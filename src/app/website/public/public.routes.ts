@@ -4,6 +4,7 @@ import { HomeComponent } from './home/home.component';
 import { MyAccountComponent } from './my-account/my-account.component';
 import { HelpComponent } from './help/help.component';
 import { BasketComponent } from './basket/basket.component';
+import { PaymentComponent } from './payment/payment.component';
 
 export const publicRoutes: Routes = [
   {
@@ -25,5 +26,9 @@ export const publicRoutes: Routes = [
   {
     path: 'myaccount',
     component: MyAccountComponent,
+  },
+  {
+    path: 'payment',
+    component: PaymentComponent,
   }
 ];
