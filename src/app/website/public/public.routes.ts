@@ -26,6 +26,20 @@ export const publicRoutes: Routes = [
   {
     path: 'myaccount',
     component: MyAccountComponent,
+    children: [
+      {
+        path: 'addresses',
+        loadComponent: () => import('./my-account/addresses/addresses.component').then(m => m.AddressesComponent)
+      },
+      {
+        path: 'cards',
+        loadComponent: () => import('./my-account/cards/cards.component').then(m => m.CardsComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./my-account/profile/profile.component').then(m => m.ProfileComponent)
+      }
+    ]
   },
   {
     path: 'payment',

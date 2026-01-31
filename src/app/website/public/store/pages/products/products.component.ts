@@ -45,13 +45,16 @@ export class ProductsComponent implements OnInit {
    * Agrega un producto al carrito.
    * @param product El producto que se va a agregar al carrito.
    */
-  addToCart(product: Product): void {
-    if (!product._id) {
+  addToCart(productId: string): void {
+    if (!productId) {
       console.error('El producto no tiene un ID válido.');
       return;
     }
 
     // Llama al servicio para agregar el producto al carrito
-    this.basketService.addToCart(product._id, 1);
+    this.basketService.addToBasket(productId, 1).subscribe({
+      next: (basket) => console.log('Producto agregado:', basket),
+      error: (err) => console.error('Error:', err),
+    });
   }
 }

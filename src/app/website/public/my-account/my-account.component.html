@@ -59,12 +59,22 @@
     <aside class="w-1/4 bg-white shadow-lg p-4">
       <ul class="space-y-4">
         <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
-          <span>📍</span>
-          <span>Direcciones</span>
+          <a routerLink="profile" routerLinkActive="text-blue-600" class="flex items-center space-x-2 w-full">
+            <span>📍</span>
+            <span>Perfil</span>
+          </a>
         </li>
         <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
-          <span>💳</span>
-          <span>Medios de pago</span>
+          <a routerLink="addresses" routerLinkActive="text-blue-600" class="flex items-center space-x-2 w-full">
+            <span>📍</span>
+            <span>Direcciones</span>
+          </a>
+        </li>
+        <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
+          <a routerLink="cards" routerLinkActive="text-blue-600" class="flex items-center space-x-2 w-full">
+            <span>💳</span>
+            <span>Medios de pago</span>
+          </a>
         </li>
         <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
           <span>⚙️</span>
@@ -80,118 +90,7 @@
     <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxx Main Content xxxxxxxxxxxxxxxxxxxxxxxxxxx -->
 
     <div class="w-3/4 p-8">
-      <h2 class="text-xl font-semibold text-gray-700">Datos personales</h2>
-      <div class="bg-white p-6 mt-4 shadow-lg rounded-lg">
-        <form [formGroup]="userForm" class="space-y-4">
-          <div class="my-4 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-4">
-            <!-- **************************profilePicture input************************** -->
-
-            <div class="sm:col-span-2 sm:col-start-1">
-              <button
-                type="button"
-                class="relative flex rounded-full text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-200 focus:outline-hidden"
-                id="user-menu-button"
-                aria-expanded="false"
-                aria-haspopup="true"
-              >
-                <span class="absolute -inset-1.5"></span>
-                <span class="sr-only">Open user menu</span>
-                <img
-                  class="size-13 rounded-full"
-                  [src]="userData?.profilePicture"
-                  alt="User profile"
-                />
-              </button>
-            </div>
-
-            <!-- **************************email input************************** -->
-
-            <div class="sm:col-span-2">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Correo</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="email"
-                  type="email"
-                  name="email"
-                  id="email"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************displayname input************************** -->
-
-            <div class="sm:col-span-full">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Nombres y Apellidos</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="displayName"
-                  type="text"
-                  name="displayname"
-                  id="displayname"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************phones input************************** -->
-
-            <div class="sm:col-span-2 sm:col-start-1">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Celular</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="phone"
-                  type="text"
-                  name="phone"
-                  id="phone"
-                  class="block w-full rounded-md font-medium py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************dni input************************** -->
-            <div class="sm:col-span-2">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >DNI</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="dni"
-                  type="text"
-                  name="dni"
-                  id="dni"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            class="bg-indigo-600 hover:bg-indigo-500 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Guardar
-          </button>
-        </form>
-      </div>
+      <router-outlet></router-outlet>
     </div>
   </div>
 </div>
