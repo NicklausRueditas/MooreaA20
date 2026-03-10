@@ -1,0 +1,22 @@
+.checkout-input {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  border-radius: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  color: #111827;
+  line-height: 1.25rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  outline: none;
+  background-color: #fff;
+}
+
+.checkout-input:focus {
+  border-color: var(--color-primary, #6366f1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary, #6366f1) 20%, transparent);
+}
+
+.checkout-input.border-red-400,
+.checkout-input[class*="border-red"] {
+  border-color: #f87171;
+}

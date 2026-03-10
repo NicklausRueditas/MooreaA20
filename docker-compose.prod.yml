@@ -1,0 +1,23 @@
+version: '3.8'
+
+# Production using pre-built files (recommended for Tailwind CSS 4.0)
+# Build locally first: npm install && npm run build
+
+services:
+  angular-prod-local:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production-local
+    container_name: angular17-prod-local
+    ports:
+      - "80:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - angular-network
+
+networks:
+  angular-network:
+    driver: bridge

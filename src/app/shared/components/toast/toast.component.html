@@ -1,0 +1,97 @@
+<div
+  class="fixed inset-0 flex items-end justify-center px-4 py-6 pointer-events-none sm:p-6 sm:items-start sm:justify-end z-50">
+  <div class="flex flex-col gap-3 w-full max-w-sm">
+    @for (toast of toastService.toasts$ | async; track toast) {
+    <div @toastAnimation class="pointer-events-auto w-full">
+      <div [class]="getToastClasses(toast.type)" role="alert">
+        <div class="flex items-start">
+          <!-- Icono -->
+          <div [class]="getIconContainerClasses(toast.type)">
+            @if (toast.type === 'success') {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            }
+            @if (toast.type === 'error') {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+            </svg>
+            }
+            @if (toast.type === 'warning') {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.008v.008H12v-.008z" />
+            </svg>
+            }
+            @if (toast.type === 'info') {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+            </svg>
+            }
+            @if (toast.type === 'confirm') {
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+              stroke="currentColor" class="w-6 h-6">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+            </svg>
+            }
+          </div>
+
+          <!-- Contenido -->
+          <div class="flex-1 w-full relative">
+            <div class="flex justify-between items-start">
+              <p class="text-sm font-medium text-gray-900 leading-5">
+                {{ toast.message }}
+              </p>
+
+              <!-- Close Button (solo si no es confirm) -->
+              @if (toast.type !== 'confirm') {
+              <button class="ml-4 -mt-1 text-gray-400 hover:text-gray-600 focus:outline-none transition-colors"
+                (click)="toastService.removeToast(toast)">
+                <span class="sr-only">Close</span>
+                <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clip-rule="evenodd" />
+                </svg>
+              </button>
+              }
+            </div>
+
+            <!-- Botones de Acción (Confirm) -->
+            @if (toast.type === 'confirm') {
+            <div class="mt-4 flex space-x-3">
+              <button (click)="onConfirm(toast)"
+                class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                {{ toast.confirmText || 'Confirmar' }}
+              </button>
+              <button (click)="onCancel(toast)"
+                class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                {{ toast.cancelText || 'Cancelar' }}
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Progress Bar (Opcional, decoration) -->
+        @if (toast.type !== 'confirm') {
+        <div
+          class="absolute bottom-0 left-0 h-1 bg-gradient-to-r from-transparent via-gray-200 to-transparent w-full opacity-50 rounded-b-xl overflow-hidden">
+          <div class="h-full bg-current opacity-30 w-full animate-shrink origin-left"
+            [style.animation-duration]="(toast.duration || 5000) + 'ms'"></div>
+        </div>
+        }
+
+      </div>
+    </div>
+    }
+  </div>
+</div>

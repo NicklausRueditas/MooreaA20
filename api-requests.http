@@ -1,0 +1,980 @@
+###############################################################################
+# 🛒 API REST - Tienda Virtual
+# Base URL: http://localhost:3000
+# Autenticación: JWT Bearer Token
+###############################################################################
+
+@baseUrl = http://localhost:3000
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWE3MjVmMmM3OWY2NmJjMzVmZTQ0OTUiLCJlbWFpbCI6Im5pY2swNDd0dUBnbWFpbC5jb20iLCJyb2xlcyI6WyJ1c2VyIl0sImRpc3BsYXlOYW1lIjoiTmlja2zDoXVzIE9BIiwiaWF0IjoxNzcyNTc3MjYzLCJleHAiOjE3NzI2NjM2NjMsImF1ZCI6InRpZW5kYS12aXJ0dWFsLWFwcCIsImlzcyI6InRpZW5kYS12aXJ0dWFsLWFwaSJ9.nhFIDYCNpz_AL0Sj7QCBKjTjudEkYy0_oYj4nFJ0Bo0
+eyJhbGciOiJIUz
+###############################################################################
+# 🔐 AUTENTICACIÓN (AUTH)
+###############################################################################
+
+### 1. Registro de Usuario
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "usuario02@ejemplo.com",
+  "password": "Password123!",
+  "displayName": "Juan Pérez",
+  "phone": "+51987654321",
+  "dni": "87654321",
+  "roles": ["user"]
+}
+
+### 2. Login de Usuario
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "usuario02@ejemplo.com",
+  "password": "Password123!"
+}
+
+### 3. Logout
+POST {{baseUrl}}/auth/logout
+Authorization: Bearer {{token}}
+
+### 4. Autenticación con Google (Abrir en navegador)
+
+# GET {{baseUrl}}/auth/google
+
+### 5. Callback de Google (Automático)
+
+# GET {{baseUrl}}/auth/google/callback
+
+
+###############################################################################
+# 👤 PERFIL DE USUARIO (SESION)
+###############################################################################
+
+### 1. Obtener Perfil del Usuario Autenticado
+GET {{baseUrl}}/sesion/profile
+Authorization: Bearer {{token}}
+
+### 2. Actualizar Perfil
+PATCH {{baseUrl}}/sesion/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "displayName": "Juan Carlos Pérez",
+  "phone": "+51987654322",
+  "profilePicture": "https://ejemplo.com/nueva-foto.jpg"
+}
+
+### 3. Eliminar Cuenta
+DELETE {{baseUrl}}/sesion/profile
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 👥 GESTIÓN DE USUARIOS (MANAGE - Solo Admin)
+###############################################################################
+
+### 1. Crear Usuario
+POST {{baseUrl}}/manage/user/create
+Content-Type: application/json
+
+{
+  "email": "nuevo@ejemplo.com",
+  "password": "Password123!",
+  "displayName": "Nuevo Usuario",
+  "phone": "+51987654321",
+  "dni": "12345678",
+  "roles": ["user"]
+}
+
+### 2. Listar Todos los Usuarios Activos (Admin)
+GET {{baseUrl}}/manage/users
+Authorization: Bearer {{token}}
+
+### 3. Obtener Usuario por ID (Admin)
+GET {{baseUrl}}/manage/user/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 4. Actualizar Usuario (Admin)
+PATCH {{baseUrl}}/manage/user/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "displayName": "Nombre Actualizado",
+  "phone": "+51999888777",
+  "roles": ["user", "worker"]
+}
+
+### 5. Desactivar Usuario (Soft Delete - Admin)
+PATCH {{baseUrl}}/manage/user/67890abcdef1234567890abc/deactivate
+Authorization: Bearer {{token}}
+
+### 6. Eliminar Usuario Permanentemente (Admin)
+DELETE {{baseUrl}}/manage/user/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 📦 PRODUCTOS MAESTROS (PRODUCTS)
+###############################################################################
+
+### 1. Obtener Todos los Productos (Paginado, incluye inactivos)
+GET {{baseUrl}}/product/all?page=1&limit=12
+
+### 2. Obtener Solo Productos Activos (Paginado)
+GET {{baseUrl}}/product/active?page=1&limit=12
+
+### 3. Buscar Productos por Tags
+GET {{baseUrl}}/product/search?tags=laptop,gaming
+
+### 4. Obtener Productos por Categoría
+GET {{baseUrl}}/product/category/Electrónica
+
+### 5. Obtener Productos por IDs
+GET {{baseUrl}}/product/byIds?ids=67890abc,12345def
+
+### 6. Obtener Producto por ID
+GET {{baseUrl}}/product/67890abcdef1234567890abc
+
+### 7. Obtener Producto por Código
+GET {{baseUrl}}/product/code/BASH-DALLAS
+
+### 8. Buscar Productos por Rango de Precio
+GET {{baseUrl}}/product/price-range?minPrice=100&maxPrice=500
+
+### 9. Crear Producto Maestro
+POST {{baseUrl}}/product
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "BASH-DALLAS",
+  "name": "Zapatilla Bash Dallas",
+  "brand": "Bash",
+  "model": "Dallas",
+  "description": "Zapatilla urbana de alta calidad",
+  "specifications": {
+    "material": "Cuero sintético",
+    "suela": "Goma antideslizante",
+    "tipo": "Casual"
+  },
+  "basePrice": 199.99,
+  "category": ["Calzado", "Zapatillas", "Urbano"],
+  "discount": 0,
+  "isActive": true,
+  "tags": ["zapatilla", "urbano", "casual", "bash"],
+  "gallery": [
+    "https://res.cloudinary.com/ejemplo/image/upload/v1/lifestyle-1.jpg",
+    "https://res.cloudinary.com/ejemplo/image/upload/v1/size-chart.jpg"
+  ]
+}
+
+### 10. Actualizar Producto Maestro
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "basePrice": 179.99,
+  "discount": 10,
+  "tags": ["zapatilla", "oferta", "urbano"],
+  "gallery": [
+    "https://res.cloudinary.com/ejemplo/image/upload/v1/lifestyle-1.jpg",
+    "https://res.cloudinary.com/ejemplo/image/upload/v1/size-chart.jpg"
+  ]
+}
+
+### 11. Eliminar Producto (Soft Delete - marca como inactivo)
+DELETE {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 12. Eliminar Producto Permanentemente (Hard Delete - solo admin)
+DELETE {{baseUrl}}/product/67890abcdef1234567890abc/hard
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 👟 VARIANTES DE PRODUCTOS (PRODUCT VARIANTS)
+###############################################################################
+
+### 1. Obtener Todas las Variantes (Paginado)
+GET {{baseUrl}}/product-variants?page=1&limit=12
+
+### 2. Buscar Variante por SKU
+GET {{baseUrl}}/product-variants/sku/BASH-DALLAS-WHT-36
+
+### 3. Obtener Variantes de un Producto
+GET {{baseUrl}}/product-variants/product/67890abcdef1234567890abc
+
+### 4. Buscar Variantes por Color
+GET {{baseUrl}}/product-variants/color/WHT
+
+### 5. Buscar Variantes por Talla
+GET {{baseUrl}}/product-variants/size/36
+
+### 6. Obtener Variante por ID
+GET {{baseUrl}}/product-variants/67890abcdef1234567890abc
+
+### 7. Calcular Precio Final de Variante
+GET {{baseUrl}}/product-variants/67890abcdef1234567890abc/price
+
+### 8. Crear Variante de Producto
+POST {{baseUrl}}/product-variants
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "67890abcdef1234567890abc",
+  "sku": "BASH-DALLAS-WHT-36",
+  "color": {
+    "name": "Blanco",
+    "hex": "#FFFFFF",
+    "code": "WHT"
+  },
+  "size": {
+    "type": "TALLA",
+    "value": "36",
+    "region": "EU"
+  },
+  "dimensions": {
+    "weight": {
+      "value": 0.5,
+      "unit": "kg"
+    },
+    "length": 25,
+    "width": 10,
+    "height": 8
+  },
+  "gallery": [
+    "https://ejemplo.com/bash-dallas-white-1.jpg",
+    "https://ejemplo.com/bash-dallas-white-2.jpg"
+  ],
+  "priceAdjustment": 0,
+  "isActive": true
+}
+
+### 9. Actualizar Variante
+PATCH {{baseUrl}}/product-variants/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "priceAdjustment": 10,
+  "gallery": [
+    "https://ejemplo.com/nueva-imagen-1.jpg",
+    "https://ejemplo.com/nueva-imagen-2.jpg"
+  ]
+}
+
+### 10. Eliminar Variante (Soft Delete)
+DELETE {{baseUrl}}/product-variants/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 11. Eliminar Variante Permanentemente
+DELETE {{baseUrl}}/product-variants/67890abcdef1234567890abc/hard
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 📊 INVENTARIO (INVENTORY)
+###############################################################################
+
+### 1. Obtener Todo el Inventario (Paginado)
+GET {{baseUrl}}/inventory?page=1&limit=50
+
+### 2. Obtener Inventario de una Tienda
+GET {{baseUrl}}/inventory/store/67890abcdef1234567890abc
+
+### 3. Obtener Stock de una Variante en Todas las Tiendas
+GET {{baseUrl}}/inventory/variant/67890abcdef1234567890abc
+
+### 4. Obtener Inventario Específico (Variante + Tienda)
+GET {{baseUrl}}/inventory/variant/67890abcdef1234567890abc/store/507f1f77bcf86cd799439012
+
+### 5. Verificar Disponibilidad de Stock
+GET {{baseUrl}}/inventory/availability/67890abcdef1234567890abc/507f1f77bcf86cd799439012?quantity=2
+
+### 6. Buscar Productos con Stock Bajo
+GET {{baseUrl}}/inventory/low-stock
+
+### 7. Buscar Productos con Stock Bajo en una Tienda
+GET {{baseUrl}}/inventory/low-stock?storeId=507f1f77bcf86cd799439012
+
+### 8. Buscar Productos Sin Stock
+GET {{baseUrl}}/inventory/out-of-stock
+
+### 9. Crear Registro de Inventario
+POST {{baseUrl}}/inventory
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "variantId": "67890abcdef1234567890abc",
+  "storeId": "507f1f77bcf86cd799439012",
+  "quantity": 100,
+  "reservedQuantity": 0,
+  "location": {
+    "aisle": "A",
+    "shelf": "3",
+    "bin": "12"
+  },
+  "reorderPoint": 10,
+  "reorderQuantity": 50,
+  "cost": 89.99,
+  "wholesalePrice": 149.99
+}
+
+### 10. Reservar Stock (Para Carrito)
+POST {{baseUrl}}/inventory/reserve
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "variantId": "67890abcdef1234567890abc",
+  "storeId": "507f1f77bcf86cd799439012",
+  "quantity": 2
+}
+
+### 11. Liberar Stock Reservado
+POST {{baseUrl}}/inventory/release
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "variantId": "67890abcdef1234567890abc",
+  "storeId": "507f1f77bcf86cd799439012",
+  "quantity": 2
+}
+
+### 12. Reducir Stock (Venta Completada)
+PATCH {{baseUrl}}/inventory/reduce/67890abcdef1234567890abc/507f1f77bcf86cd799439012
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 2
+}
+
+### 13. Incrementar Stock (Reabastecimiento)
+PATCH {{baseUrl}}/inventory/increase/67890abcdef1234567890abc/507f1f77bcf86cd799439012
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 50
+}
+
+### 14. Actualizar Inventario
+PATCH {{baseUrl}}/inventory/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "reorderPoint": 15,
+  "reorderQuantity": 75,
+  "location": {
+    "aisle": "B",
+    "shelf": "5",
+    "bin": "20"
+  }
+}
+
+### 15. Eliminar Registro de Inventario
+DELETE {{baseUrl}}/inventory/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# ⭐ RESEÑAS Y CALIFICACIONES (REVIEWS)
+###############################################################################
+
+### 1. Crear Reseña de Producto (Requiere Auth)
+POST {{baseUrl}}/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "productId": "67890abcdef1234567890abc",
+  "rating": 5,
+  "title": "Excelente producto",
+  "comment": "Este producto superó mis expectativas. La calidad es excelente y llegó en perfectas condiciones. Lo recomiendo totalmente.",
+  "images": [
+    "https://ejemplo.com/review-foto1.jpg",
+    "https://ejemplo.com/review-foto2.jpg"
+  ],
+  "verified": true
+}
+
+### 2. Obtener Todas las Reseñas (Paginado)
+GET {{baseUrl}}/reviews?page=1&limit=10
+
+### 3. Obtener Reseñas de un Producto Específico
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?page=1&limit=10
+
+### 4. Obtener Reseñas con Filtro de Calificación Mínima
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?minRating=4
+
+### 5. Obtener Solo Reseñas Verificadas
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?verified=true
+
+### 6. Obtener Reseñas Ordenadas por Más Útiles
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?sortBy=helpful&sortOrder=desc
+
+### 7. Obtener Reseñas Ordenadas por Calificación
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?sortBy=rating&sortOrder=desc
+
+### 8. Obtener Reseñas de un Usuario
+GET {{baseUrl}}/reviews/user/67890abcdef1234567890abc
+
+### 9. Obtener Reseña por ID
+GET {{baseUrl}}/reviews/67890abcdef1234567890abc
+
+### 10. Actualizar Reseña (Solo Propietario)
+PATCH {{baseUrl}}/reviews/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rating": 4,
+  "title": "Buen producto con pequeños detalles",
+  "comment": "Después de usarlo más tiempo, actualizo mi opinión. Es un buen producto pero tiene algunos detalles menores que mejorar."
+}
+
+### 11. Eliminar Reseña (Solo Propietario)
+DELETE {{baseUrl}}/reviews/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 12. Marcar Reseña como Útil
+POST {{baseUrl}}/reviews/67890abcdef1234567890abc/helpful
+
+### 13. Obtener Reseñas con Múltiples Filtros
+GET {{baseUrl}}/reviews/product/67890abcdef1234567890abc?minRating=4&verified=true&sortBy=createdAt&sortOrder=desc&page=1&limit=5
+
+
+### 6. Eliminar Producto (Requiere Auth)
+DELETE {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 🛒 CARRITO DE COMPRAS (BASKET)
+# IMPORTANTE: todos los endpoints usan variantId (ObjectId de ProductVariant).
+# El cliente debe elegir talla + color ANTES de agregar al carrito.
+# Flujo: GET /product-variants/product/:productId → elegir variante → POST /basket/add
+###############################################################################
+
+### 1. Obtener Carrito Completo con Cálculos
+# Respuesta unificada — shape:
+# {
+#   "items": [
+#     {
+#       "variantId": "...",
+#       "productId": "...",
+#       "variant": { "_id": "...", "sku": "BASH-DALLAS-WHT-36", "color": { "name": "Blanco", "hex": "#FFF", "code": "WHT" },
+#                    "size": { "type": "TALLA", "value": "36", "region": "EU" }, "gallery": [...], "priceAdjustment": 0 },
+#       "product":  { "_id": "...", "name": "Zapatilla Bash Dallas", "brand": "Bash", "basePrice": 199.99, "discount": 10 },
+#       "quantity": 2,
+#       "finalPrice": 199.99,
+#       "discount": 10,
+#       "subtotal": 359.98,
+#       "savings": 39.998
+#     }
+#   ],
+#   "summary": {
+#     "itemCount": 1,
+#     "totalQuantity": 2,
+#     "totalWithoutDiscount": 399.98,
+#     "totalWithDiscount": 359.98,
+#     "totalSavings": 39.998
+#   }
+# }
+GET {{baseUrl}}/basket
+Authorization: Bearer {{token}}
+
+### 2. Inicializar/Obtener Carrito Básico (sin cálculos)
+GET {{baseUrl}}/basket/init
+Authorization: Bearer {{token}}
+
+### 3. Obtener Resumen del Carrito (itemCount, totalQuantity, estimatedTotal)
+GET {{baseUrl}}/basket/summary
+Authorization: Bearer {{token}}
+
+### 4. Verificar si una Variante está en el Carrito
+GET {{baseUrl}}/basket/check/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 5. Agregar Variante al Carrito
+# Validaciones automáticas: variante activa, producto activo, stock disponible en Inventory
+POST {{baseUrl}}/basket/add
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "variantId": "67890abcdef1234567890abc",
+  "quantity": 2
+}
+
+### 6. Actualizar Cantidad de Variante (valor absoluto — reemplaza la cantidad actual)
+PATCH {{baseUrl}}/basket/update/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "quantity": 5
+}
+
+### 7. Ajustar Cantidad (Incrementar +1)
+PATCH {{baseUrl}}/basket/adjust/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "change": 1
+}
+
+### 8. Ajustar Cantidad (Decrementar -1 — si el resultado ≤ 0 se elimina el item)
+PATCH {{baseUrl}}/basket/adjust/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "change": -1
+}
+
+### 9. Eliminar Variante del Carrito
+DELETE {{baseUrl}}/basket/remove/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 10. Vaciar Carrito Completo
+DELETE {{baseUrl}}/basket/clear
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 🛍️ ÓRDENES (ORDERS)
+# Flujo: el frontend agrupa el carrito por fulfillment y llama POST /orders una vez por grupo.
+# Ejemplo con carrito mixto delivery+pickup → 2 llamadas a POST /orders con variantIds distintos.
+###############################################################################
+
+### 1. Crear Orden — Delivery (toda la canasta o un subconjunto)
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fulfillment": "delivery",
+  "paymentMethod": "card",
+  "addressId": "67890abcdef1234567890abc"
+}
+
+### 2. Crear Orden — Delivery con subset del carrito (carrito mixto)
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fulfillment": "delivery",
+  "paymentMethod": "card",
+  "addressId": "67890abcdef1234567890abc",
+  "variantIds": ["67890abcdef1234567890ab1", "67890abcdef1234567890ab2"]
+}
+
+### 3. Crear Orden — Pickup en tienda
+POST {{baseUrl}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "fulfillment": "pickup",
+  "paymentMethod": "yape",
+  "storeId": "67890abcdef1234567890abc",
+  "variantIds": ["67890abcdef1234567890ab3"]
+}
+
+### 4. Mis Órdenes (historial del usuario autenticado)
+GET {{baseUrl}}/orders/my
+Authorization: Bearer {{token}}
+
+### 5. Detalle de Mi Orden
+GET {{baseUrl}}/orders/my/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 6. Datos QR para Retiro en Tienda (generado on-demand, no persistido)
+# Devuelve { pickupCode, invoiceNumber, qrContent }
+# El frontend/app genera el QR visual a partir de qrContent
+GET {{baseUrl}}/orders/my/67890abcdef1234567890abc/qr
+Authorization: Bearer {{token}}
+
+### 7. Confirmar Retiro en Tienda (cajero escanea el QR)
+# El cajero usa el pickupCode del QR — marca la orden como DELIVERED
+PATCH {{baseUrl}}/orders/pickup/confirm/PKP-8F3X2K
+Authorization: Bearer {{token}}
+
+### 8. Todas las Órdenes [Admin] — Sin filtros
+GET {{baseUrl}}/orders/all
+Authorization: Bearer {{token}}
+
+### 9. Todas las Órdenes [Admin] — Filtrar por estado
+GET {{baseUrl}}/orders/all?status=pending_payment
+Authorization: Bearer {{token}}
+
+### 10. Todas las Órdenes [Admin] — Filtrar por fulfillment
+GET {{baseUrl}}/orders/all?fulfillment=pickup
+Authorization: Bearer {{token}}
+
+### 11. Todas las Órdenes [Admin] — Pickup de una tienda específica
+GET {{baseUrl}}/orders/all?fulfillment=pickup&storeId=67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 12. Actualizar Estado de Orden [Admin/Worker] — Marcar como pagada
+PATCH {{baseUrl}}/orders/67890abcdef1234567890abc/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "paid"
+}
+
+### 13. Actualizar Estado — Preparando
+PATCH {{baseUrl}}/orders/67890abcdef1234567890abc/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "preparing"
+}
+
+### 14. Actualizar Estado — Listo para Retiro (pickup)
+PATCH {{baseUrl}}/orders/67890abcdef1234567890abc/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "ready_for_pickup"
+}
+
+### 15. Actualizar Estado — Enviado (delivery)
+PATCH {{baseUrl}}/orders/67890abcdef1234567890abc/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "shipped"
+}
+
+### 16. Cancelar Orden (cancelReason obligatorio)
+PATCH {{baseUrl}}/orders/67890abcdef1234567890abc/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "cancelled",
+  "cancelReason": "Sin stock disponible para completar el pedido"
+}
+
+# ── IZIPAY — PAGO CON TARJETA ──────────────────────────────────────────────────────────────
+# Flujo: 17 → (Angular monta el formulario embebido de Izipay) → 18 (webhook automático)
+# Req: IZIPAY_SHOP_ID, IZIPAY_PASSWORD e IZIPAY_HMAC_KEY configurados en .env
+
+### 17. Iniciar Pago con Izipay (obtener formToken para el formulario embebido)
+# Devuelve { formToken, publicKey, jsUrl, amount, invoiceNumber, currency }
+# El frontend:
+#   1. Carga jsUrl en el <head>
+#   2. KRGlue.loadLibrary(jsUrl, publicKey)
+#      .then(() => KRGlue.setFormConfig({ "kr-public-key": publicKey, "formToken": formToken }))
+#   3. Monta el formulario embebido — Izipay maneja todo (validación, 3DS, etc.)
+POST {{baseUrl}}/orders/67890abcdef1234567890abc/payment/init
+Authorization: Bearer {{token}}
+
+### 18. Webhook de Izipay — llamado automáticamente por Izipay al finalizar el pago
+# Izipay hace POST con los campos: kr-answer (JSON), kr-hash, kr-hash-algorithm
+# URL configurada en el portal Izipay → Configuración → Notificaciones → URL de notificación
+# La URL en .env: IZIPAY_WEBHOOK_URL=http://localhost:3000/orders/izipay/webhook
+# ⚠️  NO llamar manualmente — el backend verifica la firma HMAC-SHA256 antes de procesar
+POST {{baseUrl}}/orders/izipay/webhook
+Content-Type: application/x-www-form-urlencoded
+
+kr-answer={"orderStatus":"PAID","orderId":"ORD-2026-00001","transactions":[{"uuid":"test-tx-id","amount":34999,"currency":"PEN","status":"PAID","cardDetails":{"effectiveBrand":"VISA","pan":"490000XXXXXX1001"}}]}&kr-hash=firma_hmac_sha256_generada_por_izipay&kr-hash-algorithm=sha256_hmac
+
+
+
+###############################################################################
+# 📍 DIRECCIONES (ADDRESSES)
+###############################################################################
+
+### 1. Crear Nueva Dirección
+POST {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address": {
+    "alias": "Casa Cuarta",
+    "street": "Av. loreto",
+    "streetNumber": "4321",
+    "apartment": "103",
+    "district": "El Tambo",
+    "province": "Huancayo",
+    "department": "Junín",
+    "postalCode": "12701",
+    "country": "PE",
+    "references": "Cerca a la plaza de armas",
+    "isDefault": true,
+    "lat": -12.072505,
+    "lng": -75.232241,
+    "placeId": "ChIJx1vQD8o9BZERX9lH3Q8wMwc",
+    "distanceFromStore": 2.5
+  }
+}
+
+### 2. Obtener Todas las Direcciones del Usuario
+GET {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+
+### 3. Obtener Dirección Predeterminada
+GET {{baseUrl}}/addresses/default
+Authorization: Bearer {{token}}
+
+### 4. Obtener Dirección por ID
+GET {{baseUrl}}/addresses/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 5. Actualizar Dirección
+PATCH {{baseUrl}}/addresses/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "address": {
+    "alias": "Casa Actualizada",
+    "street": "Av. Larco",
+    "streetNumber": "5678",
+    "district": "Miraflores",
+    "province": "Lima",
+    "department": "Lima",
+    "postalCode": "15074",
+    "country": "PE",
+    "isDefault": false
+  }
+}
+
+### 6. Establecer Dirección como Predeterminada
+PATCH {{baseUrl}}/addresses/67890abcdef1234567890abc/default
+Authorization: Bearer {{token}}
+
+### 7. Eliminar Dirección Específica
+DELETE {{baseUrl}}/addresses/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 8. Eliminar Todas las Direcciones
+DELETE {{baseUrl}}/addresses
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 🖼️ IMÁGENES (IMAGES) - Cloudinary
+###############################################################################
+
+### 1. Subir Imagen a Cloudinary
+POST {{baseUrl}}/image/upload
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="producto.jpg"
+Content-Type: image/jpeg
+
+< ./path/to/image.jpg
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### 2. Obtener Todas las Imágenes
+GET {{baseUrl}}/image/all
+
+### 3. Obtener Todas las Imágenes (Incluir Inactivas)
+GET {{baseUrl}}/image/all?includeInactive=true
+
+### 4. Obtener Imágenes de un Usuario
+GET {{baseUrl}}/image/user/698945136e9c96832d8dfe07
+Authorization: Bearer {{token}}
+
+### 5. Obtener Imagen por Cloudinary ID (Metadata)
+GET {{baseUrl}}/image/tienda-virtual/gi9wwkhnk1nryp5dsvxq
+
+### 6. Actualizar Metadata de Imagen
+PATCH {{baseUrl}}/image/tienda-virtual/gi9wwkhnk1nryp5dsvxq
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isActive": false
+}
+
+### 7. Desactivar Imagen (Soft Delete)
+PATCH {{baseUrl}}/image/tienda-virtual/gi9wwkhnk1nryp5dsvxq/deactivate
+Authorization: Bearer {{token}}
+
+### 8. Eliminar Imagen Permanentemente (DB + Cloudinary)
+DELETE {{baseUrl}}/image/tienda-virtual/gi9wwkhnk1nryp5dsvxq
+Authorization: Bearer {{token}}
+
+
+
+
+###############################################################################
+# 🏪 TIENDAS (STORES)
+###############################################################################
+
+### 1. Crear Tienda
+POST {{baseUrl}}/stores
+Content-Type: application/json
+
+{
+  "name": "Tienda Central",
+  "address": "Av. Principal 123, Lima",
+  "lat": -12.046373,
+  "lng": -77.042754,
+  "phone": "+51999999999",
+  "email": "central@tienda.com",
+  "isActive": true,
+  "businessHours": [
+    {
+      "dayOfWeek": 1,
+      "openTime": "09:00",
+      "closeTime": "18:00",
+      "isOpen": true
+    },
+    {
+      "dayOfWeek": 2,
+      "openTime": "09:00",
+      "closeTime": "18:00",
+      "isOpen": true
+    }
+  ]
+}
+
+### 2. Obtener Todas las Tiendas
+GET {{baseUrl}}/stores
+
+### 3. Obtener Solo Tiendas Activas
+GET {{baseUrl}}/stores/active
+
+### 4. Obtener Tienda por ID
+GET {{baseUrl}}/stores/67890abcdef1234567890abc
+
+### 5. Actualizar Tienda
+PATCH {{baseUrl}}/stores/67890abcdef1234567890abc
+Content-Type: application/json
+
+{
+  "name": "Tienda Central Actualizada",
+  "isActive": false
+}
+
+### 6. Eliminar Tienda
+DELETE {{baseUrl}}/stores/67890abcdef1234567890abc
+
+### 7. Agregar Trabajador a Tienda
+POST {{baseUrl}}/stores/67890abcdef1234567890abc/workers
+Content-Type: application/json
+
+{
+  "userId": "507f1f77bcf86cd799439011",
+  "role": "manager"
+}
+
+### 8. Agregar Zona de Cobertura
+POST {{baseUrl}}/stores/67890abcdef1234567890abc/coverage-zones
+Content-Type: application/json
+
+{
+  "name": "Centro de Lima",
+  "coordinates": [
+    [-77.042754, -12.046373],
+    [-77.042754, -12.056373],
+    [-77.032754, -12.056373],
+    [-77.032754, -12.046373],
+    [-77.042754, -12.046373]
+  ],
+  "deliveryFee": 5.0
+}
+
+
+
+
+###############################################################################
+# 💳 TARJETAS (CARDS)
+###############################################################################
+
+### 1. Crear Tarjeta
+POST {{baseUrl}}/cards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cardNumber": "4111111111111111",
+  "cardHolder": "JUAN PEREZ",
+  "expirationDate": "12/28",
+  "cardType": "Visa",
+  "cvv": "123"
+}
+
+### 2. Obtener Todas las Tarjetas
+GET {{baseUrl}}/cards
+Authorization: Bearer {{token}}
+
+### 3. Obtener Tarjeta por ID
+GET {{baseUrl}}/cards/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### 4. Actualizar Tarjeta (Ej: titular)
+PATCH {{baseUrl}}/cards/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "cardHolder": "JUAN PEREZ ACTUALIZADO"
+}
+
+### 5. Eliminar Tarjeta
+DELETE {{baseUrl}}/cards/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+
+### 1. Obtener Configuración
+GET {{baseUrl}}/config
+
+###############################################################################
+# 📚 DOCUMENTACIÓN
+###############################################################################
+
+### Acceder a Swagger UI
+# GET {{baseUrl}}/api-docs
+
+
+###############################################################################
+# 💡 NOTAS IMPORTANTES
+###############################################################################
+
+# 1. Reemplaza {{token}} con el token JWT obtenido del login
+# 2. Después de hacer login, copia el access_token y pégalo en la variable @token
+# 3. Los IDs de ejemplo (67890abcdef1234567890abc) deben ser reemplazados con IDs reales
+# 4. Para subir imágenes, ajusta la ruta del archivo en la sección de imágenes
+# 5. Algunos endpoints requieren roles específicos (admin, worker)
+# 6. La paginación por defecto es: page=1, limit=12
+
+###############################################################################
+# 🔄 FLUJO TÍPICO DE USO
+###############################################################################
+
+# 1. Registrarse: POST /auth/register
+# 2. Login: POST /auth/login (guardar el token)
+# 3. Ver productos: GET /product/all
+# 4. Ver reseñas de un producto: GET /reviews/product/:productId
+# 5. Agregar al carrito: POST /basket/add
+# 6. Ver carrito: GET /basket/summary
+# 7. Crear dirección: POST /addresses
+# 8. Crear pedido: POST /operations
+# 9. Ver mis pedidos: GET /operations
+# 10. Calificar producto comprado: POST /reviews

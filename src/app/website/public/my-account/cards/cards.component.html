@@ -1,0 +1,132 @@
+<div class="space-y-6">
+
+  <!-- Header -->
+  <div class="flex justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <div>
+      <h2 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-gray-800 to-gray-600">
+        Mis Tarjetas
+      </h2>
+      <p class="text-sm text-gray-500 mt-1">Gestiona tus métodos de pago de forma segura</p>
+    </div>
+    <button (click)="openAddModal()"
+      class="inline-flex items-center px-4 py-2 bg-gray-900 rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition shadow-lg shadow-gray-900/20">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Agregar Nueva
+    </button>
+  </div>
+
+  <!-- Loading skeletons -->
+  @if (isLoading) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (item of [1,2,3]; track item) {
+    <div class="h-48 rounded-2xl bg-gray-200 animate-pulse"></div>
+    }
+  </div>
+  } @else if (cards.length === 0) {
+  <!-- Estado vacío -->
+  <div class="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
+    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+          d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+      </svg>
+    </div>
+    <h3 class="text-lg font-medium text-gray-900">No tienes tarjetas guardadas</h3>
+    <p class="mt-1 text-sm text-gray-500 mb-5">Agrega una tarjeta para agilizar tus compras.</p>
+    <button (click)="openAddModal()"
+      class="inline-flex items-center px-5 py-2.5 bg-gray-900 rounded-xl text-sm font-semibold text-white hover:bg-gray-700 transition shadow-md">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Agregar primera tarjeta
+    </button>
+  </div>
+  } @else {
+  <!-- Grid de tarjetas -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (card of cards; track card._id) {
+    <div
+      class="group relative h-48 rounded-2xl p-6 text-white shadow-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl overflow-hidden bg-gradient-to-r"
+      [ngClass]="getCardGradient(card.cardType)">
+
+      <!-- Decoración -->
+      <div class="absolute -top-10 -right-10 w-40 h-40 bg-white opacity-10 rounded-full blur-2xl group-hover:opacity-20 transition-opacity duration-500"></div>
+      <div class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-black/50 to-transparent"></div>
+
+      <div class="relative z-10 flex flex-col h-full justify-between">
+        <div class="flex justify-between items-start">
+          <div class="flex flex-col">
+            <span class="text-xs uppercase tracking-wider opacity-75 font-semibold">Saldo actual</span>
+            <span class="text-lg font-bold tracking-tight">****</span>
+          </div>
+          <span class="font-bold text-xl italic tracking-tighter opacity-90">{{ card.cardType }}</span>
+        </div>
+
+        <div class="space-y-4">
+          <div class="flex items-center space-x-2">
+            <!-- Chip SIM -->
+            <div class="w-10 h-8 bg-yellow-400 rounded-md bg-opacity-80 relative border border-yellow-600/30 overflow-hidden">
+              <div class="absolute w-full h-[1px] bg-black/20 top-1/2"></div>
+              <div class="absolute h-full w-[1px] bg-black/20 left-1/3"></div>
+              <div class="absolute h-full w-[1px] bg-black/20 right-1/3"></div>
+            </div>
+            <span class="text-white/50">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                  d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-10.513a9 9 0 0112.16 0M4.111 6.89a13 13 0 0115.778 0" />
+              </svg>
+            </span>
+          </div>
+
+          <div class="text-xl font-mono tracking-widest">
+            {{ card.cardNumber | slice:0:4 }} **** **** {{ card.cardNumber | slice:-4 }}
+          </div>
+
+          <div class="flex justify-between items-end">
+            <div>
+              <span class="text-[0.6rem] uppercase tracking-wider opacity-60">Titular</span>
+              <p class="font-medium text-sm tracking-wide uppercase truncate max-w-[150px]">{{ card.cardHolder }}</p>
+            </div>
+            <div class="text-right">
+              <span class="text-[0.6rem] uppercase tracking-wider opacity-60">Expira</span>
+              <p class="font-medium text-sm font-mono">{{ card.expirationDate }}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones al hover -->
+      <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 gap-3">
+        <button (click)="openEditModal(card)"
+          class="p-2 bg-white/20 hover:bg-white/40 rounded-full text-white transition-colors border border-white/30 backdrop-blur-sm"
+          title="Editar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+          </svg>
+        </button>
+        <button (click)="deleteCard(card)"
+          class="p-2 bg-red-500/80 hover:bg-red-600/90 rounded-full text-white transition-colors border border-red-400/30 backdrop-blur-sm"
+          title="Eliminar">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+    }
+  </div>
+  }
+
+  <!-- Modal reutilizable -->
+  <app-card-modal
+    [isOpen]="showCardModal"
+    [editCard]="cardToEdit"
+    (closed)="onModalClosed()"
+    (cardSaved)="onCardSaved($event)">
+  </app-card-modal>
+
+</div>

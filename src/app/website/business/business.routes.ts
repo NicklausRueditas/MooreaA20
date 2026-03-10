@@ -1,9 +1,45 @@
 import { Routes } from '@angular/router';
-import { InventoryComponent } from './inventory/inventory.component';
 
 export const businessRoutes: Routes = [
-    {
-        path: 'inventory',
-        component: InventoryComponent,
-      }
+  {
+    path: 'products',
+    loadComponent: () => import('./products/products.component').then(m => m.ProductsComponent)
+  },
+  {
+    path: 'products/new',
+    loadComponent: () => import('./product-editor/product-editor.component').then(m => m.ProductEditorComponent)
+  },
+  {
+    path: 'products/:id/edit',
+    loadComponent: () => import('./product-editor/product-editor.component').then(m => m.ProductEditorComponent)
+  },
+  {
+    path: 'stores',
+    loadComponent: () => import('./stores/stores.component').then(m => m.StoresComponent)
+  },
+  {
+    path: 'stores/:id/inventory',
+    loadComponent: () => import('./stores/store-inventory/store-inventory.component').then(m => m.StoreInventoryComponent)
+  },
+  {
+    path: 'stores/:id/workers',
+    loadComponent: () => import('./stores/store-workers/store-workers.component').then(m => m.StoreWorkersComponent)
+  },
+  {
+    path: 'stores/:id/coverage',
+    loadComponent: () => import('./stores/coverage-zones/coverage-zones.component').then(m => m.CoverageZonesComponent)
+  },
+  {
+    path: 'orders',
+    loadComponent: () => import('./orders-admin/orders-admin.component').then(m => m.OrdersAdminComponent)
+  },
+  {
+    path: 'pickup-scanner',
+    loadComponent: () => import('./pickup-scanner/pickup-scanner.component').then(m => m.PickupScannerComponent)
+  },
+  {
+    path: '',
+    redirectTo: 'products',
+    pathMatch: 'full'
+  }
 ];

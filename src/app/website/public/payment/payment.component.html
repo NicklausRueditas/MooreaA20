@@ -1,0 +1,659 @@
+<!-- ─── PAYMENT / CHECKOUT PAGE ─────────────────────────────────────────── -->
+<div class="min-h-screen bg-gray-50">
+
+  <!-- ─── HEADER ──────────────────────────────────────────────────────────── -->
+  <header class="bg-white border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <a [routerLink]="['/']" class="flex items-center gap-2 text-gray-700 hover:text-primary transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span class="text-sm font-medium hidden sm:block">Volver a la tienda</span>
+        </a>
+
+        <!-- Stepper -->
+        <nav class="flex items-center gap-0">
+          @for (step of steps; track step; let i = $index) {
+          <div class="flex items-center">
+            <button (click)="i < stepIndex ? goToStep(step) : null"
+              class="flex items-center gap-1.5 px-2 py-1 rounded-lg transition-all"
+              [class.cursor-default]="i >= stepIndex">
+              <span class="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
+                [ngClass]="{
+                  'bg-primary text-white shadow':  i === stepIndex,
+                  'bg-green-500 text-white':       i < stepIndex,
+                  'bg-gray-100 text-gray-400':     i > stepIndex
+                }">
+                @if (i < stepIndex) {
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" />
+                </svg>
+                } @else { {{ i + 1 }} }
+              </span>
+              <span class="text-xs font-medium hidden sm:block"
+                [ngClass]="{ 'text-primary': i === stepIndex, 'text-green-600': i < stepIndex, 'text-gray-400': i > stepIndex }">
+                {{ step === 'address' ? 'Entrega' : step === 'payment' ? 'Pago' : 'Confirmación' }}
+              </span>
+            </button>
+            @if (i < steps.length - 1) {
+            <div class="w-8 h-px mx-1"
+              [ngClass]="i < stepIndex ? 'bg-green-400' : 'bg-gray-200'"></div>
+            }
+          </div>
+          }
+        </nav>
+
+        <a [routerLink]="['/basket']" class="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-800 transition-colors">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span class="font-medium">{{ basketItems.length }}</span>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <!-- ─── MAIN ─────────────────────────────────────────────────────────────── -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- COLUMNA IZQUIERDA — Pasos                                          -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="lg:col-span-2 space-y-6">
+
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        <!-- PASO 1: ENTREGA                                                  -->
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        @if (currentStep() === 'address') {
+        <div class="space-y-5">
+
+          <!-- POR PRODUCTO: modo de entrega -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100">
+              <h2 class="text-base font-bold text-gray-900">Forma de entrega por producto</h2>
+              <p class="text-xs text-gray-500 mt-0.5">Puedes elegir delivery o recojo en tienda para cada artículo.</p>
+            </div>
+
+            <div class="divide-y divide-gray-100">
+              @for (item of basketItems; track getItemKey(item)) {
+              @let mode = getItemDeliveryMode(item);
+
+              <div class="p-5">
+                <!-- Info del producto -->
+                <div class="flex gap-3 mb-4">
+                  @if (getThumbnail(item)) {
+                  <img [src]="getThumbnail(item)" [alt]="getProductName(item)"
+                    class="w-12 h-12 object-cover rounded-lg flex-shrink-0">
+                  } @else {
+                  <div class="w-12 h-12 bg-gray-100 rounded-lg flex-shrink-0 flex items-center justify-center">
+                    <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01" />
+                    </svg>
+                  </div>
+                  }
+                  <div class="min-w-0">
+                    <p class="font-semibold text-gray-900 text-sm truncate">{{ getProductName(item) }}</p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                      {{ getColorLabel(item) }}{{ getColorLabel(item) && getSizeLabel(item) ? ' · ' : '' }}Talla {{ getSizeLabel(item) }} · {{ item.quantity }} un.
+                    </p>
+                    <p class="text-sm font-bold text-primary mt-0.5">{{ (item.finalPrice ?? 0) | solCurrency }}</p>
+                  </div>
+                </div>
+
+                <!-- Toggle delivery / pickup -->
+                <div class="grid grid-cols-2 gap-3 mb-4">
+                  <button (click)="setItemDeliveryMode(item, 'delivery')"
+                    class="flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left"
+                    [ngClass]="mode === 'delivery'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300'">
+                    <span class="text-xl leading-none">🚚</span>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">Delivery</p>
+                      <p class="text-xs text-gray-400">S/ 15.00</p>
+                    </div>
+                    @if (mode === 'delivery') {
+                    <span class="ml-auto w-4 h-4 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    }
+                  </button>
+
+                  <button (click)="setItemDeliveryMode(item, 'pickup')"
+                    class="flex items-center gap-2.5 p-3 rounded-xl border-2 transition-all text-left"
+                    [ngClass]="mode === 'pickup'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-gray-200 hover:border-gray-300'">
+                    <span class="text-xl leading-none">🏪</span>
+                    <div>
+                      <p class="text-sm font-semibold text-gray-800">Recojo en tienda</p>
+                      <p class="text-xs text-green-600 font-medium">Gratis</p>
+                    </div>
+                    @if (mode === 'pickup') {
+                    <span class="ml-auto w-4 h-4 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+                      <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </span>
+                    }
+                  </button>
+                </div>
+
+                <!-- ── INFO: fecha y detalles según modo ── -->
+                @if (mode === 'delivery') {
+                <div class="flex items-center gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-2.5">
+                  <svg class="w-4 h-4 text-blue-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p class="text-xs text-blue-700">
+                    Llega estimado: <span class="font-semibold capitalize">{{ deliveryDateLabel }}</span>
+                  </p>
+                </div>
+                }
+
+                @if (mode === 'pickup') {
+                <div class="space-y-2">
+                  <!-- Selector de tienda -->
+                  <button (click)="toggleStorePicker(item)"
+                    class="w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all"
+                    [ngClass]="getItemPickupStore(item)
+                      ? 'border-primary/40 bg-primary/5'
+                      : 'border-dashed border-gray-300 hover:border-primary/40'">
+                    <div class="flex items-center gap-2.5 min-w-0">
+                      <span class="text-base flex-shrink-0">🏪</span>
+                      <div class="min-w-0 text-left">
+                        @if (getItemPickupStore(item); as store) {
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ store.name }}</p>
+                        <p class="text-xs text-gray-500">{{ store.address }}</p>
+                        } @else {
+                        <p class="text-sm text-gray-400">Seleccionar tienda para recoger</p>
+                        }
+                      </div>
+                    </div>
+                    <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform"
+                      [class.rotate-180]="isStorePickerOpen(item)"
+                      fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </button>
+
+                  <!-- Lista de tiendas -->
+                  @if (isStorePickerOpen(item)) {
+                  <div class="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-lg">
+                    @if (isLoadingStores) {
+                    <div class="flex justify-center py-8">
+                      <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                      </svg>
+                    </div>
+                    } @else if (stores.length === 0) {
+                    <p class="text-center text-gray-400 py-6 text-sm">No hay tiendas disponibles</p>
+                    } @else {
+                    <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto">
+                      @for (store of stores; track store._id) {
+                      <button (click)="setItemPickupStore(item, store)"
+                        class="w-full flex items-start gap-3 p-4 hover:bg-gray-50 text-left transition-colors">
+                        <span class="mt-0.5 flex-shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center"
+                          [ngClass]="getItemPickupStore(item)?._id === store._id ? 'border-primary' : 'border-gray-300'">
+                          @if (getItemPickupStore(item)?._id === store._id) {
+                          <span class="w-2 h-2 rounded-full bg-primary"></span>
+                          }
+                        </span>
+                        <div class="flex-1 min-w-0">
+                          <div class="flex items-center gap-2 flex-wrap">
+                            <p class="font-semibold text-gray-900 text-sm">{{ store.name }}</p>
+                            <span class="text-xs px-1.5 py-0.5 rounded-full font-medium"
+                              [ngClass]="isStoreOpen(store) ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'">
+                              {{ isStoreOpen(store) ? 'Abierto' : 'Cerrado' }}
+                            </span>
+                          </div>
+                          <p class="text-xs text-gray-500 mt-0.5 truncate">{{ store.address }}</p>
+                          <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
+                            <span>{{ getStoreHours(store) }}</span>
+                            <span class="font-medium text-primary">📍 {{ getStoreDistance(store) }}</span>
+                          </div>
+                        </div>
+                      </button>
+                      }
+                    </div>
+                    }
+                  </div>
+                  }
+
+                  <!-- Info de fecha de recojo + distancia -->
+                  @if (getItemPickupStore(item); as store) {
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="flex items-center gap-2 bg-green-50 border border-green-100 rounded-xl px-3 py-2.5">
+                      <svg class="w-4 h-4 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <div>
+                        <p class="text-xs text-green-600 font-medium">Disponible desde</p>
+                        <p class="text-xs font-bold text-green-800 capitalize">{{ pickupDateLabel }}</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-amber-50 border border-amber-100 rounded-xl px-3 py-2.5">
+                      <svg class="w-4 h-4 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      <div>
+                        <p class="text-xs text-amber-600 font-medium">Distancia</p>
+                        <p class="text-xs font-bold text-amber-800">{{ getStoreDistance(store) }}</p>
+                      </div>
+                    </div>
+                  </div>
+                  }
+                </div>
+                }
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Dirección de entrega (solo si hay items en delivery) -->
+          @if (hasDeliveryItems()) {
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+              <div>
+                <h2 class="text-base font-bold text-gray-900">Dirección de entrega</h2>
+                <p class="text-xs text-gray-500 mt-0.5">Para los productos con delivery</p>
+              </div>
+              <button (click)="showAddressModal = true"
+                class="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva
+              </button>
+            </div>
+
+            <div class="p-5 space-y-3">
+              @if (isLoadingAddresses) {
+              <div class="flex justify-center py-8">
+                <svg class="animate-spin h-7 w-7 text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              </div>
+              } @else if (addresses.length === 0) {
+              <p class="text-center text-gray-400 py-6 text-sm">Sin direcciones guardadas.</p>
+              } @else {
+              @for (addr of addresses; track addr._id) {
+              <button (click)="selectAddress(addr)"
+                class="w-full flex items-start gap-3 p-4 rounded-xl border-2 text-left transition-all"
+                [ngClass]="selectedAddress?._id === addr._id
+                  ? 'border-primary bg-primary/5'
+                  : 'border-gray-200 hover:border-gray-300'">
+                <span class="mt-0.5 flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  [ngClass]="selectedAddress?._id === addr._id ? 'border-primary' : 'border-gray-300'">
+                  @if (selectedAddress?._id === addr._id) {
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                  }
+                </span>
+                <div>
+                  <div class="flex items-center gap-2">
+                    <p class="font-semibold text-gray-900 text-sm">{{ addr.alias }}</p>
+                    @if (addr.isDefault) {
+                    <span class="text-xs bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium">Principal</span>
+                    }
+                  </div>
+                  <p class="text-sm text-gray-600 mt-0.5">{{ formatAddressFull(addr) }}</p>
+                  @if (addr.references) {
+                  <p class="text-xs text-gray-400 mt-0.5">Ref: {{ addr.references }}</p>
+                  }
+                </div>
+              </button>
+              }
+              }
+            </div>
+
+            <!-- Modal de dirección (componente compartido) -->
+            <app-address-modal
+              [isOpen]="showAddressModal"
+              [editAddress]="null"
+              [googleMapsApiKey]="googleMapsApiKey"
+              (closed)="showAddressModal = false"
+              (addressSaved)="onAddressModalSaved($event)">
+            </app-address-modal>
+          </div>
+          } <!-- fin @if hasDeliveryItems -->
+
+          <!-- Botón continuar -->
+          <div class="flex justify-end">
+            <button (click)="continueToPayment()" [disabled]="!canContinueFromAddress"
+              class="flex items-center gap-2 px-8 py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              Continuar con el pago
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        <!-- PASO 2: PAGO                                                     -->
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        @if (currentStep() === 'payment') {
+        <div class="space-y-5">
+
+          <!-- Método de pago -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100">
+              <h2 class="text-base font-bold text-gray-900">Método de pago</h2>
+            </div>
+            <div class="p-5 space-y-3">
+              @for (pm of [
+                { id: 'card', emoji: '💳', label: 'Tarjeta de crédito / débito', sub: '' },
+                { id: 'yape', emoji: '📱', label: 'Yape', sub: '' },
+                { id: 'cash', emoji: '💵', label: 'Efectivo al recibir', sub: '' }
+              ]; track pm.id) {
+              <button (click)="paymentMethod.set($any(pm.id))"
+                class="w-full flex items-center gap-3 p-4 rounded-xl border-2 transition-all"
+                [ngClass]="paymentMethod() === pm.id
+                  ? 'border-primary bg-primary/5'
+                  : 'border-gray-200 hover:border-gray-300'">
+                <span class="text-2xl">{{ pm.emoji }}</span>
+                <span class="font-medium text-gray-800 flex-1 text-left text-sm">{{ pm.label }}</span>
+                @if (paymentMethod() === pm.id) {
+                <span class="w-5 h-5 bg-primary rounded-full flex items-center justify-center">
+                  <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                  </svg>
+                </span>
+                }
+              </button>
+              }
+            </div>
+          </div>
+
+          <!-- Tarjetas (si paymentMethod = card) -->
+          @if (paymentMethod() === 'card') {
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h2 class="text-base font-bold text-gray-900">Mis tarjetas</h2>
+              <button (click)="showCardModal = true"
+                class="text-sm font-medium text-primary hover:text-primary/80 flex items-center gap-1 transition-colors">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                </svg>
+                Nueva tarjeta
+              </button>
+            </div>
+            <div class="p-5 space-y-3">
+              @if (isLoadingCards) {
+              <div class="flex justify-center py-8">
+                <svg class="animate-spin h-7 w-7 text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+              </div>
+              } @else if (cards.length === 0) {
+              <p class="text-center text-gray-400 py-6 text-sm">Sin tarjetas guardadas.</p>
+              } @else {
+              @for (card of cards; track card._id) {
+              <button (click)="selectCard(card)"
+                class="w-full flex items-center gap-4 p-4 rounded-xl border-2 transition-all"
+                [ngClass]="selectedCard?._id === card._id
+                  ? 'border-primary bg-primary/5'
+                  : 'border-gray-200 hover:border-gray-300'">
+                <span class="flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  [ngClass]="selectedCard?._id === card._id ? 'border-primary' : 'border-gray-300'">
+                  @if (selectedCard?._id === card._id) {
+                  <span class="w-2.5 h-2.5 rounded-full bg-primary"></span>
+                  }
+                </span>
+                <span class="text-2xl">💳</span>
+                <div class="text-left flex-1">
+                  <p class="font-semibold text-gray-900 text-sm">{{ card.cardType }} — {{ maskCard(card) }}</p>
+                  <p class="text-xs text-gray-500">{{ card.cardHolder }} · Vence {{ card.expirationDate }}</p>
+                </div>
+              </button>
+              }
+              }
+            </div>
+          </div>
+
+          <!-- Modal de tarjeta (componente compartido) -->
+          <app-card-modal
+            [isOpen]="showCardModal"
+            [editCard]="null"
+            (closed)="showCardModal = false"
+            (cardSaved)="onCardModalSaved($event)">
+          </app-card-modal>
+          }
+
+          <!-- Info Yape -->
+          @if (paymentMethod() === 'yape') {
+          <div class="bg-purple-50 border border-purple-200 rounded-2xl p-6 text-center">
+            <p class="text-4xl mb-3">📱</p>
+            <p class="font-semibold text-purple-800">Pago con Yape</p>
+            <p class="text-sm text-purple-600 mt-1">Recibirás el número de Yape para completar el pago al confirmar.</p>
+          </div>
+          }
+
+          <!-- Info efectivo -->
+          @if (paymentMethod() === 'cash') {
+          <div class="bg-green-50 border border-green-200 rounded-2xl p-6 text-center">
+            <p class="text-4xl mb-3">💵</p>
+            <p class="font-semibold text-green-800">Efectivo al recibir</p>
+            <p class="text-sm text-green-600 mt-1">El cobro se realiza al momento de recibir tu pedido.</p>
+          </div>
+          }
+
+          <div class="flex items-center justify-between">
+            <button (click)="backToAddress()"
+              class="flex items-center gap-2 px-6 py-3 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver
+            </button>
+            <button (click)="continueToReview()" [disabled]="!canContinueFromPayment"
+              class="flex items-center gap-2 px-8 py-3.5 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              Revisar pedido
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        }
+
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        <!-- PASO 3: CONFIRMACIÓN                                             -->
+        <!-- ──────────────────────────────────────────────────────────────── -->
+        @if (currentStep() === 'review') {
+        <div class="space-y-5">
+
+          <!-- Resumen de entrega -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h2 class="text-base font-bold text-gray-900">Entrega</h2>
+              <button (click)="backToAddress()" class="text-sm text-primary hover:underline">Cambiar</button>
+            </div>
+            <div class="divide-y divide-gray-100">
+              @for (item of basketItems; track getItemKey(item)) {
+              <div class="p-4 flex items-start gap-3">
+                @if (getThumbnail(item)) {
+                <img [src]="getThumbnail(item)" [alt]="getProductName(item)" class="w-10 h-10 object-cover rounded-lg flex-shrink-0">
+                }
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">{{ getProductName(item) }}</p>
+                  @if (getItemDeliveryMode(item) === 'delivery') {
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <span class="text-sm">🚚</span>
+                    <span class="text-xs text-gray-600">Delivery</span>
+                    @if (selectedAddress) {
+                    <span class="text-xs text-gray-400">— {{ formatAddressFull(selectedAddress) }}</span>
+                    }
+                  </div>
+                  <p class="text-xs text-blue-600 mt-0.5">Llega el <span class="font-medium capitalize">{{ deliveryDateLabel }}</span></p>
+                  } @else {
+                  @if (getItemPickupStore(item); as store) {
+                  <div class="flex items-center gap-1.5 mt-1">
+                    <span class="text-sm">🏪</span>
+                    <span class="text-xs text-gray-600">{{ store.name }}</span>
+                    <span class="text-xs text-gray-400 truncate">— {{ store.address }}</span>
+                  </div>
+                  <div class="flex items-center gap-3 mt-0.5">
+                    <p class="text-xs text-green-600">Disponible: <span class="font-medium capitalize">{{ pickupDateLabel }}</span></p>
+                    <p class="text-xs text-amber-600">📍 {{ getStoreDistance(store) }}</p>
+                  </div>
+                  }
+                  }
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+
+          <!-- Método de pago -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-5 border-b border-gray-100 flex items-center justify-between">
+              <h2 class="text-base font-bold text-gray-900">Pago</h2>
+              <button (click)="backToPayment()" class="text-sm text-primary hover:underline">Cambiar</button>
+            </div>
+            <div class="p-5 flex items-center gap-4">
+              @if (paymentMethod() === 'card' && selectedCard) {
+              <span class="text-3xl">💳</span>
+              <div>
+                <p class="font-semibold text-gray-900 text-sm">{{ selectedCard.cardType }} — {{ maskCard(selectedCard) }}</p>
+                <p class="text-xs text-gray-500">{{ selectedCard.cardHolder }}</p>
+              </div>
+              } @else if (paymentMethod() === 'yape') {
+              <span class="text-3xl">📱</span><p class="font-semibold text-gray-900 text-sm">Yape</p>
+              } @else if (paymentMethod() === 'cash') {
+              <span class="text-3xl">💵</span><p class="font-semibold text-gray-900 text-sm">Efectivo al recibir</p>
+              }
+            </div>
+          </div>
+
+          <!-- Términos -->
+          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+            <label class="flex items-start gap-3 cursor-pointer">
+              <input type="checkbox" [(ngModel)]="acceptedTerms" class="mt-0.5 w-4 h-4 accent-primary flex-shrink-0">
+              <span class="text-sm text-gray-600">
+                Declaro haber leído y aceptado los
+                <a href="#" class="text-primary hover:underline font-medium">Términos y Condiciones</a>
+                y la <a href="#" class="text-primary hover:underline font-medium">Política de Privacidad</a>.
+              </span>
+            </label>
+          </div>
+
+          @if (orderError) {
+          <div class="bg-rose-50 border border-rose-200 text-rose-700 rounded-xl p-4 text-sm">{{ orderError }}</div>
+          }
+
+          <div class="flex items-center justify-between">
+            <button (click)="backToPayment()"
+              class="flex items-center gap-2 px-6 py-3 text-gray-600 font-medium rounded-xl hover:bg-gray-100 transition-colors">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver
+            </button>
+            <button (click)="confirmOrder()" [disabled]="!acceptedTerms || isProcessingOrder"
+              class="flex items-center gap-2 px-10 py-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isProcessingOrder) {
+              <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+              Procesando...
+              } @else {
+              🔒 Confirmar — {{ totalOrder | solCurrency }}
+              }
+            </button>
+          </div>
+        </div>
+        }
+
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <!-- COLUMNA DERECHA — Resumen sticky                                   -->
+      <!-- ═══════════════════════════════════════════════════════════════════ -->
+      <div class="lg:col-span-1">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden sticky top-24">
+          <div class="p-5 border-b border-gray-100">
+            <h2 class="text-sm font-bold text-gray-900">Resumen de orden</h2>
+          </div>
+
+          <!-- Items -->
+          <div class="divide-y divide-gray-100 max-h-72 overflow-y-auto">
+            @for (item of basketItems; track $index) {
+            @let thumb = getThumbnail(item);
+            <div class="flex gap-3 p-4">
+              <div class="relative flex-shrink-0">
+                @if (thumb) {
+                <img [src]="thumb" [alt]="getProductName(item)" class="w-12 h-12 object-cover rounded-lg">
+                } @else {
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                  <svg class="w-5 h-5 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16" />
+                  </svg>
+                </div>
+                }
+                <span class="absolute -top-1.5 -right-1.5 w-4 h-4 bg-primary text-white text-xs font-bold rounded-full flex items-center justify-center">{{ item.quantity }}</span>
+              </div>
+              <div class="flex-1 min-w-0">
+                <p class="text-xs font-semibold text-gray-900 truncate">{{ getProductName(item) }}</p>
+                <p class="text-xs text-gray-400 mt-0.5">
+                  {{ getColorLabel(item) }}{{ getColorLabel(item) && getSizeLabel(item) ? ' · ' : '' }}{{ getSizeLabel(item) ? 'T ' + getSizeLabel(item) : '' }}
+                </p>
+                <p class="text-xs mt-0.5">
+                  @if (getItemDeliveryMode(item) === 'delivery') {
+                  <span class="text-blue-500">🚚 Delivery</span>
+                  } @else {
+                  <span class="text-green-600">🏪 Recojo</span>
+                  }
+                </p>
+              </div>
+              <div class="flex-shrink-0 text-right">
+                <p class="text-xs font-bold text-gray-900">{{ (item.subtotal ?? 0) | solCurrency }}</p>
+                @if (item.discount && item.discount > 0) {
+                <p class="text-xs text-green-600">-{{ item.discount }}%</p>
+                }
+              </div>
+            </div>
+            }
+          </div>
+
+          <!-- Totales -->
+          <div class="p-5 space-y-2.5 border-t border-gray-100">
+            <div class="flex justify-between text-sm text-gray-600">
+              <span>Subtotal ({{ basketItems.length }} items)</span>
+              <span>{{ subtotalAmount | solCurrency }}</span>
+            </div>
+            @if (savingsAmount > 0) {
+            <div class="flex justify-between text-sm text-green-600 font-medium">
+              <span>Descuentos</span>
+              <span>−{{ savingsAmount | solCurrency }}</span>
+            </div>
+            }
+            <div class="flex justify-between text-sm text-gray-600">
+              <span>Envío</span>
+              @if (deliveryCost === 0) { <span class="text-green-600 font-medium">Gratis</span> }
+              @else { <span>{{ deliveryCost | solCurrency }}</span> }
+            </div>
+            <div class="h-px bg-gray-100 my-1"></div>
+            <div class="flex justify-between font-bold text-gray-900">
+              <span>Total</span>
+              <span class="text-lg text-primary">{{ totalOrder | solCurrency }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+</div>
+
+

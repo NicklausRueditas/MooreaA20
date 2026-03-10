@@ -1,196 +1,188 @@
-<div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
-  <div class="container mx-auto p-6">
-    <!-- Flotante de navegación -->
-    <div
-      class="bg-white rounded-lg shadow-md flex justify-between p-4 w-full md:w-2/3 mx-auto"
-    >
-      <div
-        class="flex-1 text-center cursor-pointer relative"
-        [class.text-blue-600]="selectedTab === 'perfil'"
-        (click)="setTab('perfil')"
-      >
-        <div class="flex flex-col items-center">
-          <span class="text-2xl">👤</span>
-          <span class="font-semibold">Mi perfil</span>
-        </div>
-        @if (selectedTab === 'perfil') {
-        <div
-          class="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 w-10 bg-lime-500 rounded-lg"
-        ></div>
-        }
-      </div>
+<div class="min-h-screen bg-gray-50 py-10">
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <!-- Título de sección (Visible solo en móvil para contexto) -->
+    <h1 class="text-2xl font-bold text-gray-900 mb-6 md:hidden">Mi Cuenta</h1>
 
-      <div
-        class="flex-1 text-center cursor-pointer relative"
-        [class.text-blue-600]="selectedTab === 'compras'"
-        (click)="setTab('compras')"
-      >
-        <div class="flex flex-col items-center">
-          <span class="text-2xl">📦</span>
-          <span class="font-semibold">Mis compras</span>
-        </div>
-        @if (selectedTab === 'compras') {
-        <div
-          class="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 w-10 bg-lime-500 rounded-lg"
-        ></div>
-        }
-      </div>
+    <div class="lg:grid lg:grid-cols-12 lg:gap-x-8">
+      <!-- Sidebar de Navegación -->
+      <aside class="lg:col-span-3 mb-6 lg:mb-0">
+        <nav class="space-y-1">
+          <!-- Tarjeta de Usuario Resumen -->
+          @if (user$ | async; as user) {
+            <div class="bg-white overflow-hidden shadow-sm rounded-xl mb-4">
+              <div class="p-5 flex items-center space-x-4">
+                <div class="flex-shrink-0">
+                  @if (user.profilePicture && !imageError) {
+                    <img
+                      class="h-12 w-12 rounded-full object-cover border-2 border-primary/20"
+                      [src]="user.profilePicture"
+                      [alt]="user.displayName"
+                      (error)="onImageError()"
+                    />
+                  } @else {
+                    <div
+                      class="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center border-2 border-primary/20"
+                    >
+                      <span class="text-lg font-semibold text-primary">{{
+                        (user.displayName || "U").charAt(0)
+                      }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="flex-1 min-w-0">
+                  <p class="text-sm font-medium text-gray-900 truncate">
+                    {{ user.displayName }}
+                  </p>
+                  <p class="text-xs text-gray-500 truncate">
+                    {{ user.email }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          }
 
-      <div
-        class="flex-1 text-center cursor-pointer relative"
-        [class.text-blue-600]="selectedTab === 'ayuda'"
-        (click)="setTab('ayuda')"
-      >
-        <div class="flex flex-col items-center">
-          <span class="text-2xl">❓</span>
-          <span class="font-semibold">Ayuda</span>
-        </div>
-        @if (selectedTab === 'ayuda') {
-        <div
-          class="absolute bottom-0 left-1/2 transform -translate-x-1/2 h-1 w-10 bg-lime-500 rounded-lg"
-        ></div>
-        }
-      </div>
-    </div>
-  </div>
-
-  <div class="flex h-screen bg-gray-100">
-    <!-- Sidebar -->
-    <aside class="w-1/4 bg-white shadow-lg p-4">
-      <ul class="space-y-4">
-        <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
-          <span>📍</span>
-          <span>Direcciones</span>
-        </li>
-        <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
-          <span>💳</span>
-          <span>Medios de pago</span>
-        </li>
-        <li class="flex items-center space-x-2 text-gray-500 cursor-pointer">
-          <span>⚙️</span>
-          <span>Configurar mi cuenta</span>
-        </li>
-        <li class="flex items-center space-x-2 text-red-500 cursor-pointer">
-          <span>🚪</span>
-          <span>Cerrar sesión</span>
-        </li>
-      </ul>
-    </aside>
-
-    <!-- xxxxxxxxxxxxxxxxxxxxxxxxxxx Main Content xxxxxxxxxxxxxxxxxxxxxxxxxxx -->
-
-    <div class="w-3/4 p-8">
-      <h2 class="text-xl font-semibold text-gray-700">Datos personales</h2>
-      <div class="bg-white p-6 mt-4 shadow-lg rounded-lg">
-        <form [formGroup]="userForm" class="space-y-4">
-          <div class="my-4 grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-4">
-            <!-- **************************profilePicture input************************** -->
-
-            <div class="sm:col-span-2 sm:col-start-1">
-              <button
-                type="button"
-                class="relative flex rounded-full text-sm focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-gray-200 focus:outline-hidden"
-                id="user-menu-button"
-                aria-expanded="false"
-                aria-haspopup="true"
+          <!-- Menú de Enlaces -->
+          <div class="bg-white shadow-sm rounded-xl overflow-hidden">
+            <div class="p-2 space-y-1">
+              <!-- Perfil -->
+              <a
+                routerLink="profile"
+                routerLinkActive="bg-rose-50 text-rose-700 font-semibold"
+                class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+                aria-current="page"
               >
-                <span class="absolute -inset-1.5"></span>
-                <span class="sr-only">Open user menu</span>
-                <img
-                  class="size-13 rounded-full"
-                  [src]="userData?.profilePicture"
-                  alt="User profile"
-                />
+                <span
+                  class="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center text-gray-400 group-hover:text-rose-500 router-link-active:text-rose-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z"
+                    />
+                  </svg>
+                </span>
+                <span class="truncate">Mi Perfil</span>
+              </a>
+
+              <!-- Direcciones -->
+              <a
+                routerLink="addresses"
+                routerLinkActive="bg-rose-50 text-rose-700 font-semibold"
+                class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+              >
+                <span
+                  class="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center text-gray-400 group-hover:text-rose-500 router-link-active:text-rose-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z"
+                    />
+                  </svg>
+                </span>
+                <span class="truncate">Direcciones</span>
+              </a>
+
+              <!-- Métodos de Pago -->
+              <a
+                routerLink="cards"
+                routerLinkActive="bg-rose-50 text-rose-700 font-semibold"
+                class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+              >
+                <span
+                  class="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center text-gray-400 group-hover:text-rose-500 router-link-active:text-rose-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"
+                    />
+                  </svg>
+                </span>
+                <span class="truncate">Métodos de Pago</span>
+              </a>
+
+              <!-- Mis Órdenes -->
+              <a
+                routerLink="orders"
+                routerLinkActive="bg-rose-50 text-rose-700 font-semibold"
+                class="group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:text-rose-700 hover:bg-rose-50 transition-colors"
+              >
+                <span class="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center text-gray-400 group-hover:text-rose-500">
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                  </svg>
+                </span>
+                <span class="truncate">Mis Órdenes</span>
+              </a>
+
+              <!-- Separador -->
+              <div class="border-t border-gray-100 my-2"></div>
+
+              <!-- Cerrar Sesión -->
+              <button
+                class="w-full group flex items-center px-3 py-2.5 text-sm font-medium rounded-lg text-gray-700 hover:text-red-700 hover:bg-red-50 transition-colors text-left"
+              >
+                <span
+                  class="mr-3 flex-shrink-0 h-6 w-6 flex items-center justify-center text-gray-400 group-hover:text-red-500"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    class="w-5 h-5"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"
+                    />
+                  </svg>
+                </span>
+                <span class="truncate">Cerrar Sesión</span>
               </button>
             </div>
-
-            <!-- **************************email input************************** -->
-
-            <div class="sm:col-span-2">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Correo</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="email"
-                  type="email"
-                  name="email"
-                  id="email"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************displayname input************************** -->
-
-            <div class="sm:col-span-full">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Nombres y Apellidos</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="displayName"
-                  type="text"
-                  name="displayname"
-                  id="displayname"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************phones input************************** -->
-
-            <div class="sm:col-span-2 sm:col-start-1">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >Celular</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="phone"
-                  type="text"
-                  name="phone"
-                  id="phone"
-                  class="block w-full rounded-md font-medium py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
-
-            <!-- **************************dni input************************** -->
-            <div class="sm:col-span-2">
-              <label
-                for="displayname"
-                class="block text-sm font-medium text-gray-600"
-                >DNI</label
-              >
-              <div class="mt-2 border-b border-gray-400">
-                <input
-                  formControlName="dni"
-                  type="text"
-                  name="dni"
-                  id="dni"
-                  class="block w-full rounded-md py-1.5 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-0 border-none sm:text-sm/6"
-                  required
-                />
-              </div>
-            </div>
           </div>
+        </nav>
+      </aside>
 
-          <button
-            type="submit"
-            class="bg-indigo-600 hover:bg-indigo-500 rounded-md px-3 py-2 text-sm font-semibold text-white shadow-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-          >
-            Guardar
-          </button>
-        </form>
+      <!-- Contenido Principal -->
+      <div class="lg:col-span-9">
+        <div class="bg-white shadow-sm rounded-xl min-h-[500px] p-6">
+          <router-outlet></router-outlet>
+        </div>
       </div>
     </div>
   </div>

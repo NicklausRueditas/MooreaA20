@@ -1,0 +1,124 @@
+/* Modern Product Card Animations */
+
+/* Card lift effect */
+.group:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+/* Image zoom with smooth transition */
+.group img {
+  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.group:hover img {
+  transform: scale(1.1);
+}
+
+/* Quick action buttons entrance */
+@keyframes slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.group:hover .absolute.right-3 > button {
+  animation: slide-in-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
+}
+
+.group:hover .absolute.right-3 > button:nth-child(1) {
+  animation-delay: 0.05s;
+}
+
+.group:hover .absolute.right-3 > button:nth-child(2) {
+  animation-delay: 0.1s;
+}
+
+/* Gradient animation for badges */
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+span[class*="bg-gradient"] {
+  background-size: 200% 200%;
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Stock badge pulse for low stock */
+.bg-orange-100 {
+  animation: pulse-warning 2s ease-in-out infinite;
+}
+
+@keyframes pulse-warning {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+/* ===== ADD TO CART BUTTON - OUTLINED DESIGN ===== */
+
+.add-to-cart-btn {
+  position: relative;
+  overflow: hidden;
+  letter-spacing: 0.05em;
+}
+
+/* Smooth shadow transition */
+.add-to-cart-btn:hover {
+  box-shadow: 0 4px 12px rgba(236, 0, 63, 0.15);
+}
+
+/* Active state */
+.add-to-cart-btn:active {
+  box-shadow: 0 2px 6px rgba(236, 0, 63, 0.1);
+}
+
+/* ===== END ADD TO CART BUTTON ===== */
+
+/* Smooth transitions for all interactive elements */
+button, a {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Loading spinner enhancement */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Empty state icon bounce */
+@keyframes bounce-gentle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.col-span-full svg {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+/* Price responsive behavior */
+.flex-wrap {
+  flex-wrap: wrap;
+}

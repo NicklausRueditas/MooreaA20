@@ -1,3 +1,14 @@
 export interface UpdateProductDto {
-  [key: string]: string | number | string[] | Record<string, string>; // Valores que se pueden actualizar
+  code?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  description?: string;
+  specifications?: Record<string, string>;
+  basePrice?: number;
+  category?: string[];
+  gallery?: string[];
+  discount?: number;
+  isActive?: boolean;
+  tags?: string[];
 }

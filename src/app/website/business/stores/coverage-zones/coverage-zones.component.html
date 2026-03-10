@@ -1,0 +1,186 @@
+<div class="min-h-screen bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Header -->
+        <div class="mb-8">
+            <button (click)="goBack()"
+                class="mb-4 flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+                Volver a Tiendas
+            </button>
+
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                        <svg class="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                        Zonas de Cobertura - {{ store?.name }}
+                    </h1>
+                    <p class="text-gray-600 mt-1">Define las áreas de entrega y tarifas</p>
+                </div>
+                <button (click)="openAddModal()"
+                    class="px-6 py-3 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Nueva Zona
+                </button>
+            </div>
+        </div>
+
+        <!-- Zones Grid -->
+        @if (zones.length > 0) {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (zone of zones; track zone._id) {
+            <div class="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow">
+                <!-- Zone Header -->
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex-1">
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ zone.name }}</h3>
+                        <div class="flex items-center gap-2 text-sm text-gray-600 mb-3">
+                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                            </svg>
+                            {{ formatCoordinates(zone.coordinates) }}
+                        </div>
+                    </div>
+                    <button (click)="deleteZone(zone)" title="Eliminar"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Delivery Fee -->
+                <div class="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Tarifa de Envío</span>
+                        </div>
+                        <span class="text-2xl font-bold text-green-600">S/ {{ zone.deliveryFee.toFixed(2) }}</span>
+                    </div>
+                </div>
+
+                <!-- Coordinates Preview -->
+                <div class="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <p class="text-xs font-medium text-gray-500 mb-2">Coordenadas del polígono:</p>
+                    <div class="max-h-20 overflow-y-auto">
+                        @for (coord of zone.coordinates; track $index) {
+                        <p class="text-xs text-gray-600 font-mono">{{ $index + 1 }}. [{{ coord[0] }}, {{ coord[1] }}]
+                        </p>
+                        }
+                    </div>
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <!-- Empty State -->
+        <div class="bg-white rounded-lg shadow-sm p-16 text-center">
+            <svg class="mx-auto h-16 w-16 text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">No hay zonas de cobertura</h3>
+            <p class="text-gray-500 mb-4">Define las áreas donde realizas entregas</p>
+            <button (click)="openAddModal()"
+                class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                Crear Zona
+            </button>
+        </div>
+        }
+    </div>
+
+    <!-- Add Zone Modal -->
+    @if (showAddModal) {
+    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-900">Nueva Zona de Cobertura</h2>
+                <button (click)="closeAddModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+
+            <form [formGroup]="addZoneForm" (ngSubmit)="onAddZone()">
+                <!-- Zone Name -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Nombre de la Zona <span class="text-red-500">*</span>
+                    </label>
+                    <input formControlName="name" type="text"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="Centro de Lima">
+                </div>
+
+                <!-- Delivery Fee -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Tarifa de Envío (S/) <span class="text-red-500">*</span>
+                    </label>
+                    <input formControlName="deliveryFee" type="number" step="0.01" min="0"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
+                        placeholder="5.00">
+                </div>
+
+                <!-- Coordinates -->
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Coordenadas del Polígono <span class="text-red-500">*</span>
+                    </label>
+                    <textarea [(ngModel)]="coordinatesInput" [ngModelOptions]="{standalone: true}" rows="6"
+                        class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent font-mono text-sm"
+                        placeholder="-77.042754,-12.046373; -77.042754,-12.056373; -77.032754,-12.056373; -77.032754,-12.046373; -77.042754,-12.046373"></textarea>
+                    <p class="text-xs text-gray-500 mt-2">
+                        Formato: lng,lat; lng,lat; ... (mínimo 3 puntos, separados por punto y coma)
+                    </p>
+                </div>
+
+                <!-- Info Box -->
+                <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <div class="flex gap-3">
+                        <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-medium mb-1">Cómo definir coordenadas:</p>
+                            <ul class="list-disc list-inside space-y-1 text-xs">
+                                <li>Cada punto debe tener longitud (lng) y latitud (lat)</li>
+                                <li>Separa los puntos con punto y coma (;)</li>
+                                <li>El primer y último punto deben ser iguales para cerrar el polígono</li>
+                                <li>Puedes usar Google Maps para obtener las coordenadas</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center justify-end gap-3">
+                    <button type="button" (click)="closeAddModal()"
+                        class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="!addZoneForm.valid || !coordinatesInput"
+                        class="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+                        Crear Zona
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    }
