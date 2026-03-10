@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../core/services/auth.service';
-import { ToastService } from '../../core/services/toast.service';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { ToastService } from '../../core/services/ui/toast.service';
 
 @Component({
   selector: 'app-auth-callback',

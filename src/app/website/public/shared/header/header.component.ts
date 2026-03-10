@@ -1,36 +1,33 @@
 import { CommonModule } from '@angular/common';
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
-import { SesionService } from '../../../../core/services/sesion.service';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
+import { SesionService } from '../../../../core/services/auth/sesion.service';
 import { User } from '../../../../core/interfaces/user.interface';
-import { AuthService } from '../../../../core/services/auth.service';
-import { BasketService } from '../../../../core/services/basket.service';
-import { Basket } from '../../../../core/interfaces/basket.interface';
-import { Product } from '../../../../core/interfaces/product.interface';
-import { Subscription, combineLatest, take } from 'rxjs';
+import { AuthService } from '../../../../core/services/auth/auth.service';
+import { BasketService } from '../../../../core/services/commerce/basket.service';
+import { Basket, BasketItem } from '../../../../core/interfaces/basket.interface';
+import { Subscription, take } from 'rxjs';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './header.component.html',
   styleUrls: ['./header.component.css']
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   userData: User | null = null;
   basket: Basket | null = null;
-  products: Product[] = [];
   basketSummary = {
     itemCount: 0,
     totalQuantity: 0,
     estimatedTotal: 0
   };
-  
+
   isMenuUserOpen = false;
   isMenuCartOpen = false;
-  loading = true;
-  error: string | null = null;
-  
+  isMenuMobileOpen = false;
+
   private subscriptions = new Subscription();
 
   constructor(
@@ -38,9 +35,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private basketService: BasketService,
     private router: Router
-  ) {}
-
-  /* ======================= Inicialización ======================= */
+  ) { }
 
   ngOnInit(): void {
     this.loadUserData();
@@ -53,210 +48,158 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   private loadUserData(): void {
     if (!this.authService.isAuthenticated()) {
-      this.loading = false;
       return;
     }
 
-    this.sesionService.getProfile().pipe(
-      take(1)
-    ).subscribe({
+    // Llamar a getProfile() directamente
+    // Si AuthService ya cargó el perfil, getProfile() usará el caché
+    const userSub = this.sesionService.getProfile().subscribe({
       next: (user) => {
+        console.log('[HeaderComponent] User received from getProfile:', user);
         this.userData = user;
-        this.loading = false;
       },
       error: (error) => {
         console.error('Error al cargar perfil:', error);
-        this.error = 'Error al cargar datos del usuario';
-        this.loading = false;
-        this.authService.logout();
       }
     });
+
+    this.subscriptions.add(userSub);
   }
 
   private initBasketSubscriptions(): void {
-    // Suscribirse al basket completo
     const basketSub = this.basketService.basket$.subscribe(basket => {
       this.basket = basket;
     });
 
-    // Suscribirse a los productos del basket
-    const productsSub = this.basketService.basketProducts$.subscribe(products => {
-      this.products = products;
-    });
-
-    // Suscribirse al resumen del basket
     const summarySub = this.basketService.basketSummary$.subscribe(summary => {
       this.basketSummary = summary;
     });
 
-    // Agregar todas las suscripciones al manager
     this.subscriptions.add(basketSub);
-    this.subscriptions.add(productsSub);
     this.subscriptions.add(summarySub);
   }
-
-  /* ======================= Manejo de Sesión ======================= */
 
   logout(): void {
     this.authService.logout();
     this.userData = null;
     this.basket = null;
-    this.products = [];
     this.basketSummary = { itemCount: 0, totalQuantity: 0, estimatedTotal: 0 };
-    this.router.navigate(['/']);
     this.closeAllMenus();
   }
 
-  /* ======================= Manejo de Menús ======================= */
-
-  toggleMenu(menu: 'user' | 'cart', event: Event): void {
+  toggleMenu(menu: 'user' | 'cart' | 'mobile', event: Event): void {
     event.stopPropagation();
     if (menu === 'user') {
       this.isMenuUserOpen = !this.isMenuUserOpen;
       this.isMenuCartOpen = false;
-    } else {
+      this.isMenuMobileOpen = false;
+    } else if (menu === 'cart') {
       this.isMenuCartOpen = !this.isMenuCartOpen;
       this.isMenuUserOpen = false;
+      this.isMenuMobileOpen = false;
+    } else if (menu === 'mobile') {
+      this.isMenuMobileOpen = !this.isMenuMobileOpen;
+      this.isMenuUserOpen = false;
+      this.isMenuCartOpen = false;
     }
   }
 
   @HostListener('document:click', ['$event'])
   closeMenus(event: Event): void {
     const target = event.target as HTMLElement;
-    if (!target.closest('#user-menu') && !target.closest('#cart-menu')) {
+    if (!target.closest('#user-menu') && !target.closest('#cart-menu') && !target.closest('#mobile-menu')) {
       this.closeAllMenus();
     }
   }
 
-  private closeAllMenus(): void {
+  public closeAllMenus(): void {
     this.isMenuUserOpen = false;
     this.isMenuCartOpen = false;
+    this.isMenuMobileOpen = false;
   }
 
-  /* ======================= Carrito de Compras ======================= */
-
   get totalPrice(): number {
-    // Usa el estimatedTotal del basketSummary (más eficiente)
     return this.basketSummary.estimatedTotal;
   }
 
   get totalItems(): number {
-    // Usa el totalQuantity del basketSummary
     return this.basketSummary.totalQuantity;
   }
 
-  get uniqueItemsCount(): number {
-    return this.basketSummary.itemCount;
+  /** String ID de la variante para trackBy y llamadas al API */
+  getVariantId(item: any): string {
+    if (!item) return 'empty';
+    // Nuevo formato: variantId es string
+    if (typeof item.variantId === 'string' && item.variantId) return item.variantId;
+    // Guest localStorage: variant es objeto
+    if (item.variant?._id) return item.variant._id;
+    if (!item._corruptedId) item._corruptedId = `corrupted-${Math.random()}`;
+    return item._corruptedId;
   }
 
-  getProductById(productId: string | any): Product | undefined {
-    // Extraer el ID si es un objeto
-    const id = this.extractProductId(productId);
-    return this.products.find(p => p._id === id);
+  /** Label color · talla para el mini-carrito del header */
+  getVariantLabel(item: any): string {
+    const v = item.variant && typeof item.variant === 'object' ? item.variant : null;
+    if (!v) return '';
+    const color = v.color?.name ?? '';
+    const size  = v.size?.value ?? '';
+    return [color, size].filter(Boolean).join(' · ');
   }
 
-  getProductName(productId: string | any): string {
-    const product = this.getProductById(productId);
-    return product?.name || 'Producto no encontrado';
+  /** Primera imagen de la variante para el mini-carrito */
+  getVariantThumbnail(item: any): string {
+    const v = item.variant && typeof item.variant === 'object' ? item.variant : null;
+    return v?.gallery?.[0] ?? '';
   }
 
-  getProductPrice(productId: string | any): number {
-    const product = this.getProductById(productId);
-    return product?.price || 0;
-  }
-
-  getProductImage(productId: string | any): string {
-    const product = this.getProductById(productId);
-    return product?.gallery?.[0] || 'assets/images/placeholder.jpg';
-  }
-
-  getProductQuantity(productId: string | any): number {
-    if (!this.basket?.items) return 0;
-    
-    const id = this.extractProductId(productId);
-    const item = this.basket.items.find(item => 
-      this.extractProductId(item.product) === id
-    );
-    
-    return item?.quantity || 0;
-  }
-
-  // Método helper para extraer el ID del producto (puede ser string o objeto)
-  private extractProductId(product: string | any): string {
-    if (typeof product === 'string') {
-      return product;
-    } else if (product && typeof product === 'object' && product._id) {
-      return product._id;
+  removeFromCart(variantId: string): void {
+    if (!variantId || variantId.startsWith('corrupted-')) {
+      // Ítem corrupto: limpiarlo del carrito local sin llamar al API
+      this.basketService.cleanupCorruptedItems();
+      return;
     }
+    this.basketService.removeFromBasket(variantId).pipe(take(1)).subscribe({
+      next: () => console.log('Variante eliminada'),
+      error: (err) => console.error('Error:', err)
+    });
+  }
+
+  updateQuantity(variantId: string, change: number): void {
+    if (!variantId || variantId.startsWith('corrupted-')) {
+      // Ítem corrupto: limpiarlo del carrito local sin llamar al API
+      this.basketService.cleanupCorruptedItems();
+      return;
+    }
+    this.basketService.adjustQuantity(variantId, change).pipe(take(1)).subscribe({
+      next: () => console.log('Cantidad actualizada'),
+      error: (err) => console.error('Error:', err)
+    });
+  }
+
+  /** Nombre del producto maestro extraido desde item.product (nuevo backend) */
+  getProductName(item: any): string {
+    if (item.product && typeof item.product === 'object') return item.product.name ?? '';
     return '';
   }
 
-  /* ======================= Métodos del Carrito ======================= */
-
-  removeFromCart(productId: string): void {
-    this.basketService.removeFromBasket(productId).pipe(
-      take(1)
-    ).subscribe({
-      next: () => {
-        console.log('Producto eliminado del carrito');
-      },
-      error: (err) => {
-        console.error('Error al eliminar producto:', err);
-      }
-    });
+  /** SKU de la variante (item.variant.sku) */
+  getSku(item: any): string {
+    if (item.variant && typeof item.variant === 'object') return item.variant.sku ?? '';
+    return '';
   }
-
-  updateQuantity(productId: string, change: number): void {
-    this.basketService.adjustQuantity(productId, change).pipe(
-      take(1)
-    ).subscribe({
-      next: () => {
-        console.log('Cantidad actualizada');
-      },
-      error: (err) => {
-        console.error('Error al actualizar cantidad:', err);
-      }
-    });
-  }
-
-  clearCart(): void {
-    this.basketService.clearBasket().pipe(
-      take(1)
-    ).subscribe({
-      next: () => {
-        console.log('Carrito vaciado');
-        this.closeAllMenus();
-      },
-      error: (err) => {
-        console.error('Error al vaciar carrito:', err);
-      }
-    });
-  }
-
-  /* ======================= Navegación Segura ======================= */
 
   navigateTo(route: string): void {
-    if (!this.authService.isAuthenticated() && route.includes('/dashboard')) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: route } });
-      return;
-    }
     this.router.navigate([route]);
     this.closeAllMenus();
   }
 
   navigateToCheckout(): void {
     if (!this.authService.isAuthenticated()) {
-      this.router.navigate(['/login'], { queryParams: { returnUrl: '/checkout' } });
+      this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/basket' } });
       return;
     }
-    
-    if (!this.basket || this.basket.items.length === 0) {
-      // Opcional: mostrar mensaje de carrito vacío
-      console.log('El carrito está vacío');
-      return;
-    }
-    
-    this.router.navigate(['/checkout']);
+    if (!this.basket || this.basket.items.length === 0) return;
+    this.router.navigate(['/basket']);
     this.closeAllMenus();
   }
 }

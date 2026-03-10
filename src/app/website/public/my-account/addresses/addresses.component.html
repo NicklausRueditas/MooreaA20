@@ -1,258 +1,174 @@
-<div class="container mx-auto px-4 py-8">
-  <!-- Header Section -->
-  <div class="flex justify-between items-center mb-8">
-    <h1 class="text-3xl font-bold text-gray-800">Mis Direcciones</h1>
-    <button 
-      (click)="openAddAddressModal()"
-      class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center"
-    >
-      <i class="fas fa-plus mr-2"></i> Agregar Nueva Dirección
+<div class="space-y-6">
+
+  <!-- Header de Sección -->
+  <div class="border-b border-gray-200 pb-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+    <div>
+      <h3 class="text-xl font-semibold leading-6 text-gray-900">Mis Direcciones</h3>
+      <p class="mt-2 text-sm text-gray-500">Gestiona tus direcciones de envío y facturación.</p>
+    </div>
+    @if (addresses.length > 0) {
+    <button (click)="openAddAddressModal()"
+      class="inline-flex items-center justify-center rounded-md bg-rose-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-rose-600 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+        class="w-5 h-5 mr-2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+      </svg>
+      Agregar Nueva Dirección
     </button>
+    }
   </div>
 
   <!-- Loading State -->
-  <div *ngIf="isLoading" class="flex justify-center my-12">
-    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+  @if (isLoading) {
+  <div class="flex justify-center my-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-rose-500"></div>
   </div>
+  }
 
-  <!-- Empty State -->
-  <div *ngIf="!isLoading && addresses.length === 0" class="text-center py-12">
-    <i class="fas fa-map-marker-alt text-5xl text-gray-300 mb-4"></i>
-    <h3 class="text-xl font-medium text-gray-600">No hay direcciones guardadas aún</h3>
-    <p class="text-gray-500 mt-2">Agrega tu primera dirección para comenzar</p>
-    <button 
-      (click)="openAddAddressModal()"
-      class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
-    >
-      Agregar Dirección
-    </button>
-  </div>
+  <!-- Grid de Direcciones -->
+  @if (!isLoading) {
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-  <!-- Addresses Grid -->
-  <div *ngIf="!isLoading && addresses.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div 
-      *ngFor="let address of addresses" 
-      [class.border-blue-500]="address.isDefault"
-      class="border rounded-lg p-6 relative transition-all hover:shadow-md"
-    >
-      <!-- Default Badge -->
-      <span 
-        *ngIf="address.isDefault"
-        class="absolute top-4 right-4 bg-blue-100 text-blue-800 text-xs font-medium px-2.5 py-0.5 rounded"
-      >
-        Predeterminada
-      </span>
-
-      <h3 class="text-lg font-semibold mb-2">{{address.alias}}</h3>
-      <p class="text-gray-800 mb-1">{{address.street}} {{address.streetNumber}}</p>
-      <p class="text-gray-600 mb-1">{{address.apartment ? 'Dpto ' + address.apartment + ', ' : ''}}{{address.district}}</p>
-      <p class="text-gray-600 mb-1">{{address.province}}, {{address.department}}</p>
-      <p class="text-gray-600 mb-1">{{address.postalCode}}</p>
-      <p class="text-gray-600 mb-4">{{address.country}}</p>
-
-      <div *ngIf="address.references" class="bg-gray-50 p-3 rounded mb-4">
-        <p class="text-sm text-gray-600">{{address.references}}</p>
+    <!-- Card vacía: agregar primera dirección -->
+    @if (addresses.length === 0) {
+    <div (click)="openAddAddressModal()"
+      class="group relative flex flex-col items-center justify-center w-full h-full min-h-[320px] rounded-2xl border-2 border-dashed border-gray-300 hover:border-rose-500 hover:bg-rose-50 transition-all cursor-pointer p-6 text-center">
+      <div
+        class="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-gray-100 group-hover:bg-rose-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-8 h-8 text-gray-400 group-hover:text-rose-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
       </div>
-
-      <!-- Action Buttons -->
-      <div class="flex flex-wrap gap-2 mt-4">
-        <button 
-          *ngIf="!address.isDefault"
-          (click)="setAsDefault(address._id? address._id : '')"
-          class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded transition-colors"
-        >
-          Establecer como Predeterminada
-        </button>
-        <button 
-          (click)="openEditModal(address)"
-          class="text-sm bg-gray-100 hover:bg-gray-200 text-gray-800 px-3 py-1 rounded transition-colors"
-        >
-          Editar
-        </button>
-        <button 
-          (click)="deleteAddress(address._id? address._id : '')"
-          class="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1 rounded transition-colors"
-        >
-          Eliminar
-        </button>
-      </div>
+      <h3 class="mt-4 text-sm font-semibold text-gray-900 group-hover:text-rose-700">Agregar una dirección</h3>
+      <p class="mt-1 text-sm text-gray-500">Configura tu primera ubicación de entrega.</p>
     </div>
-  </div>
+    }
 
-  <!-- Add/Edit Address Modal -->
-  <div *ngIf="showModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-    <div class="bg-white rounded-lg w-full max-w-md">
-      <div class="flex justify-between items-center border-b p-4">
-        <h3 class="text-lg font-semibold">{{editMode ? 'Editar Dirección' : 'Agregar Nueva Dirección'}}</h3>
-        <button (click)="closeModal()" class="text-gray-500 hover:text-gray-700">
-          <i class="fas fa-times"></i>
-        </button>
+    <!-- Lista de Direcciones -->
+    @for (address of addresses; track address._id) {
+    <div
+      class="relative flex flex-col bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+      [class.ring-2]="address.isDefault" [class.ring-rose-500]="address.isDefault">
+
+      <!-- Mapa Miniatura -->
+      <div class="h-32 bg-gray-100 w-full relative overflow-hidden">
+        @if (googleMapsApiKey) {
+        <img
+          src="https://maps.googleapis.com/maps/api/staticmap?center={{address.lat || -12.046374}},{{address.lng || -77.042793}}&zoom=15&size=400x150&maptype=roadmap&markers=color:red%7C{{address.lat || -12.046374}},{{address.lng || -77.042793}}&key={{googleMapsApiKey}}"
+          alt="Mapa de ubicación" class="w-full h-full object-cover opacity-80"
+          onerror="this.src='https://placehold.co/400x150/f3f4f6/a1a1aa?text=Mapa+No+Disponible'">
+        } @else {
+        <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-400">
+          <i class="fas fa-map-marked-alt text-3xl"></i>
+        </div>
+        }
+        <div class="absolute inset-0 bg-gradient-to-t from-black/10 to-transparent"></div>
+
+        <!-- Badge Default -->
+        @if (address.isDefault) {
+        <span
+          class="absolute top-3 right-3 inline-flex items-center rounded-full bg-rose-600 px-2.5 py-0.5 text-xs font-medium text-white shadow-sm">
+          <svg class="mr-1 h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+              clip-rule="evenodd"></path>
+          </svg>
+          Principal
+        </span>
+        }
       </div>
 
-      <form [formGroup]="addressForm" (ngSubmit)="onSubmit()" class="p-4">
-        <div class="space-y-4">
-          <!-- Alias -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Alias/Nombre</label>
-            <input 
-              formControlName="alias"
-              type="text" 
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: Casa, Oficina"
-            >
+      <!-- Contenido -->
+      <div class="flex-1 p-5 space-y-4">
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <h4 class="text-lg font-bold text-gray-900 truncate">{{ address.alias }}</h4>
+            <span class="text-xs font-mono text-gray-400 border border-gray-200 rounded px-1.5 bg-gray-50">{{
+              address.postalCode }}</span>
           </div>
-
-          <!-- Calle -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Calle/Avenida</label>
-            <input 
-              formControlName="street"
-              type="text" 
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-          </div>
-
-          <!-- Número y Departamento -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Número</label>
-              <input 
-                formControlName="streetNumber"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Departamento (opcional)</label>
-              <input 
-                formControlName="apartment"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Número, piso, etc."
-              >
-            </div>
-          </div>
-
-          <!-- Distrito y Código Postal -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Distrito</label>
-              <input 
-                formControlName="district"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
-              <input 
-                formControlName="postalCode"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-          </div>
-
-          <!-- Provincia y Departamento -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
-              <input 
-                formControlName="province"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Departamento</label>
-              <input 
-                formControlName="department"
-                type="text" 
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              >
-            </div>
-          </div>
-
-          <!-- País -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
-            <select 
-              formControlName="country"
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="PE">Perú</option>
-              <option value="AR">Argentina</option>
-              <option value="CL">Chile</option>
-              <option value="CO">Colombia</option>
-              <option value="MX">México</option>
-            </select>
-          </div>
-
-          <!-- Referencias -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Referencias (opcional)</label>
-            <textarea 
-              formControlName="references"
-              rows="2" 
-              class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Ej: Frente al parque, puerta verde"
-            ></textarea>
-          </div>
-
-          <!-- Coordenadas (opcional) -->
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Latitud (opcional)</label>
-              <input 
-                formControlName="lat"
-                type="number" 
-                step="0.000001"
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="-12.123456"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Longitud (opcional)</label>
-              <input 
-                formControlName="lng"
-                type="number" 
-                step="0.000001"
-                class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="-77.123456"
-              >
-            </div>
-          </div>
-
-          <!-- Dirección predeterminada -->
-          <div class="flex items-center">
-            <input 
-              formControlName="isDefault"
-              id="defaultAddress" 
-              type="checkbox" 
-              class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-            >
-            <label for="defaultAddress" class="ml-2 block text-sm text-gray-700">Establecer como dirección predeterminada</label>
-          </div>
+          <p class="text-sm font-medium text-gray-800">{{ address.street }} {{ address.streetNumber }}</p>
+          <p class="text-sm text-gray-500">
+            {{ address.apartment ? 'Dpto/Int ' + address.apartment + ', ' : '' }}
+            {{ address.district }}, {{ address.province }}
+          </p>
         </div>
 
-        <!-- Form Actions -->
-        <div class="mt-6 flex justify-end space-x-3">
-          <button 
-            type="button" 
-            (click)="closeModal()"
-            class="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-50"
-          >
-            Cancelar
+        @if (address.references) {
+        <div class="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 italic border border-gray-100">
+          "{{ address.references }}"
+        </div>
+        }
+
+        <div class="grid grid-cols-2 gap-2 pt-2 border-t border-gray-100">
+          <div class="flex items-center text-xs text-gray-500">
+            <span class="font-medium mr-1 text-gray-700">País:</span> {{ address.country }}
+          </div>
+          @if (address.distanceFromStore) {
+          <div class="flex items-center text-xs text-gray-500">
+            <span class="font-medium mr-1 text-gray-700">Distancia:</span> {{ address.distanceFromStore }}km
+          </div>
+          }
+        </div>
+      </div>
+
+      <!-- Footer Acciones -->
+      <div class="bg-gray-50 px-5 py-3 border-t border-gray-100 flex items-center justify-between">
+        @if (!address.isDefault) {
+        <button (click)="setAsDefault(address._id!)"
+          class="text-xs font-medium text-gray-500 hover:text-rose-600 transition-colors">
+          Hacer Principal
+        </button>
+        }
+        <div class="flex items-center space-x-3 ml-auto">
+          <button (click)="openEditModal(address)" class="text-gray-400 hover:text-blue-600 transition-colors p-1"
+            title="Editar">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
+            </svg>
           </button>
-          <button 
-            type="submit" 
-            [disabled]="addressForm.invalid"
-            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:bg-blue-300"
-          >
-            {{editMode ? 'Actualizar Dirección' : 'Guardar Dirección'}}
+          <button (click)="deleteAddress(address._id!)" class="text-gray-400 hover:text-red-600 transition-colors p-1"
+            title="Eliminar">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+              stroke="currentColor" class="w-5 h-5">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+            </svg>
           </button>
         </div>
-      </form>
+      </div>
+
     </div>
+    }
+
+    <!-- Card para Agregar más (cuando ya existen) -->
+    @if (addresses.length > 0) {
+    <div (click)="openAddAddressModal()"
+      class="group relative flex flex-col items-center justify-center w-full min-h-[320px] rounded-2xl border-2 border-dashed border-gray-300 hover:border-rose-500 hover:bg-rose-50 transition-all cursor-pointer p-6 text-center">
+      <div
+        class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100 group-hover:bg-rose-100 transition-colors">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+          class="w-6 h-6 text-gray-400 group-hover:text-rose-600">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+        </svg>
+      </div>
+      <h3 class="mt-2 text-sm font-semibold text-gray-900 group-hover:text-rose-700">Agregar otra</h3>
+    </div>
+    }
+
   </div>
+  }
+
+  <!-- Modal de dirección (shared component) -->
+  <app-address-modal
+    [isOpen]="showAddressModal"
+    [editAddress]="addressToEdit"
+    [googleMapsApiKey]="googleMapsApiKey"
+    (closed)="onModalClosed()"
+    (addressSaved)="onAddressSaved($event)">
+  </app-address-modal>
+
 </div>
+<app-toast></app-toast>

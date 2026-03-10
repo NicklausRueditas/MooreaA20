@@ -3,7 +3,7 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { User } from '../../../../core/interfaces/user.interface';
 
 import { firstValueFrom } from 'rxjs';
-import { SesionService } from '../../../../core/services/sesion.service';
+import { SesionService } from '../../../../core/services/auth/sesion.service';
 
 @Component({
   selector: 'app-profile',
@@ -15,6 +15,7 @@ import { SesionService } from '../../../../core/services/sesion.service';
 export class ProfileComponent implements OnInit {
   userData: Partial<User> | null = null;
   userForm!: FormGroup;
+  imageError = false;
 
   constructor(
     private fb: FormBuilder,
@@ -25,7 +26,11 @@ export class ProfileComponent implements OnInit {
     this.initForm();
   }
 
-   /** 📌 Inicializa el formulario con validaciones */
+  onImageError(): void {
+    this.imageError = true;
+  }
+
+  /** 📌 Inicializa el formulario con validaciones */
   private initForm() {
     this.userForm = this.fb.group({
       displayName: ['', [Validators.required, Validators.minLength(3)]],
@@ -55,7 +60,7 @@ export class ProfileComponent implements OnInit {
       displayName: this.userData?.displayName || '',
       email: this.userData?.email || '',
       dni: this.userData?.dni || '',
-      phone: this.userData?.phone|| '',
+      phone: this.userData?.phone || '',
     });
 
     this.cdr.detectChanges(); // 🔄 Forzar actualización de la vista

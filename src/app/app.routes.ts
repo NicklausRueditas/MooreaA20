@@ -1,6 +1,6 @@
-import { Routes} from '@angular/router';
+import { Routes } from '@angular/router';
 
-export const appRoutes: Routes = [ 
+export const appRoutes: Routes = [
   {
     path: '',
     redirectTo: '/home', // Redirigir a /home si no hay una ruta específica
@@ -16,11 +16,6 @@ export const appRoutes: Routes = [
     // Ruta para la sección de 'business', carga las rutas del módulo 'business'
     path: 'business',
     loadChildren: () => import('./website/business/business.routes').then(m => m.businessRoutes)
-  },
-  {
-    // Ruta para la sección de 'company', carga las rutas del módulo 'company'
-    path: 'company',
-    loadChildren: () => import('./website/company/company.routes').then(m => m.companyRoutes)
   },
   {
     // Ruta para la sección de 'auth', carga las rutas del módulo 'auth'

@@ -1,1 +1,181 @@
-<p>Home work</p>
+<div class="min-h-screen bg-white">
+
+    <!-- Hero Section -->
+    <section class="relative bg-gradient-to-br from-primary/10 via-white to-primary/5 overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div
+                class="absolute top-0 left-0 w-96 h-96 bg-primary rounded-full -translate-x-1/2 -translate-y-1/2 blur-3xl">
+            </div>
+            <div
+                class="absolute bottom-0 right-0 w-96 h-96 bg-primary rounded-full translate-x-1/2 translate-y-1/2 blur-3xl">
+            </div>
+        </div>
+
+        <div class="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+            <div class="grid lg:grid-cols-2 gap-12 items-center">
+
+                <!-- Hero Content -->
+                <div class="text-center lg:text-left">
+                    <h1 class="text-5xl lg:text-6xl font-brand text-gray-900 mb-6 leading-tight">
+                        Descubre lo mejor en
+                        <span class="text-primary">Moorea</span>
+                    </h1>
+                    <p class="text-xl text-gray-600 mb-8 leading-relaxed">
+                        Tu tienda online de confianza. Encuentra productos de calidad con los mejores precios y envío
+                        rápido a todo el país.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                        <a routerLink="/store"
+                            class="inline-flex items-center justify-center px-8 py-4 bg-primary text-white font-semibold rounded-xl shadow-lg hover:bg-primary/90 transition-all transform hover:scale-105">
+                            Explorar Tienda
+                            <svg class="ml-2 h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                            </svg>
+                        </a>
+                        <a routerLink="/store"
+                            class="inline-flex items-center justify-center px-8 py-4 bg-white border-2 border-gray-300 text-gray-700 font-semibold rounded-xl hover:border-primary hover:text-primary transition-all">
+                            Ver Ofertas
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Hero Image -->
+                <div class="relative">
+                    <div
+                        class="aspect-square rounded-3xl bg-gradient-to-br from-primary/20 to-primary/5 p-8 shadow-2xl">
+                        <img src="https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600" alt="Shopping"
+                            class="w-full h-full object-cover rounded-2xl">
+                    </div>
+                    <!-- Floating Badge -->
+                    <div class="absolute -bottom-6 -left-6 bg-white rounded-2xl shadow-xl p-6 border border-gray-100">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center">
+                                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M5 13l4 4L19 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p class="text-2xl font-bold text-gray-900">1000+</p>
+                                <p class="text-sm text-gray-600">Productos</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-20 bg-gray-50">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl lg:text-4xl font-brand text-gray-900 mb-4">
+                    ¿Por qué elegir Moorea?
+                </h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Nos comprometemos a brindarte la mejor experiencia de compra online
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+                @for(feature of features; track feature.title) {
+                <div
+                    class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center mb-4">
+                        <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                [attr.d]="feature.icon" />
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">{{ feature.title }}</h3>
+                    <p class="text-gray-600">{{ feature.description }}</p>
+                </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- Categories Section -->
+    <section class="py-20 bg-white">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl lg:text-4xl font-brand text-gray-900 mb-4">
+                    Explora por Categorías
+                </h2>
+                <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                    Encuentra exactamente lo que buscas en nuestras categorías destacadas
+                </p>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                @for(category of categories; track category.name) {
+                <a [routerLink]="category.link"
+                    class="group relative overflow-hidden rounded-2xl aspect-square shadow-lg hover:shadow-2xl transition-all transform hover:scale-105">
+                    <img [src]="category.image" [alt]="category.name"
+                        class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+                    <div class="absolute bottom-0 left-0 right-0 p-6">
+                        <h3 class="text-2xl font-bold text-white mb-2">{{ category.name }}</h3>
+                        <span class="inline-flex items-center text-white text-sm font-medium">
+                            Ver más
+                            <svg class="ml-1 w-4 h-4 group-hover:translate-x-1 transition-transform" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 5l7 7-7 7" />
+                            </svg>
+                        </span>
+                    </div>
+                </a>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-gradient-to-br from-primary to-primary/80">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="text-center">
+                <h2 class="text-3xl lg:text-4xl font-brand text-white mb-6">
+                    ¿Listo para comenzar?
+                </h2>
+                <p class="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
+                    Únete a miles de clientes satisfechos y descubre una nueva forma de comprar online
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a routerLink="/auth/register"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-white text-primary font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:scale-105">
+                        Crear Cuenta Gratis
+                    </a>
+                    <a routerLink="/store"
+                        class="inline-flex items-center justify-center px-8 py-4 bg-transparent border-2 border-white text-white font-semibold rounded-xl hover:bg-white hover:text-primary transition-all">
+                        Explorar Productos
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="py-16 bg-gray-50">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-3 gap-8 text-center">
+                <div>
+                    <p class="text-4xl lg:text-5xl font-bold text-primary mb-2">10K+</p>
+                    <p class="text-gray-600 font-medium">Clientes Felices</p>
+                </div>
+                <div>
+                    <p class="text-4xl lg:text-5xl font-bold text-primary mb-2">1000+</p>
+                    <p class="text-gray-600 font-medium">Productos Disponibles</p>
+                </div>
+                <div>
+                    <p class="text-4xl lg:text-5xl font-bold text-primary mb-2">24/7</p>
+                    <p class="text-gray-600 font-medium">Soporte al Cliente</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+</div>

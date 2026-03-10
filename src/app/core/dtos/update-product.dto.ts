@@ -1,17 +1,14 @@
-export interface DimensionsDto {
-  weight?: {
-    value?: number;
-    unit?: string;
-  };
-  size?: {
-    type?: string;
-    height?: string;
-    width?: string;
-    depth?: string;
-    value?: string;
-  };
-}
-
 export interface UpdateProductDto {
-  [key: string]: string | number | string[] | Record<string, string> | DimensionsDto;
+  code?: string;
+  name?: string;
+  brand?: string;
+  model?: string;
+  description?: string;
+  specifications?: Record<string, string>;
+  basePrice?: number;
+  category?: string[];
+  gallery?: string[];
+  discount?: number;
+  isActive?: boolean;
+  tags?: string[];
 }

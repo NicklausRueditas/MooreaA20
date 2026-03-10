@@ -42,7 +42,10 @@ export interface CurrentUserResponse {
 export interface CreateUserDto {
   email: string;
   password: string;
-  // Añadir otros campos requeridos para registro
+  displayName: string;
+  phone: string;
+  dni: string;
+  roles?: string[];
 }
 
 /**

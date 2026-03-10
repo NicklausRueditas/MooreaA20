@@ -16,6 +16,10 @@ export const publicRoutes: Routes = [
     component: StoreComponent,
   },
   {
+    path: 'product/:id',
+    loadComponent: () => import('./store/pages/product-detail/product-detail.component').then(m => m.ProductDetailComponent)
+  },
+  {
     path: 'help',
     component: HelpComponent,
   },
@@ -24,9 +28,18 @@ export const publicRoutes: Routes = [
     component: BasketComponent,
   },
   {
-    path: 'myaccount',
+    path: 'my-account',
     component: MyAccountComponent,
     children: [
+      {
+        path: '',
+        redirectTo: 'profile',
+        pathMatch: 'full'
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./my-account/profile/profile.component').then(m => m.ProfileComponent)
+      },
       {
         path: 'addresses',
         loadComponent: () => import('./my-account/addresses/addresses.component').then(m => m.AddressesComponent)
@@ -36,13 +49,18 @@ export const publicRoutes: Routes = [
         loadComponent: () => import('./my-account/cards/cards.component').then(m => m.CardsComponent)
       },
       {
-        path: 'profile',
-        loadComponent: () => import('./my-account/profile/profile.component').then(m => m.ProfileComponent)
-      }
+        path: 'orders',
+        loadComponent: () => import('./my-account/orders/orders.component').then(m => m.OrdersComponent)
+      },
     ]
   },
   {
     path: 'payment',
     component: PaymentComponent,
-  }
+  },
+  {
+    path: 'orders/:id/success',
+    loadComponent: () => import('./order-success/order-success.component').then(m => m.OrderSuccessComponent),
+  },
 ];
+

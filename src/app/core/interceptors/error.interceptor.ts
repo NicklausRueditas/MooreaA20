@@ -2,7 +2,7 @@ import { HttpInterceptorFn, HttpErrorResponse } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
-import { ToastService } from '../services/toast.service';
+import { ToastService } from '../services/ui/toast.service';
 
 // Nota: Evitamos inyectar AuthService aquí para prevenir dependencia circular.
 // Si el interceptor intentara llamar a AuthService.logout() y este usa HttpClient,

@@ -1,0 +1,262 @@
+<div class="p-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                {{ isEditMode ? 'Editar Tienda' : 'Nueva Tienda' }}
+            </h2>
+            <p class="text-gray-600 text-sm mt-1">
+                {{ isEditMode ? 'Actualiza la información de la tienda' : 'Completa los datos para crear una nueva
+                tienda' }}
+            </p>
+        </div>
+        <button (click)="onClose()" class="text-gray-400 hover:text-gray-600 transition-colors">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+        </button>
+    </div>
+
+    <!-- Form -->
+    <form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
+        <div class="space-y-6">
+            <!-- Basic Information -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Información Básica
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Name -->
+                    <div class="md:col-span-2">
+                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nombre de la Tienda <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="name" type="text" id="name"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="Tienda Central">
+                    </div>
+
+                    <!-- Address -->
+                    <div class="md:col-span-2">
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                            Dirección <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="address" type="text" id="address"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="Av. Principal 123, Lima">
+                    </div>
+
+                    <!-- Phone -->
+                    <div>
+                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                            Teléfono <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="phone" type="tel" id="phone"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="+51999999999">
+                    </div>
+
+                    <!-- Email -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                            Email <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="email" type="email" id="email"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="central@tienda.com">
+                    </div>
+
+                    <!-- Active Status -->
+                    <div class="md:col-span-2">
+                        <label class="flex items-center gap-3 cursor-pointer">
+                            <input formControlName="isActive" type="checkbox"
+                                class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                            <span class="text-sm font-medium text-gray-700">Tienda Activa</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Location -->
+            <div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Ubicación
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Latitude -->
+                    <div>
+                        <label for="lat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Latitud <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="lat" type="number" step="0.000001" id="lat"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="-12.046373">
+                    </div>
+
+                    <!-- Longitude -->
+                    <div>
+                        <label for="lng" class="block text-sm font-medium text-gray-700 mb-2">
+                            Longitud <span class="text-red-500">*</span>
+                        </label>
+                        <input formControlName="lng" type="number" step="0.000001" id="lng"
+                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            placeholder="-77.042754">
+                    </div>
+
+                    <!-- Map Container -->
+                    <div class="md:col-span-2 mt-4">
+                        <div class="rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-100 relative"
+                            style="height: 350px;">
+                            <!-- Google Maps Container -->
+                            <div #mapContainer class="w-full h-full"></div>
+
+                            <!-- Loading State -->
+                            <div *ngIf="!googleMapsApiKey"
+                                class="absolute inset-0 flex items-center justify-center bg-gray-100 z-50">
+                                <div class="text-center">
+                                    <svg class="animate-spin h-8 w-8 text-primary mx-auto mb-2" fill="none"
+                                        viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+                                            stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor"
+                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+                                        </path>
+                                    </svg>
+                                    <span class="text-gray-500 text-sm">Cargando mapa...</span>
+                                </div>
+                            </div>
+
+                            <!-- Instructions -->
+                            <div
+                                class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md z-10">
+                                <p class="text-xs text-gray-700 flex items-center gap-2">
+                                    <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24"
+                                        stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                    Haz clic en el mapa para seleccionar la ubicación
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Business Hours -->
+            <div>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Horarios de Atención
+                    </h3>
+                    <button type="button" (click)="addBusinessHour()"
+                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Agregar Horario
+                    </button>
+                </div>
+
+                <div formArrayName="businessHours" class="space-y-3">
+                    @for (hour of businessHoursArray.controls; track $index; let i = $index) {
+                    <div [formGroupName]="i"
+                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors">
+                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
+                            <!-- Day of Week -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
+                                <select formControlName="dayOfWeek"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                                    @for (day of daysOfWeek; track day.value) {
+                                    <option [value]="day.value">{{ day.label }}</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <!-- Open Time -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Apertura</label>
+                                <input formControlName="openTime" type="time"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <!-- Close Time -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Cierre</label>
+                                <input formControlName="closeTime" type="time"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
+                            </div>
+
+                            <!-- Is Open -->
+                            <div>
+                                <label class="flex items-center gap-2 cursor-pointer">
+                                    <input formControlName="isOpen" type="checkbox"
+                                        class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
+                                    <span class="text-sm font-medium text-gray-700">Abierto</span>
+                                </label>
+                            </div>
+
+                            <!-- Remove Button -->
+                            <div>
+                                <button type="button" (click)="removeBusinessHour(i)"
+                                    class="w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Eliminar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                @if (businessHoursArray.length === 0) {
+                <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p class="text-gray-500 text-sm">No hay horarios configurados</p>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
+            <button type="button" (click)="onClose()"
+                class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
+                Cancelar
+            </button>
+            <button type="submit" [disabled]="!storeForm.valid"
+                class="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                </svg>
+                {{ isEditMode ? 'Actualizar' : 'Crear' }} Tienda
+            </button>
+        </div>
+    </form>
+</div>

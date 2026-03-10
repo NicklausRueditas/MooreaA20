@@ -1,0 +1,197 @@
+@if (isOpen) {
+<!-- Backdrop -->
+<div class="fixed inset-0 z-50 overflow-y-auto" role="dialog" aria-modal="true">
+  <div class="fixed inset-0 bg-gray-900/60 backdrop-blur-sm" (click)="close()"></div>
+
+  <div class="flex min-h-full items-center justify-center p-4 sm:p-0">
+    <div class="relative transform overflow-hidden rounded-2xl bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-4xl border border-gray-100">
+
+      <!-- Header -->
+      <div class="bg-white px-6 py-4 border-b border-gray-100 flex items-center justify-between sticky top-0 z-10">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900">
+            {{ editMode ? 'Editar ubicación' : 'Nueva ubicación' }}
+          </h3>
+          <p class="text-sm text-gray-500 mt-0.5">Define dónde recibirás tus productos.</p>
+        </div>
+        <button (click)="close()"
+          class="rounded-full p-2 bg-gray-50 text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all focus:outline-none">
+          <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd"
+              d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+              clip-rule="evenodd" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <form [formGroup]="addressForm" (ngSubmit)="onSubmit()">
+        <div class="flex flex-col lg:flex-row h-full max-h-[80vh] lg:max-h-[600px]">
+
+          <!-- Columna Izquierda: Mapa -->
+          <div class="lg:w-1/2 bg-gray-50 p-6 flex flex-col relative order-first lg:order-last">
+            <div class="flex-1 rounded-xl overflow-hidden border border-gray-200 shadow-inner bg-gray-200 relative min-h-[300px]">
+              <!-- Mapa interactivo -->
+              <div #mapContainer class="w-full h-full" style="min-height: 300px;"></div>
+              @if (!googleMapsApiKey) {
+              <div class="absolute inset-0 flex items-center justify-center bg-gray-100 text-gray-400 z-50">
+                <span>Mapa no configurado</span>
+              </div>
+              }
+            </div>
+            <!-- Coordenadas -->
+            <div class="mt-4 grid grid-cols-2 gap-4 text-xs text-gray-500 font-mono">
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <span class="font-bold">Lat:</span> {{ addressForm.get('lat')?.value ?? '—' }}
+              </div>
+              <div class="bg-white p-2 rounded border border-gray-200">
+                <span class="font-bold">Lng:</span> {{ addressForm.get('lng')?.value ?? '—' }}
+              </div>
+            </div>
+          </div>
+
+          <!-- Columna Derecha: Formulario -->
+          <div class="lg:w-1/2 p-6 overflow-y-auto bg-white">
+            <div class="space-y-6">
+
+              <!-- Alias -->
+              <div>
+                <label for="am-alias" class="block text-sm font-semibold leading-6 text-gray-900">
+                  Alias de la dirección <span class="text-rose-600">*</span>
+                </label>
+                <div class="mt-2">
+                  <input type="text" id="am-alias" formControlName="alias"
+                    placeholder="Ej. Casa de Playa, Oficina Principal"
+                    class="block w-full rounded-md border-0 py-2.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-rose-600 sm:text-sm">
+                </div>
+              </div>
+
+              <!-- Detalles de ubicación -->
+              <div class="border-t border-gray-100 pt-4">
+                <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Detalles de ubicación</h4>
+
+                <!-- Calle y Número -->
+                <div class="grid grid-cols-12 gap-4">
+                  <div class="col-span-8">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Calle / Avenida</label>
+                    <input type="text" formControlName="street" placeholder="Av. Larco"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                  </div>
+                  <div class="col-span-4">
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Número</label>
+                    <input type="text" formControlName="streetNumber" placeholder="123"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                  </div>
+                </div>
+
+                <!-- Dpto y C. Postal -->
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Dpto / Interior</label>
+                    <input type="text" formControlName="apartment" placeholder="Ej. 201, Torre A"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">C. Postal</label>
+                    <input type="text" formControlName="postalCode" placeholder="Lima 18"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                  </div>
+                </div>
+
+                <div class="border-t border-gray-100 my-4"></div>
+                <h5 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-4">Ubicación Geográfica</h5>
+
+                <!-- Departamento y Provincia -->
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Departamento</label>
+                    <select formControlName="department" (change)="onDepartmentChange($event)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                      <option value="" disabled>Seleccionar</option>
+                      @for (dep of departments; track dep.name) {
+                      <option [value]="dep.name">{{ dep.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Provincia</label>
+                    <select formControlName="province" (change)="onProvinceChange($event)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2">
+                      <option value="" disabled>Seleccionar</option>
+                      @for (prov of provinces; track prov.name) {
+                      <option [value]="prov.name">{{ prov.name }}</option>
+                      }
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Distrito y País -->
+                <div class="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">Distrito</label>
+                    <select formControlName="district" (change)="onDistrictChange($event)"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-rose-500 focus:ring-rose-500 sm:text-sm py-2"
+                      [attr.disabled]="districts.length === 0 ? true : null">
+                      <option value="" disabled>Seleccionar</option>
+                      @for (dist of districts; track dist.name) {
+                      <option [value]="dist.name">{{ dist.name }}</option>
+                      }
+                    </select>
+                  </div>
+                  <div>
+                    <label class="block text-xs font-medium text-gray-700 mb-1">País</label>
+                    <div class="relative">
+                      <input type="text" value="Perú" readonly
+                        class="block w-full rounded-md border-gray-200 bg-gray-100 text-gray-500 shadow-sm sm:text-sm py-2 pl-3 cursor-not-allowed">
+                    </div>
+                    <input type="hidden" formControlName="country">
+                  </div>
+                </div>
+              </div>
+
+              <!-- Referencias -->
+              <div class="border-t border-gray-100 pt-4">
+                <label for="am-references" class="block text-sm font-medium leading-6 text-gray-900">
+                  Referencias de entrega
+                </label>
+                <div class="mt-2">
+                  <textarea id="am-references" formControlName="references" rows="3"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-rose-600 sm:text-sm bg-gray-50/50"
+                    placeholder="Ej: Portero electrónico malogrado, dejar en recepción..."></textarea>
+                </div>
+              </div>
+
+              <!-- Dirección Principal -->
+              <div class="flex items-center justify-between border-t border-gray-100 pt-4">
+                <span class="flex flex-grow flex-col">
+                  <span class="text-sm font-medium leading-6 text-gray-900">Dirección Principal</span>
+                  <span class="text-sm text-gray-500">Usar esta dirección por defecto para mis pedidos.</span>
+                </span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" formControlName="isDefault" class="sr-only peer">
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-rose-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-rose-600"></div>
+                </label>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="bg-gray-50 px-6 py-4 flex flex-row-reverse gap-3 rounded-b-2xl border-t border-gray-100">
+          <button type="submit" [disabled]="addressForm.invalid"
+            class="inline-flex w-full justify-center rounded-md bg-rose-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-rose-500 sm:ml-3 sm:w-auto disabled:opacity-50 disabled:cursor-not-allowed transition-all">
+            {{ editMode ? 'Guardar Cambios' : 'Guardar ubicación' }}
+          </button>
+          <button type="button" (click)="close()"
+            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto transition-all">
+            Cancelar
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+}

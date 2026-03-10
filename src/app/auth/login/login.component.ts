@@ -1,29 +1,27 @@
 import { Component } from '@angular/core';
-import { AuthService } from '../../core/services/auth.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { finalize } from 'rxjs/operators';
-import { ToastService } from '../../core/services/toast.service';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '../../core/services/auth/auth.service';
+import { ToastService } from '../../core/services/ui/toast.service';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
   loginForm: FormGroup;
-  isLoading = false;
-  googleLoading = false;
-  errorMessage: string | null = null;
+  loading = false;
+  showPassword = false;
 
   constructor(
-    private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router,
-    private toastService: ToastService
+    private authService: AuthService,
+    private toastService: ToastService,
+    private router: Router
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -31,96 +29,52 @@ export class LoginComponent {
     });
   }
 
-  /**
-   * Inicio de sesión con Google OAuth
-   */
-  signInWithGoogle(): void {
-    this.googleLoading = true;
-    this.errorMessage = null;
-    
-    try {
-      this.authService.initiateGoogleLogin();
-    } catch (error) {
-      this.handleError('Error al iniciar sesión con Google');
-      this.toastService.showError('Error al iniciar sesión con Google');
-    } finally {
-      this.googleLoading = false;
-    }
+  togglePasswordVisibility(): void {
+    this.showPassword = !this.showPassword;
   }
 
-  /**
-   * Inicio de sesión tradicional con email/contraseña
-   */
   onSubmit(): void {
     if (this.loginForm.invalid) {
-      this.markFormGroupTouched(this.loginForm);
+      Object.keys(this.loginForm.controls).forEach(key => {
+        this.loginForm.get(key)?.markAsTouched();
+      });
+      this.toastService.showError('Por favor, completa todos los campos correctamente');
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = null;
+    this.loading = true;
     const { email, password } = this.loginForm.value;
 
-    this.authService.login({ email, password })
-      .pipe(
-        finalize(() => this.isLoading = false)
-      )
-      .subscribe({
-        next: () => {
-          this.toastService.showSuccess('Inicio de sesión exitoso');
-          this.router.navigate(['/home']);
-        },
-        error: (error) => {
-          this.handleLoginError(error);
+    this.authService.login({ email, password }).subscribe({
+      next: () => {
+        this.toastService.showSuccess('¡Bienvenido! Inicio de sesión exitoso');
+        // AuthService handles redirect
+      },
+      error: (err) => {
+        console.error('Error en login:', err);
+
+        // Specific error messages based on API response
+        let errorMessage = 'Error al iniciar sesión';
+
+        if (err.error?.message) {
+          errorMessage = err.error.message;
+        } else if (err.status === 401) {
+          errorMessage = '❌ Credenciales incorrectas. Verifica tu email y contraseña';
+        } else if (err.status === 404) {
+          errorMessage = '📧 Este correo no está registrado. ¿Deseas crear una cuenta?';
+        } else if (err.status === 0) {
+          errorMessage = '🌐 No se pudo conectar con el servidor. Verifica tu conexión';
+        } else if (err.status === 500) {
+          errorMessage = '⚠️ Error del servidor. Intenta nuevamente más tarde';
         }
-      });
-  }
 
-  /**
-   * Maneja errores de login
-   */
-  private handleLoginError(error: any): void {
-    const errorMessage = this.getErrorMessage(error);
-    this.errorMessage = errorMessage;
-    this.toastService.showError(errorMessage);
-    this.authService.removeToken();
-  }
-
-  /**
-   * Marca todos los campos del formulario como touched para mostrar errores
-   */
-  private markFormGroupTouched(formGroup: FormGroup): void {
-    Object.values(formGroup.controls).forEach(control => {
-      control.markAsTouched();
-
-      if (control instanceof FormGroup) {
-        this.markFormGroupTouched(control);
+        this.toastService.showError(errorMessage);
+        this.loading = false;
       }
     });
   }
 
-  /**
-   * Obtiene mensajes de error amigables para el usuario
-   */
-  private getErrorMessage(error: any): string {
-    if (error.error?.message) {
-      return error.error.message;
-    }
-    if (error.status === 401) {
-      return 'Credenciales incorrectas. Por favor verifique su email y contraseña';
-    }
-    if (error.status === 0) {
-      return 'No se pudo conectar con el servidor. Verifique su conexión a internet';
-    }
-    return 'Ocurrió un error al iniciar sesión. Por favor intente nuevamente';
-  }
-
-  /**
-   * Maneja errores generales
-   */
-  private handleError(message: string): void {
-    this.errorMessage = message;
-    this.isLoading = false;
-    this.googleLoading = false;
+  loginWithGoogle(): void {
+    this.authService.initiateGoogleLogin();
   }
 }

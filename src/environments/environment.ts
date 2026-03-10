@@ -1,4 +1,8 @@
 export const environment = {
-  production: false,
-  apiUrl: 'http://localhost:3000',
+  production: true,
+  apiUrl: 'https://tu-api.com',  // ← cambiar por la URL de producción
+  payment: {
+    gateway: 'niubiz' as const,
+    sandboxMode: false,          // false en producción
+  },
 };

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 
 import { animate, style, transition, trigger } from '@angular/animations';
-import { ToastService } from '../../../core/services/toast.service';
+import { Toast, ToastService } from '../../../core/services/ui/toast.service';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
@@ -11,61 +11,65 @@ import { AsyncPipe } from '@angular/common';
   animations: [
     trigger('toastAnimation', [
       transition(':enter', [
-        style({ opacity: 0, transform: 'translateY(20px)' }),
-        animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' }))
+        style({ opacity: 0, transform: 'translateY(10px) scale(0.95)' }),
+        animate('300ms cubic-bezier(0.4, 0, 0.2, 1)', style({ opacity: 1, transform: 'translateY(0) scale(1)' }))
       ]),
       transition(':leave', [
-        animate('150ms ease-in', style({ opacity: 0, transform: 'scale(0.9)' }))
+        animate('200ms cubic-bezier(0.4, 0, 1, 1)', style({ opacity: 0, transform: 'translateY(-10px) scale(0.95)' }))
       ])
     ])
   ]
 })
 export class ToastComponent {
-  constructor(public toastService: ToastService) {}
+  constructor(public toastService: ToastService) { }
 
   getToastClasses(type: string) {
-    const baseClasses = 'flex items-start p-4 rounded-lg shadow-lg max-w-xs border-l-4';
+    const baseClasses = 'flex flex-col p-4 rounded-xl shadow-xl max-w-sm w-full border border-opacity-20 backdrop-blur-md transition-all';
     switch (type) {
       case 'success':
-        return `${baseClasses} bg-green-50 border-green-500 text-green-700`;
+        return `${baseClasses} bg-white border-green-200 shadow-green-100/50`;
       case 'error':
-        return `${baseClasses} bg-red-50 border-red-500 text-red-700`;
+        return `${baseClasses} bg-white border-red-200 shadow-red-100/50`;
       case 'warning':
-        return `${baseClasses} bg-yellow-50 border-yellow-500 text-yellow-700`;
+        return `${baseClasses} bg-white border-amber-200 shadow-amber-100/50`;
       case 'info':
-        return `${baseClasses} bg-blue-50 border-blue-500 text-blue-700`;
+        return `${baseClasses} bg-white border-blue-200 shadow-blue-100/50`;
+      case 'confirm':
+        return `${baseClasses} bg-white border-gray-200 shadow-gray-200/50`;
       default:
-        return `${baseClasses} bg-gray-50 border-gray-500 text-gray-700`;
+        return `${baseClasses} bg-white border-gray-200 shadow-gray-100/50`;
     }
   }
 
-  getIconClasses(type: string) {
+  getIconContainerClasses(type: string) {
+    const baseClasses = 'flex items-center justify-center w-10 h-10 rounded-full mr-3 shrink-0';
     switch (type) {
       case 'success':
-        return 'text-green-500';
+        return `${baseClasses} bg-green-100 text-green-600`;
       case 'error':
-        return 'text-red-500';
+        return `${baseClasses} bg-red-100 text-red-600`;
       case 'warning':
-        return 'text-yellow-500';
+        return `${baseClasses} bg-amber-100 text-amber-600`;
       case 'info':
-        return 'text-blue-500';
+        return `${baseClasses} bg-blue-100 text-blue-600`;
+      case 'confirm':
+        return `${baseClasses} bg-indigo-100 text-indigo-600`;
       default:
-        return 'text-gray-500';
+        return `${baseClasses} bg-gray-100 text-gray-600`;
     }
   }
 
-  getIcon(type: string) {
-    switch (type) {
-      case 'success':
-        return 'check-circle';
-      case 'error':
-        return 'x-circle';
-      case 'warning':
-        return 'exclamation';
-      case 'info':
-        return 'information-circle';
-      default:
-        return 'bell';
+  onConfirm(toast: Toast) {
+    if (toast.onConfirm) {
+      toast.onConfirm();
     }
+    this.toastService.removeToast(toast);
+  }
+
+  onCancel(toast: Toast) {
+    if (toast.onCancel) {
+      toast.onCancel();
+    }
+    this.toastService.removeToast(toast);
   }
 }

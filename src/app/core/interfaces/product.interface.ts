@@ -6,27 +6,23 @@ export interface Product {
   model: string; // Modelo del producto
   description?: string; // Descripción opcional del producto
   specifications?: Record<string, string>; // Especificaciones dinámicas (clave-valor)
-  supplier: string; // Proveedor del producto
-  color?: string; // Color del producto (opcional)
-  dimensions: {
-    weight: {
-      value: number; // Valor numérico del peso
-      unit: string; // Unidad de peso como string
-    };
-    size: {
-      type: string; // Tipo de tamaño como string
-      height?: string; // Alto (opcional)
-      width?: string; // Ancho (opcional)
-      depth?: string; // Profundidad (opcional)
-      value?: string; // Valor descriptivo del tamaño (opcional)
-    };
-  };
-  information?: string; // Información adicional opcional
-  price: number; // Precio del producto
+  basePrice: number; // Precio base del producto
   category: string[]; // Categorías del producto
   gallery: string[]; // Galería de imágenes del producto
-  stock: number; // Stock del producto
   discount: number; // Descuento del producto (porcentaje)
+  isActive: boolean; // Estado activo/inactivo del producto
+  tags: string[]; // Tags para búsqueda y filtrado
+  rating?: { // Sistema de rating (opcional)
+    average: number; // Promedio de rating (0-5)
+    count: number; // Cantidad total de reseñas
+    distribution: { // Distribución de ratings
+      1: number;
+      2: number;
+      3: number;
+      4: number;
+      5: number;
+    };
+  };
   createdAt: string; // Fecha de creación (generada automáticamente)
   updatedAt: string; // Fecha de actualización (generada automáticamente)
 }

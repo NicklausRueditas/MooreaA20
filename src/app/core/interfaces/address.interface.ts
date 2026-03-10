@@ -101,9 +101,10 @@ export interface CreateAddressResponse extends AddressResponse {
 /**
  * Respuesta para operaciones de listado
  */
-export interface ListAddressesResponse extends AddressResponse {
-  addresses: AddressData[];
-  count: number;
+export interface ListAddressesResponse extends Omit<AddressResponse, 'address'> {
+  addresses?: AddressData[];
+  address?: AddressData[]; // Propiedad añadida para compatibilidad con backend actual
+  count?: number;
 }
 
 /**
