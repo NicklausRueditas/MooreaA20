@@ -144,20 +144,20 @@ export class ProductsService {
 
   // ─── CRUD (backoffice) ─────────────────────────────────────────────────────
 
-  createProduct(product: Partial<Product>): Observable<Product> {
-    return this.http.post<Product>(`${this.apiUrl}`, product).pipe(
-      tap(() => this.resetCatalog()) // invalidar caché al crear
+  createProduct(product: Partial<Product>): Observable<CreateProductResponse> {
+    return this.http.post<CreateProductResponse>(`${this.apiUrl}`, product).pipe(
+      tap(() => this.resetCatalog())
     );
   }
 
   /** Alias para compatibilidad */
-  addProduct(product: Partial<Product>): Observable<Product> {
+  addProduct(product: Partial<Product>): Observable<CreateProductResponse> {
     return this.createProduct(product);
   }
 
   updateProduct(productId: string, updateData: UpdateProductDto): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/${productId}`, updateData).pipe(
-      tap(() => this.resetCatalog()) // invalidar caché al editar
+      tap(() => this.resetCatalog())
     );
   }
 
@@ -173,3 +173,10 @@ export class ProductsService {
     );
   }
 }
+
+/** Shape del response del POST /product (backend v2) */
+export interface CreateProductResponse {
+  product: Product;
+  reactivated: boolean;
+}
+

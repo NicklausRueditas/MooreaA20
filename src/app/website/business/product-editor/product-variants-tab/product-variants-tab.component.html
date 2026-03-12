@@ -74,10 +74,32 @@
                 <p class="text-xs text-gray-400 -mt-1">{{ sizeLabel(variant) }}</p>
 
                 <!-- Precio -->
-                <p class="text-sm font-bold" [class.text-primary]="variant.isActive" [class.text-gray-400]="!variant.isActive">S/ {{ finalPrice(variant).toFixed(2) }}</p>
-                @if ((variant.priceAdjustment ?? 0) !== 0) {
-                  <p class="text-xs -mt-1" [class.text-green-600]="(variant.priceAdjustment ?? 0) > 0 && variant.isActive" [class.text-red-500]="(variant.priceAdjustment ?? 0) < 0 && variant.isActive" [class.text-gray-400]="!variant.isActive">{{ (variant.priceAdjustment ?? 0) > 0 ? '+' : '' }}{{ variant.priceAdjustment }}</p>
-                }
+                <div>
+                  <!-- Precio base + ajuste -->
+                  @if ((variant.priceAdjustment ?? 0) !== 0) {
+                    <p class="text-xs line-through" [class.text-gray-300]="variant.isActive" [class.text-gray-200]="!variant.isActive">
+                      S/ {{ (product?.basePrice ?? 0).toFixed(2) }}
+                    </p>
+                  }
+                  <p class="text-sm font-bold" [class.text-primary]="variant.isActive" [class.text-gray-400]="!variant.isActive">
+                    S/ {{ finalPrice(variant).toFixed(2) }}
+                    @if ((variant.priceAdjustment ?? 0) !== 0) {
+                      <span class="text-xs font-normal ml-1"
+                        [class.text-green-600]="(variant.priceAdjustment ?? 0) > 0 && variant.isActive"
+                        [class.text-red-500]="(variant.priceAdjustment ?? 0) < 0 && variant.isActive"
+                        [class.text-gray-400]="!variant.isActive">
+                        ({{ (variant.priceAdjustment ?? 0) > 0 ? '+' : '' }}{{ variant.priceAdjustment }})
+                      </span>
+                    }
+                  </p>
+                  <!-- Precio real con descuento -->
+                  @if ((product?.discount ?? 0) > 0) {
+                    <p class="text-xs font-bold mt-0.5" [class.text-green-600]="variant.isActive" [class.text-gray-400]="!variant.isActive">
+                      S/ {{ (finalPrice(variant) * (1 - (product?.discount ?? 0) / 100)).toFixed(2) }}
+                      <span class="font-normal text-gray-400">(-{{ product?.discount }}%)</span>
+                    </p>
+                  }
+                </div>
 
                 <!-- Mini galería -->
                 @if (variant.gallery && variant.gallery.length > 0) {

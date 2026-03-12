@@ -115,24 +115,33 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
 
     this.isSaving = true;
     const payload = this.productForm.value as Product;
-    const obs = this.isNew
-      ? this.productsService.createProduct(payload)
-      : this.productsService.updateProduct(this.productId!, payload);
 
-    obs.pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
-      .subscribe({
-        next: (saved) => {
-          this.toastService.showSuccess(this.isNew ? 'Producto creado ✅' : 'Producto actualizado ✅');
-          if (this.isNew) {
-            const newId = saved._id ?? (saved as any).id;
+    if (this.isNew) {
+      // ── CREATE — response es { product, reactivated } ──────────────────────
+      this.productsService.createProduct(payload)
+        .pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
+        .subscribe({
+          next: ({ product, reactivated }) => {
+            const msg = reactivated ? '♻️ Producto reactivado' : 'Producto creado ✅';
+            this.toastService.showSuccess(msg);
+            const newId = product._id ?? (product as any).id;
             newId
               ? this.router.navigate(['/business/products', newId, 'edit'])
               : this.router.navigate(['/business/products']);
-          } else {
+          },
+          error: (err: any) => this.toastService.showError(err?.error?.message ?? 'Error al crear'),
+        });
+    } else {
+      // ── UPDATE — response es Product directamente ──────────────────────────
+      this.productsService.updateProduct(this.productId!, payload)
+        .pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
+        .subscribe({
+          next: (saved: Product) => {
+            this.toastService.showSuccess('Producto actualizado ✅');
             this.product = saved;
-          }
-        },
-        error: (err) => this.toastService.showError(err?.error?.message ?? 'Error al guardar'),
-      });
+          },
+          error: (err: any) => this.toastService.showError(err?.error?.message ?? 'Error al actualizar'),
+        });
+    }
   }
 }

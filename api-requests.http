@@ -118,12 +118,14 @@ Authorization: Bearer {{token}}
 
 ###############################################################################
 # 📦 PRODUCTOS MAESTROS (PRODUCTS)
+# GET /product/all    → Admin: activos + inactivos (paginado)
+# GET /product/active → Tienda pública: solo activos (paginado)
 ###############################################################################
 
-### 1. Obtener Todos los Productos (Paginado, incluye inactivos)
+### 1. Obtener Todos los Productos — Admin (activos + inactivos)
 GET {{baseUrl}}/product/all?page=1&limit=12
 
-### 2. Obtener Solo Productos Activos (Paginado)
+### 2. Obtener Solo Productos Activos — Tienda Pública
 GET {{baseUrl}}/product/active?page=1&limit=12
 
 ### 3. Buscar Productos por Tags
@@ -144,7 +146,12 @@ GET {{baseUrl}}/product/code/BASH-DALLAS
 ### 8. Buscar Productos por Rango de Precio
 GET {{baseUrl}}/product/price-range?minPrice=100&maxPrice=500
 
-### 9. Crear Producto Maestro
+### 9. Crear Producto Maestro (Upsert por code)
+# Comportamiento:
+#   code nuevo           → Crea el producto        (reactivated: false)
+#   code existe INACTIVO → Reactiva + actualiza    (reactivated: true)
+#   code existe ACTIVO   → Error 400 Conflict
+# Respuesta: { product: {...}, reactivated: boolean }
 POST {{baseUrl}}/product
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -197,6 +204,7 @@ Authorization: Bearer {{token}}
 
 ###############################################################################
 # 👟 VARIANTES DE PRODUCTOS (PRODUCT VARIANTS)
+# GET /product-variants/product/:id → Admin + Tienda: activas e inactivas
 ###############################################################################
 
 ### 1. Obtener Todas las Variantes (Paginado)
@@ -205,11 +213,11 @@ GET {{baseUrl}}/product-variants?page=1&limit=12
 ### 2. Buscar Variante por SKU
 GET {{baseUrl}}/product-variants/sku/BASH-DALLAS-WHT-36
 
-### 3. Obtener Variantes de un Producto
+### 3. Obtener Variantes de un Producto (activas e inactivas)
 GET {{baseUrl}}/product-variants/product/67890abcdef1234567890abc
 
 ### 4. Buscar Variantes por Color
-GET {{baseUrl}}/product-variants/color/WHT
+GET {{baseUrl}}/product-variants/color/BLU
 
 ### 5. Buscar Variantes por Talla
 GET {{baseUrl}}/product-variants/size/36
@@ -220,7 +228,12 @@ GET {{baseUrl}}/product-variants/67890abcdef1234567890abc
 ### 7. Calcular Precio Final de Variante
 GET {{baseUrl}}/product-variants/67890abcdef1234567890abc/price
 
-### 8. Crear Variante de Producto
+### 8. Crear Variante de Producto (Upsert por SKU)
+# Comportamiento:
+#   SKU nuevo           → Crea la variante         (reactivated: false)
+#   SKU existe INACTIVO → Reactiva + actualiza     (reactivated: true)
+#   SKU existe ACTIVO   → Error 400 Conflict
+# Respuesta: { variant: {...}, reactivated: boolean }
 POST {{baseUrl}}/product-variants
 Authorization: Bearer {{token}}
 Content-Type: application/json

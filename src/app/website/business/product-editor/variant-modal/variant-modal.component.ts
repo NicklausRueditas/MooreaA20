@@ -328,21 +328,39 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
 
     this.isSaving = true;
     const { productId: _omit, ...updateDto } = dto;
-    const obs = this.isEditMode
-      ? this.variantsService.updateVariant(this.editingVariant!._id, this.productId, updateDto)
-      : this.variantsService.createVariant(dto);
 
-    obs.pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
-      .subscribe({
-        next: (savedVariant) => {
-          if (this.shareGalleryByColor && gallery.length > 0) {
-            this.propagateGallery(savedVariant._id, savedVariant.color?.code, gallery);
-          }
-          this.toastService.showSuccess('Variante guardada ✅');
-          this.saved.emit(savedVariant);
-        },
-        error: (err) => this.toastService.showError(err?.error?.message ?? 'Error al guardar variante'),
-      });
+    if (this.isEditMode) {
+      // ── UPDATE — response es ProductVariant directamente ──────────────────
+      this.variantsService.updateVariant(this.editingVariant!._id, this.productId, updateDto)
+        .pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
+        .subscribe({
+          next: (savedVariant) => {
+            if (this.shareGalleryByColor && gallery.length > 0) {
+              this.propagateGallery(savedVariant._id, savedVariant.color?.code, gallery);
+            }
+            this.toastService.showSuccess('Variante actualizada ✅');
+            this.saved.emit(savedVariant);
+          },
+          error: (err) => this.toastService.showError(err?.error?.message ?? 'Error al actualizar variante'),
+        });
+    } else {
+      // ── CREATE — response es { variant, reactivated } ────────────────────
+      this.variantsService.createVariant(dto)
+        .pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
+        .subscribe({
+          next: ({ variant, reactivated }) => {
+            if (this.shareGalleryByColor && gallery.length > 0) {
+              this.propagateGallery(variant._id, variant.color?.code, gallery);
+            }
+            const msg = reactivated
+              ? `♻️ Variante reactivada: ${variant.sku}`
+              : '✅ Variante creada correctamente';
+            this.toastService.showSuccess(msg);
+            this.saved.emit(variant);
+          },
+          error: (err) => this.toastService.showError(err?.error?.message ?? 'Error al crear variante'),
+        });
+    }
   }
 
   close(): void { this.closed.emit(); }

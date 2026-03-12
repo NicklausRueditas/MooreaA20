@@ -214,19 +214,13 @@ export class ProductsComponent implements OnInit {
    * Add new product
    */
   private addProduct(newProduct: Product): void {
-    console.log('📤 Sending product to backend:', JSON.stringify(newProduct, null, 2));
-
     this.productsService.addProduct(newProduct).subscribe({
-      next: (response) => {
-        this.loadProducts(); // Reload to get updated list
-        console.log('✅ Product created:', response);
+      next: ({ product, reactivated }) => {
+        this.loadProducts();
+        console.log(reactivated ? '♻️ Product reactivated:' : '✅ Product created:', product);
       },
       error: (err) => {
-        console.error('❌ Error creating product:', err);
-        console.error('📋 Error details:', err.error);
-        if (err.error?.message) {
-          console.error('💬 Validation errors:', err.error.message);
-        }
+        console.error('❌ Error creating product:', err?.error);
       },
     });
   }

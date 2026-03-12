@@ -35,6 +35,12 @@ export interface CreateVariantDto {
 
 export type UpdateVariantDto = Partial<Omit<CreateVariantDto, 'productId'>>;
 
+/** Shape del response del POST /product-variants (backend v2) */
+export interface CreateVariantResponse {
+  variant: ProductVariant;
+  reactivated: boolean;
+}
+
 // ──────────────────────────────────────────────────────────────────────────────
 
 @Injectable({ providedIn: 'root' })
@@ -79,9 +85,12 @@ export class ProductVariantsService {
 
   // ─── ESCRITURA ────────────────────────────────────────────────────────────
 
-  /** Crea una variante e invalida el caché del producto. */
-  createVariant(dto: CreateVariantDto): Observable<ProductVariant> {
-    return this.http.post<ProductVariant>(this.apiUrl, dto).pipe(
+  /**
+   * Crea (o reactiva si el SKU ya existía) una variante.
+   * El backend devuelve { variant, reactivated }.
+   */
+  createVariant(dto: CreateVariantDto): Observable<CreateVariantResponse> {
+    return this.http.post<CreateVariantResponse>(this.apiUrl, dto).pipe(
       tap(() => this.invalidateProduct(dto.productId)),
     );
   }
@@ -93,7 +102,10 @@ export class ProductVariantsService {
     );
   }
 
-  /** Elimina una variante (soft delete) e invalida el caché. */
+  /**
+   * Soft delete de la variante (marca isActive=false).
+   * Para reusar el SKU, simplemente vuelve a crear con POST — el backend la reactiva.
+   */
   deleteVariant(variantId: string, productId: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${variantId}`).pipe(
       tap(() => this.invalidateProduct(productId)),
