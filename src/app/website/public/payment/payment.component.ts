@@ -269,20 +269,33 @@ export class PaymentComponent implements OnInit, OnDestroy {
     return Math.round(R * c * 10) / 10;
   }
 
+  /**
+   * Calcula la distancia en km entre el usuario y la tienda.
+   * Usa las coordenadas de store.location.coordinates [lng, lat].
+   */
   getStoreDistance(store: Store): string {
-    if (this.userLat != null && this.userLng != null) {
-      const km = this.calcDistance(this.userLat, this.userLng, store.lat, store.lng);
-      return `${km} km`;
-    }
-    return '—';
+    if (this.userLat == null || this.userLng == null) return '—';
+    const coords = store.location?.coordinates?.coordinates;
+    if (!coords) return '—';
+    const km = this.calcDistance(this.userLat, this.userLng, coords[1], coords[0]);
+    return `${km} km`;
   }
 
+  /**
+   * Devuelve la tienda más cercana al usuario (por Haversine).
+   * Fallback: primera tienda si no hay geolocalización o coordenadas.
+   */
   getNearestStore(): Store | null {
-    if (!this.stores.length || this.userLat == null) return this.stores[0] ?? null;
+    if (!this.stores.length) return null;
+    if (this.userLat == null || this.userLng == null) return this.stores[0];
     return this.stores.reduce((nearest, store) => {
-      const d = this.calcDistance(this.userLat!, this.userLng!, store.lat, store.lng);
-      const dNearest = this.calcDistance(this.userLat!, this.userLng!, nearest.lat, nearest.lng);
-      return d < dNearest ? store : nearest;
+      const cS = store.location?.coordinates?.coordinates;
+      const cN = nearest.location?.coordinates?.coordinates;
+      if (!cS) return nearest;
+      if (!cN) return store;
+      const d  = this.calcDistance(this.userLat!, this.userLng!, cS[1], cS[0]);
+      const dN = this.calcDistance(this.userLat!, this.userLng!, cN[1], cN[0]);
+      return d < dN ? store : nearest;
     });
   }
 
@@ -470,16 +483,30 @@ export class PaymentComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * Determina si la tienda está abierta en el momento actual.
+   * businessHours es un objeto: { monday: {open, close}, ... }
+   */
   isStoreOpen(store: Store): boolean {
-    const day = new Date().getDay();
-    const hours = store.businessHours?.find(h => h.dayOfWeek === day);
-    return hours?.isOpen ?? false;
+    const dayKey = this.currentDayKey();
+    const hours  = store.businessHours?.[dayKey];
+    return !!hours; // si tiene registro ese día, está abierto
   }
 
+  /**
+   * Devuelve el horario de la tienda para hoy.
+   * Formato: "09:00 – 18:00" o "Cerrado hoy"
+   */
   getStoreHours(store: Store): string {
-    const day = new Date().getDay();
-    const hours = store.businessHours?.find(h => h.dayOfWeek === day);
-    if (!hours?.isOpen) return 'Cerrado hoy';
-    return `${hours.openTime} – ${hours.closeTime}`;
+    const dayKey = this.currentDayKey();
+    const hours  = store.businessHours?.[dayKey];
+    return hours ? `${hours.open} – ${hours.close}` : 'Cerrado hoy';
+  }
+
+  /** Mapea el número de día JS (0=Dom ... 6=Sáb) a la clave del backend */
+  private currentDayKey(): import('../../../core/interfaces/store.interface').DayKey {
+    const keys: import('../../../core/interfaces/store.interface').DayKey[] =
+      ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    return keys[new Date().getDay()];
   }
 }

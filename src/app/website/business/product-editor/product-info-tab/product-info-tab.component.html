@@ -165,28 +165,83 @@
 
     <!-- Especificaciones -->
     <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
-      <h2 class="font-bold text-gray-900 text-base">Especificaciones técnicas</h2>
-      <div class="flex gap-2">
-        <input
-          [formControl]="specKeyCtrl"
-          type="text"
-          placeholder="material"
-          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
-        <input
-          [formControl]="specValueCtrl"
-          type="text"
-          placeholder="Cuero sintético"
-          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-        />
+      <!-- Cabecera con toggle de modo -->
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-base">Especificaciones técnicas</h2>
         <button
           type="button"
-          (click)="addSpecification()"
-          class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+          (click)="toggleJsonMode()"
+          class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all"
+          [class.bg-amber-500]="specJsonMode"
+          [class.text-white]="specJsonMode"
+          [class.border-amber-500]="specJsonMode"
+          [class.bg-white]="!specJsonMode"
+          [class.text-gray-600]="!specJsonMode"
+          [class.border-gray-300]="!specJsonMode"
         >
-          +
+          <span>&#123; &#125;</span>
+          {{ specJsonMode ? 'Cancelar JSON' : 'Importar JSON' }}
         </button>
       </div>
+
+      <!-- ── Modo JSON ─────────────────────────────────────────────────────── -->
+      @if (specJsonMode) {
+        <div class="space-y-2">
+          <p class="text-xs text-gray-500">Pega o escribe un objeto JSON con las especificaciones. Los valores deben ser string o número.</p>
+          <textarea
+            [formControl]="specJsonCtrl"
+            rows="8"
+            spellcheck="false"
+            [placeholder]="jsonPlaceholder"
+            class="w-full px-3 py-2.5 border border-amber-300 rounded-xl text-xs font-mono bg-gray-50 resize-none focus:ring-2 focus:ring-amber-400 focus:border-transparent leading-relaxed"
+          ></textarea>
+          @if (jsonSpecError) {
+            <p class="text-red-500 text-xs flex items-center gap-1">
+              <span>⚠️</span> {{ jsonSpecError }}
+            </p>
+          }
+          <div class="flex gap-2">
+            <button
+              type="button"
+              (click)="applyJsonSpecs()"
+              class="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition"
+            >
+              ✓ Aplicar JSON
+            </button>
+            <button
+              type="button"
+              (click)="toggleJsonMode()"
+              class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="flex gap-2">
+          <input
+            [formControl]="specKeyCtrl"
+            type="text"
+            placeholder="material"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <input
+            [formControl]="specValueCtrl"
+            type="text"
+            placeholder="Cuero sintético"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <button
+            type="button"
+            (click)="addSpecification()"
+            class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+          >
+            +
+          </button>
+        </div>
+      }
+
+      <!-- Tabla de especificaciones actuales (siempre visible) -->
       @if (objectKeys(specifications).length > 0) {
         <table class="w-full text-sm">
           <tbody class="divide-y divide-gray-100">
@@ -240,6 +295,31 @@
           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
         />
       </div>
+
+      <!-- Precio real al cliente -->
+      @if ((productForm.get('basePrice')?.value ?? 0) > 0) {
+        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
+             [class.bg-green-50]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.bg-gray-50]="!((productForm.get('discount')?.value ?? 0) > 0)"
+             [class.border]="true"
+             [class.border-green-200]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.border-gray-200]="!((productForm.get('discount')?.value ?? 0) > 0)">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">💰 Precio al cliente</p>
+            @if ((productForm.get('discount')?.value ?? 0) > 0) {
+              <p class="text-xs text-gray-400 line-through mt-0.5">
+                S/ {{ (+productForm.get('basePrice')!.value).toFixed(2) }}
+              </p>
+            }
+          </div>
+          <p class="text-xl font-bold"
+             [class.text-green-600]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.text-gray-800]="!((productForm.get('discount')?.value ?? 0) > 0)">
+            S/ {{ clientPrice.toFixed(2) }}
+          </p>
+        </div>
+      }
+
       <div class="flex items-center gap-3 pt-2">
         <label class="relative inline-flex items-center cursor-pointer">
           <input formControlName="isActive" type="checkbox" class="sr-only peer" />
@@ -308,5 +388,100 @@
         </a>
       </div>
     }
+
+    <!-- Garantía -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-base">🛡️ Garantía</h2>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input formControlName="hasWarranty" type="checkbox" class="sr-only peer" />
+          <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"></div>
+          <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+        </label>
+      </div>
+
+      <ng-container *ngIf="hasWarranty">
+        <div [formGroup]="warrantyGroup" class="space-y-3">
+          <!-- Duración + Unidad -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Duración *</label>
+              <input
+                formControlName="duration"
+                type="number"
+                min="1"
+                placeholder="12"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Unidad</label>
+              <select
+                formControlName="unit"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="months">Meses</option>
+                <option value="days">Días</option>
+                <option value="years">Años</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tipo de garantía -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Tipo de garantía</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                [class.border-primary]="warrantyType === 'manufacturer'"
+                [class.bg-primary]="warrantyType === 'manufacturer'"
+                [class.text-white]="warrantyType === 'manufacturer'"
+                [class.border-gray-200]="warrantyType !== 'manufacturer'"
+                [class.text-gray-700]="warrantyType !== 'manufacturer'"
+              >
+                <input type="radio" formControlName="type" value="manufacturer" class="sr-only" />
+                🏭 Fabricante
+              </label>
+              <label
+                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                [class.border-primary]="warrantyType === 'store'"
+                [class.bg-primary]="warrantyType === 'store'"
+                [class.text-white]="warrantyType === 'store'"
+                [class.border-gray-200]="warrantyType !== 'store'"
+                [class.text-gray-700]="warrantyType !== 'store'"
+              >
+                <input type="radio" formControlName="type" value="store" class="sr-only" />
+                🏪 Tienda
+              </label>
+            </div>
+          </div>
+
+          <!-- Descripción de cobertura -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Descripción de cobertura</label>
+            <textarea
+              formControlName="description"
+              rows="2"
+              placeholder="Ej. Cubre defectos de fábrica"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            ></textarea>
+          </div>
+
+          <!-- URL de política -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">URL de política (opcional)</label>
+            <input
+              formControlName="policyUrl"
+              type="url"
+              placeholder="https://marca.com/garantia"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+        </div>
+      </ng-container>
+      <p *ngIf="!hasWarranty" class="text-xs text-gray-400 text-center py-2">
+        Activa el interruptor para agregar garantía al producto
+      </p>
+    </section>
   </div>
 </form>

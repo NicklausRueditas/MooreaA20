@@ -19,7 +19,7 @@ import {
   templateUrl: './addresses.component.html',
   standalone: true,
   imports: [CommonModule, ToastComponent, AddressModalComponent],
-  styleUrls: ['./addresses.component.scss'],
+  styleUrls: ['./addresses.component.css'],
 })
 export class AddressesComponent implements OnInit, OnDestroy {
   addresses: AddressData[] = [];

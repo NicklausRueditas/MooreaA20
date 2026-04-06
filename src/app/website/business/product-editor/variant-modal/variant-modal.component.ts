@@ -126,7 +126,11 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   get pricePreview(): number {
-    return (this.product?.basePrice ?? 0) + (this.variantForm?.get('priceAdjustment')?.value ?? 0);
+    const base       = this.product?.basePrice ?? 0;
+    const adjustment = this.variantForm?.get('priceAdjustment')?.value ?? 0;
+    const discount   = this.product?.discount ?? 0;
+    const raw        = base + adjustment;
+    return raw * (1 - discount / 100);
   }
 
   /** Variante hermana con el mismo color (para auto-detect) */
@@ -290,8 +294,9 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
       productId:       this.productId,
       sku:             fv.sku.trim().toUpperCase(),
       priceAdjustment: fv.priceAdjustment ?? 0,
-      isActive:        fv.isActive,
     };
+    // isActive solo se envía en el POST de creación (el backend lo acepta aunque no esté en UpdateVariantDto)
+    if (!this.isEditMode) { (dto as any)['isActive'] = fv.isActive; }
 
     if (fv.colorName?.trim()) {
       dto.color = {
@@ -327,7 +332,17 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
     if (gallery.length > 0) { dto.gallery = gallery; }
 
     this.isSaving = true;
-    const { productId: _omit, ...updateDto } = dto;
+
+    // PATCH /:id solo acepta: color, size, dimensions, gallery, priceAdjustment
+    // (NO sku, NO isActive, NO productId — tienen endpoints propios)
+    const updateDto: import('../../../../core/services/catalog/product-variants.service').UpdateVariantDto = {
+      ...(dto.color           && { color:           dto.color }),
+      ...(dto.size            && { size:             dto.size }),
+      ...((dto as any).dimensions && { dimensions:  (dto as any).dimensions }),
+      ...(dto.gallery         && { gallery:          dto.gallery }),
+      priceAdjustment: dto.priceAdjustment ?? 0,
+    };
+
     const obs = this.isEditMode
       ? this.variantsService.updateVariant(this.editingVariant!._id, this.productId, updateDto)
       : this.variantsService.createVariant(dto);

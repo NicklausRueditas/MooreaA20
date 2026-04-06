@@ -96,15 +96,18 @@ export class ProductVariantsTabComponent implements OnInit, OnDestroy {
     this.closeModal();
   }
 
-  /** Activa o desactiva la variante (soft toggle — el SKU se conserva en DB) */
+  /** Activa o desactiva la variante usando los endpoints dedicados. */
   toggleVariantActive(variant: ProductVariant): void {
-    const newState = !variant.isActive;
-    this.variantsService.updateVariant(variant._id, this.productId, { isActive: newState })
-      .pipe(takeUntil(this.destroy$))
+    const activate = !variant.isActive;
+    const req$ = activate
+      ? this.variantsService.activateVariant(variant._id, this.productId)
+      : this.variantsService.deactivateVariant(variant._id, this.productId);
+
+    req$.pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (updated) => {
           this.variants = this.variants.map(v => v._id === updated._id ? updated : v);
-          this.toastService.showSuccess(newState ? '✅ Variante activada' : '⭕ Variante desactivada');
+          this.toastService.showSuccess(activate ? '✅ Variante activada' : '⭕ Variante desactivada');
         },
         error: () => this.toastService.showError('Error al cambiar estado'),
       });
@@ -126,8 +129,16 @@ export class ProductVariantsTabComponent implements OnInit, OnDestroy {
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  finalPrice(variant: ProductVariant): number {
+  /** Precio sin descuento (base + ajuste). */
+  rawPrice(variant: ProductVariant): number {
     return (this.product?.basePrice ?? 0) + (variant.priceAdjustment ?? 0);
+  }
+
+  /** Precio real al cliente = rawPrice × (1 − descuento/100). */
+  finalPrice(variant: ProductVariant): number {
+    const raw      = this.rawPrice(variant);
+    const discount = this.product?.discount ?? 0;
+    return raw * (1 - discount / 100);
   }
 
   sizeLabel(variant: ProductVariant): string {
@@ -139,9 +150,14 @@ export class ProductVariantsTabComponent implements OnInit, OnDestroy {
 
   // ─── Carga ───────────────────────────────────────────────────────────────
 
+  /**
+   * Carga las variantes desde el servicio (usa caché BehaviorSubject).
+   * NO invalida el caché — la invalidación la hacen los métodos de escritura
+   * (createVariant, updateVariant, deleteVariant, etc.) mediante tap().
+   * De este modo, cambiar de tab 'info' ↔ 'variants' no genera peticiones HTTP extra.
+   */
   private loadVariants(): void {
     this.isLoadingVariants = true;
-    this.variantsService.invalidateProduct(this.productId);
     this.variantsService.getVariantsByProduct(this.productId)
       .pipe(takeUntil(this.destroy$), finalize(() => { this.isLoadingVariants = false; }))
       .subscribe({ next: v => { this.variants = v; }, error: () => { this.variants = []; } });

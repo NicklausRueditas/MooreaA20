@@ -6,7 +6,7 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 
 import { ProductsService } from '../../../core/services/catalog/products.service';
 import { ToastService }    from '../../../core/services/ui/toast.service';
-import { Product }         from '../../../core/interfaces/product.interface';
+import { Product, ProductWarranty } from '../../../core/interfaces/product.interface';
 
 import { ProductInfoTabComponent }     from './product-info-tab/product-info-tab.component';
 import { ProductVariantsTabComponent } from './product-variants-tab/product-variants-tab.component';
@@ -45,6 +45,10 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
     const id              = this.route.snapshot.paramMap.get('id');
     const OBJECT_ID_REGEX = /^[a-f\d]{24}$/i;
 
+    // Leer tab inicial desde queryParam (?tab=variants)
+    const tabParam = this.route.snapshot.queryParamMap.get('tab') as EditorTab | null;
+    if (tabParam === 'variants') this.activeTab.set('variants');
+
     if (!id || id === 'new') {
       this.isNew = true;
     } else if (OBJECT_ID_REGEX.test(id)) {
@@ -74,6 +78,15 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
       tags:           this.fb.array([]),
       gallery:        this.fb.array([]),
       specifications: [null],
+      // ── Garantía ──────────────────────────────────────────────────────────
+      hasWarranty:    [false],
+      warranty: this.fb.group({
+        duration:    [12, [Validators.required, Validators.min(1)]],
+        unit:        ['months'],
+        type:        ['manufacturer'],
+        description: [''],
+        policyUrl:   [''],
+      }),
     });
   }
 
@@ -102,6 +115,8 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
       code: p.code, name: p.name, brand: p.brand, model: p.model,
       description: p.description, basePrice: p.basePrice, discount: p.discount,
       isActive: p.isActive, specifications: p.specifications ?? null,
+      hasWarranty: !!p.warranty,
+      warranty: p.warranty ?? { duration: 12, unit: 'months', type: 'manufacturer', description: '', policyUrl: '' },
     });
   }
 
@@ -114,10 +129,25 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
     }
 
     this.isSaving = true;
-    const payload = this.productForm.value as Product;
+    const raw     = this.productForm.value;
+    const payload = { ...raw } as Product;
+    // Incluir warranty solo si el usuario habilitó la garantía
+    if (!raw.hasWarranty) {
+      delete (payload as any).warranty;
+    } else {
+      // Limpiar campos opcionales vacíos
+      const w = (payload as any).warranty as ProductWarranty;
+      if (!w.description?.trim()) delete (w as any).description;
+      if (!w.policyUrl?.trim())   delete (w as any).policyUrl;
+    }
+    delete (payload as any).hasWarranty;
     const obs = this.isNew
       ? this.productsService.createProduct(payload)
-      : this.productsService.updateProduct(this.productId!, payload);
+      : (() => {
+          // PATCH /:id no acepta code (inmutable) ni isActive (endpoints propios)
+          const { isActive: _a, code: _c, ...updatePayload } = payload as any;
+          return this.productsService.updateProduct(this.productId!, updatePayload);
+        })();
 
     obs.pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
       .subscribe({
@@ -125,8 +155,10 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
           this.toastService.showSuccess(this.isNew ? 'Producto creado ✅' : 'Producto actualizado ✅');
           if (this.isNew) {
             const newId = saved._id ?? (saved as any).id;
+            // Al crear, redirigir directamente al tab de variantes para que el
+            // usuario pueda configurarlas sin pasos adicionales.
             newId
-              ? this.router.navigate(['/business/products', newId, 'edit'])
+              ? this.router.navigate(['/business/products', newId, 'edit'], { queryParams: { tab: 'variants' } })
               : this.router.navigate(['/business/products']);
           } else {
             this.product = saved;

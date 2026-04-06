@@ -168,7 +168,7 @@
                       <div class="min-w-0 text-left">
                         @if (getItemPickupStore(item); as store) {
                         <p class="text-sm font-semibold text-gray-900 truncate">{{ store.name }}</p>
-                        <p class="text-xs text-gray-500">{{ store.address }}</p>
+                        <p class="text-xs text-gray-500">{{ store.location.address }}</p>
                         } @else {
                         <p class="text-sm text-gray-400">Seleccionar tienda para recoger</p>
                         }
@@ -212,7 +212,7 @@
                               {{ isStoreOpen(store) ? 'Abierto' : 'Cerrado' }}
                             </span>
                           </div>
-                          <p class="text-xs text-gray-500 mt-0.5 truncate">{{ store.address }}</p>
+                          <p class="text-xs text-gray-500 mt-0.5 truncate">{{ store.location.address }}</p>
                           <div class="flex items-center gap-3 mt-1 text-xs text-gray-400">
                             <span>{{ getStoreHours(store) }}</span>
                             <span class="font-medium text-primary">📍 {{ getStoreDistance(store) }}</span>
@@ -500,7 +500,7 @@
                   <div class="flex items-center gap-1.5 mt-1">
                     <span class="text-sm">🏪</span>
                     <span class="text-xs text-gray-600">{{ store.name }}</span>
-                    <span class="text-xs text-gray-400 truncate">— {{ store.address }}</span>
+                    <span class="text-xs text-gray-400 truncate">— {{ store.location.address }}</span>
                   </div>
                   <div class="flex items-center gap-3 mt-0.5">
                     <p class="text-xs text-green-600">Disponible: <span class="font-medium capitalize">{{ pickupDateLabel }}</span></p>

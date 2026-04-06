@@ -138,22 +138,21 @@
                                     </div>
                                     <div>
                                         <p class="font-medium text-gray-900">{{ store.name }}</p>
-                                        <p class="text-sm text-gray-500">{{ store.businessHours.length || 0 }} horarios
-                                            configurados</p>
+                                        <p class="text-xs text-gray-400">{{ store.code }} &middot; {{ store.type }}</p>
                                     </div>
                                 </div>
                             </td>
 
                             <!-- Location -->
                             <td class="px-6 py-4">
-                                <p class="text-sm text-gray-900">{{ store.address }}</p>
-                                <p class="text-xs text-gray-500">{{ store.lat }}, {{ store.lng }}</p>
+                                <p class="text-sm text-gray-900">{{ store.location.address }}</p>
+                                <p class="text-xs text-gray-500">{{ store.location.city }}, {{ store.location.state }}</p>
                             </td>
 
                             <!-- Contact -->
                             <td class="px-6 py-4">
-                                <p class="text-sm text-gray-900">{{ store.phone }}</p>
-                                <p class="text-xs text-gray-500">{{ store.email }}</p>
+                                <p class="text-sm text-gray-900">{{ store.contact?.phone ?? '—' }}</p>
+                                <p class="text-xs text-gray-500">{{ store.contact?.email ?? '—' }}</p>
                             </td>
 
                             <!-- Status -->
@@ -259,11 +258,10 @@
 
     <!-- Form Modal -->
     @if (showFormModal) {
-    <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-        <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <app-form-store [selectedStore]="selectedStore" [isEditMode]="isEditMode" (closeModal)="closeModal()"
-                (storeSaved)="onStoreSaved($event)">
-            </app-form-store>
-        </div>
-    </div>
+        <app-form-store
+          [selectedStore]="selectedStore"
+          [isEditMode]="isEditMode"
+          (closeModal)="closeModal()"
+          (storeSaved)="onStoreSaved($event)">
+        </app-form-store>
     }

@@ -101,13 +101,12 @@ export class ProductDetailComponent implements OnInit {
       next: (variants) => {
         this.variants = variants.filter(v => v.isActive !== false);
         this.loadingVariants = false;
-        // Si solo hay una variante, seleccionarla automáticamente
-        if (this.variants.length === 1) {
+        // Auto-seleccionar la primera variante al cargar (muestra sus imágenes en la galería)
+        if (this.variants.length > 0) {
           this.autoSelectVariant(this.variants[0]);
         }
       },
       error: () => { this.loadingVariants = false; }
-
     });
   }
 
@@ -236,33 +235,47 @@ export class ProductDetailComponent implements OnInit {
   // ─── GALLERY ─────────────────────────────────────────────────────────────────
 
   /**
-   * Lista unificada: imágenes del producto maestro + una imagen por color de variante
-   * (deduplicada por URL). Este es el único array que usa el slider.
+   * Galería unificada: las imágenes de la variante seleccionada (o variante 1 por defecto)
+   * van primero, seguidas de las imágenes del producto maestro como complemento.
+   * Si no hay variante seleccionada, muestra todas las imágenes de variantes en orden
+   * y luego las del maestro. Las URLs se deduiplican para evitar repeticiones.
    */
   get combinedGallery(): GalleryItem[] {
     const items: GalleryItem[] = [];
     const seenUrls = new Set<string>();
 
-    // 1. Galería del producto maestro (lifestyle, guía de tallas, etc.)
-    for (const url of (this.product?.gallery ?? [])) {
+    // Helper para agregar URL si no fue vista aún
+    const push = (url: string, colorCode?: string, colorName?: string) => {
       if (url && !seenUrls.has(url)) {
         seenUrls.add(url);
-        items.push({ url });
+        items.push({ url, colorCode, colorName });
+      }
+    };
+
+    // 1. Imágenes de la variante seleccionada primero (o de todas en orden si no hay selección)
+    if (this.selectedVariant?.gallery?.length) {
+      for (const url of this.selectedVariant.gallery) {
+        push(url, this.selectedVariant.color?.code, this.selectedVariant.color?.name);
+      }
+      // Resto de variantes (sin la seleccionada) a continuación
+      for (const variant of this.variants) {
+        if (variant._id === this.selectedVariant._id) continue;
+        for (const url of (variant.gallery ?? [])) {
+          push(url, variant.color?.code, variant.color?.name);
+        }
+      }
+    } else {
+      // Sin variante seleccionada: todas las variantes en orden
+      for (const variant of this.variants) {
+        for (const url of (variant.gallery ?? [])) {
+          push(url, variant.color?.code, variant.color?.name);
+        }
       }
     }
 
-    // 2. Imágenes de variantes, deduplicadas por URL (una por color)
-    for (const variant of this.variants) {
-      for (const url of (variant.gallery ?? [])) {
-        if (url && !seenUrls.has(url)) {
-          seenUrls.add(url);
-          items.push({
-            url,
-            colorCode: variant.color?.code,
-            colorName: variant.color?.name,
-          });
-        }
-      }
+    // 2. Imágenes del producto maestro al final (lifestyle, guía de tallas, etc.) — complementarias
+    for (const url of (this.product?.gallery ?? [])) {
+      push(url);
     }
 
     return items;

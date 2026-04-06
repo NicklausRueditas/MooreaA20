@@ -1,10 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { StoresService } from '../../../../core/services/catalog/stores.service';
-import { ProductsService } from '../../../../core/services/catalog/products.service';
-import { ProductVariantsService } from '../../../../core/services/catalog/product-variants.service';
+import {
+  ProductVariantsService,
+  FlatCatalogVariant,
+  CatalogVariantGroup,
+  CatalogProduct,
+} from '../../../../core/services/catalog/product-variants.service';
 import { Store, InventoryItem, ProductVariant } from '../../../../core/interfaces/store.interface';
 import { Product } from '../../../../core/interfaces/product.interface';
 
@@ -29,7 +33,7 @@ export interface ProductGroup {
 @Component({
   selector: 'app-store-inventory',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './store-inventory.component.html',
   styleUrls: ['./store-inventory.component.css']
 })
@@ -47,7 +51,10 @@ export class StoreInventoryComponent implements OnInit {
 
   // Selector en cascada: producto → variante
   selectedProductId = '';
-  variantsForModal: ProductVariant[] = [];
+  /** Todas las variantes aplanadas del catálogo (FlatCatalogVariant.product.basePrice disponible) */
+  allCatalogVariants: FlatCatalogVariant[] = [];
+  /** Variantes filtradas por el producto seleccionado en el modal */
+  variantsForModal: FlatCatalogVariant[] = [];
   isLoadingVariants = false;
 
   // Filters
@@ -60,18 +67,32 @@ export class StoreInventoryComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private storesService: StoresService,
-    private productsService: ProductsService,
     private variantsService: ProductVariantsService,
     private fb: FormBuilder
   ) {
     this.addInventoryForm = this.fb.group({
-      variantId: ['', Validators.required],
-      quantity: [1, [Validators.required, Validators.min(1)]],
-      cost: [null],
-      wholesalePrice: [null],
-      reorderPoint: [10],
-      reorderQuantity: [50]
+      variantId:       ['', Validators.required],
+      quantity:        [1, [Validators.required, Validators.min(1)]],
+      cost:            [null],
+      wholesalePrice:  [null],
+      reorderPoint:    [5],   // umbral por defecto: 5 unidades
+      reorderQuantity: [20],  // cantidad a reponer por defecto: 20 unidades
+      // Ubicación física en almacén — .http L537-541: location.aisle / .shelf / .bin
+      locationAisle: [null],
+      locationShelf: [null],
+      locationBin:   [null],
     });
+  }
+
+  // ─── GETTERS ─────────────────────────────────────────────────────────────────
+
+  /**
+   * Acceso tipado al FormControl del radio de variantes.
+   * Requerido por el template: [formControl]="variantIdCtrl".
+   * Sin este getter Angular no puede conectar el radio y (change) nunca dispara.
+   */
+  get variantIdCtrl() {
+    return this.addInventoryForm.get('variantId') as import('@angular/forms').FormControl;
   }
 
   ngOnInit(): void {
@@ -79,7 +100,7 @@ export class StoreInventoryComponent implements OnInit {
     if (this.storeId) {
       this.loadStore();
       this.loadInventory();
-      this.loadProducts();
+      this.loadCatalogVariants();
     }
   }
 
@@ -106,17 +127,35 @@ export class StoreInventoryComponent implements OnInit {
     });
   }
 
-  /** Carga todos los productos maestros usando el caché compartido del servicio */
-  loadProducts(): void {
-    this.productsService.catalog$.subscribe({
-      next: (products) => {
-        this.allProducts = products;
+  /**
+   * Carga el catálogo Moorea usando el endpoint agrupado.
+   * GET /product-variants/by-catalog?ownerId=moorea
+   * Response: CatalogVariantGroup[] — cada grupo tiene { product, variants[] }.
+   * Se aplana a FlatCatalogVariant[] adjuntando el producto a cada variante
+   * para tener acceso directo a product.basePrice en onVariantSelected.
+   */
+  loadCatalogVariants(): void {
+    this.variantsService.getVariantsByCatalog('moorea').subscribe({
+      next: (groups: CatalogVariantGroup[]) => {
         this.productMap.clear();
-        products.forEach(p => this.productMap.set(p._id, p));
+        this.allProducts = [];
+        this.allCatalogVariants = [];
+
+        for (const group of groups) {
+          const p = group.product;
+          // Construir productMap y allProducts desde el campo product del grupo
+          if (!this.productMap.has(p._id)) {
+            this.productMap.set(p._id, p as unknown as Product);
+            this.allProducts.push(p as unknown as Product);
+          }
+          // Aplanar variantes adjuntando el producto a cada una
+          for (const v of group.variants) {
+            this.allCatalogVariants.push({ ...v, product: p } as FlatCatalogVariant);
+          }
+        }
       },
-      error: (err) => console.error('Error loading products:', err)
+      error: (err) => console.error('Error cargando variantes del catálogo:', err)
     });
-    this.productsService.loadCatalog();
   }
 
   // ─── VARIANT HELPERS ─────────────────────────────────────────────────────────
@@ -279,7 +318,7 @@ export class StoreInventoryComponent implements OnInit {
   // ─── INVENTORY ACTIONS ───────────────────────────────────────────────────────
 
   openAddModal(): void {
-    this.addInventoryForm.reset({ quantity: 1, reorderPoint: 10, reorderQuantity: 50 });
+    this.addInventoryForm.reset({ quantity: 1, reorderPoint: 5, reorderQuantity: 20 });
     this.selectedProductId = '';
     this.variantsForModal = [];
     this.showAddModal = true;
@@ -292,29 +331,53 @@ export class StoreInventoryComponent implements OnInit {
     this.addInventoryForm.reset();
   }
 
-  /** Al seleccionar un producto en el modal, carga sus variantes */
+  /**
+   * Al seleccionar un producto en el modal, filtra las variantes ya cargadas.
+   * No hace petición HTTP adicional — filtra sobre allCatalogVariants.
+   * Excluye las variantes que ya existen en el inventario de esta tienda.
+   * FlatCatalogVariant.product._id siempre disponible — acceso directo.
+   */
   onModalProductChange(productId: string): void {
     this.addInventoryForm.get('variantId')?.setValue('');
     this.variantsForModal = [];
     if (!productId) return;
-    this.isLoadingVariants = true;
-    this.variantsService.getVariantsByProduct(productId).subscribe({
-      next: (variants) => {
-        // Filtrar variantes ya presentes en inventario de esta tienda
-        const existingVariantIds = new Set(
-          this.inventory.map(item => typeof item.variantId === 'string' ? item.variantId : (item.variantId as ProductVariant)._id)
-        );
-        this.variantsForModal = variants.filter(v => !existingVariantIds.has(v._id));
-        this.isLoadingVariants = false;
-      },
-      error: () => { this.isLoadingVariants = false; }
-    });
+
+    const existingIds = new Set(
+      this.inventory.map(item =>
+        typeof item.variantId === 'string'
+          ? item.variantId
+          : (item.variantId as ProductVariant)._id
+      )
+    );
+
+    // product._id viene directo en FlatCatalogVariant
+    this.variantsForModal = this.allCatalogVariants.filter(v =>
+      v.product._id === productId && !existingIds.has(v._id)
+    );
+  }
+
+  /**
+   * Al seleccionar una card de variante, auto-rellena los precios:
+   *   - cost          = product.basePrice + priceAdjustment de la variante
+   *   - wholesalePrice = cost * 0.90 (precio al por mayor = costo −10%)
+   *
+   * FlatCatalogVariant garantiza que product.basePrice está disponible.
+   * @param variant FlatCatalogVariant seleccionada en el modal
+   */
+  onVariantSelected(variant: FlatCatalogVariant): void {
+    const basePrice  = variant.product.basePrice ?? 0;
+    const adjustment = variant.priceAdjustment ?? 0;
+
+    const cost         = parseFloat((basePrice + adjustment).toFixed(2));
+    const wholesalePrice = parseFloat((cost * 0.90).toFixed(2));
+
+    this.addInventoryForm.patchValue({ cost, wholesalePrice });
   }
 
   /** Etiqueta amigable para mostrar en el select de variantes */
   variantLabel(v: ProductVariant): string {
     const color = v.color ? `${v.color.name}` : '';
-    const size  = v.size  ? v.size.value : '';
+    const size = v.size ? v.size.value : '';
     const region = v.size?.region ? ` (${v.size.region})` : '';
     return [v.sku, color, size + region].filter(Boolean).join(' · ');
   }
@@ -322,14 +385,25 @@ export class StoreInventoryComponent implements OnInit {
   onAddInventory(): void {
     if (!this.addInventoryForm.valid) return;
     const fv = this.addInventoryForm.value;
+
+    // Construir location solo si se informó al menos un campo (.http L537-541)
+    const location = (fv.locationAisle || fv.locationShelf || fv.locationBin)
+      ? {
+          aisle: fv.locationAisle || undefined,
+          shelf: fv.locationShelf || undefined,
+          bin:   fv.locationBin   || undefined,
+        }
+      : undefined;
+
     this.storesService.createInventoryItem({
-      variantId: fv.variantId,
-      storeId: this.storeId,
-      quantity: fv.quantity,
-      reorderPoint: fv.reorderPoint || undefined,
-      reorderQuantity: fv.reorderQuantity || undefined,
-      cost: fv.cost || undefined,
-      wholesalePrice: fv.wholesalePrice || undefined
+      variantId:        fv.variantId,
+      storeId:          this.storeId,
+      quantity:         fv.quantity,
+      location,
+      reorderPoint:     fv.reorderPoint    || undefined,
+      reorderQuantity:  fv.reorderQuantity || undefined,
+      cost:             fv.cost            || undefined,
+      wholesalePrice:   fv.wholesalePrice  || undefined,
     }).subscribe({
       next: (created) => {
         this.inventory = [...this.inventory, created];
@@ -381,3 +455,4 @@ export class StoreInventoryComponent implements OnInit {
     this.router.navigate(['/business/stores']);
   }
 }
+

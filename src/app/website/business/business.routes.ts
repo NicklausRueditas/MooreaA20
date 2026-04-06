@@ -38,6 +38,14 @@ export const businessRoutes: Routes = [
     loadComponent: () => import('./pickup-scanner/pickup-scanner.component').then(m => m.PickupScannerComponent)
   },
   {
+    path: 'sellers',
+    loadComponent: () => import('./sellers/sellers.component').then(m => m.SellersComponent)
+  },
+  {
+    path: 'sellers/register',
+    loadComponent: () => import('./sellers/seller-register/seller-register.component').then(m => m.SellerRegisterComponent)
+  },
+  {
     path: '',
     redirectTo: 'products',
     pathMatch: 'full'

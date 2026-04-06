@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Product } from '../../../core/interfaces/product.interface';
 import { ProductsService } from '../../../core/services/catalog/products.service';
+import { SellersService } from '../../../core/services/catalog/sellers.service';
+import { AuthService }    from '../../../core/services/auth/auth.service';
 import { UpdateProductDto } from '../../../core/dtos/update-product.dto';
 import { ImageService } from '../../../core/services/utils/image.service';
 
@@ -47,30 +49,42 @@ export class ProductsComponent implements OnInit {
     totalBrands: 0
   };
 
+  /** true cuando el usuario autenticado tiene rol 'seller' (catálogo filtrado) */
+  isSeller = false;
+
   constructor(
     private productsService: ProductsService,
-    private imageService: ImageService
+    private sellersService:  SellersService,
+    private authService:     AuthService,
+    private imageService:    ImageService
   ) { }
 
   ngOnInit(): void {
+    this.isSeller = this.authService.hasRole('seller');
     this.loadProducts();
   }
 
   /**
-   * Load products with current filters and pagination
+   * Carga el catálogo según el rol del usuario autenticado.
+   * - Admin/Worker: GET /product/all  (todos los productos)
+   * - Seller:       GET /product/my-catalog  (solo los suyos)
    */
   private loadProducts(): void {
     this.isLoading = true;
-    this.productsService.getProducts(this.currentPage, this.itemsPerPage).subscribe({
+    const req$ = this.isSeller
+      ? this.sellersService.getMyCatalog(this.currentPage, this.itemsPerPage)
+      : this.productsService.getProducts(this.currentPage, this.itemsPerPage);
+
+    req$.subscribe({
       next: (result) => {
-        this.products = result.data;
+        this.products   = result.data;
         this.totalItems = result.total;
         this.applyFilters();
         this.calculateStats();
         this.isLoading = false;
       },
       error: (err) => {
-        console.error('Error loading products:', err);
+        console.error('Error cargando productos:', err);
         this.isLoading = false;
       },
     });
@@ -257,41 +271,46 @@ export class ProductsComponent implements OnInit {
    * @param id Product ID
    * @param hardDelete If true, permanently delete the product
    */
-  deleteProduct(id: string, hardDelete: boolean = false): void {
-    const confirmMessage = hardDelete
-      ? '¿Está seguro de que desea eliminar PERMANENTEMENTE este producto? Esta acción no se puede deshacer.'
-      : '¿Está seguro de que desea desactivar este producto?';
-
-    if (!confirm(confirmMessage)) {
-      return;
-    }
+  /** Elimina el producto permanentemente (hard delete). */
+  deleteProduct(id: string): void {
+    if (!confirm('¿Eliminar permanentemente este producto? Esta acción no se puede deshacer.')) return;
 
     const product = this.products.find(p => p._id === id);
 
-    // Delete images if hard delete
-    if (hardDelete && product?.gallery) {
+    // Eliminar imágenes de Cloudinary si existen
+    if (product?.gallery) {
       product.gallery.forEach(imageUrl => {
         const idLink = imageUrl.split('/').pop();
         if (idLink) {
           this.imageService.deleteImage(idLink).subscribe({
-            next: () => console.log('Image deleted:', imageUrl),
-            error: (err) => console.error('Error deleting image:', err),
+            next: () => console.log('Imagen eliminada:', imageUrl),
+            error: (err) => console.error('Error eliminando imagen:', err),
           });
         }
       });
     }
 
-    // Call appropriate delete method
-    const deleteObservable = hardDelete
-      ? this.productsService.hardDeleteProduct(id)
-      : this.productsService.deleteProduct(id);
+    this.productsService.deleteProduct(id).subscribe({
+      next: () => { this.loadProducts(); },
+      error: (err) => console.error('Error eliminando producto:', err),
+    });
+  }
 
-    deleteObservable.subscribe({
-      next: () => {
-        this.loadProducts(); // Reload to get updated list
-        console.log(`Product ${hardDelete ? 'permanently deleted' : 'deactivated'}:`, id);
+  /** Activa o desactiva el producto usando los endpoints dedicados. */
+  toggleProductActive(product: Product): void {
+    const activate = !product.isActive;
+    const req$ = activate
+      ? this.productsService.activateProduct(product._id)
+      : this.productsService.deactivateProduct(product._id);
+
+    req$.subscribe({
+      next: (updated) => {
+        const idx = this.products.findIndex(p => p._id === updated._id);
+        if (idx !== -1) this.products[idx] = updated;
+        this.applyFilters();
+        this.calculateStats();
       },
-      error: (err) => console.error('Error deleting product:', err),
+      error: (err) => console.error('Error cambiando estado del producto:', err),
     });
   }
 

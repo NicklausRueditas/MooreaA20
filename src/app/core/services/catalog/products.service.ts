@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, catchError, Observable, of, tap } from 'rxjs';
-import { Product, PaginatedResponse } from '../../interfaces/product.interface';
+import { BehaviorSubject, catchError, map, Observable, of, tap } from 'rxjs';
+import { Product, PaginatedResponse, CatalogsResponse } from '../../interfaces/product.interface';
 import { environment } from '../../../../environments/environment';
 import { UpdateProductDto } from '../../dtos/update-product.dto';
+
+/** Shape que devuelve POST /product (upsert por code) */
+interface UpsertProductResponse {
+  product: Product;
+  reactivated: boolean;
+}
 
 /**
  * Servicio para gestionar operaciones CRUD de productos maestros.
@@ -34,7 +40,7 @@ export class ProductsService {
 
   private catalogLoaded = false;
 
-  constructor(private readonly http: HttpClient) {}
+  constructor(private readonly http: HttpClient) { }
 
   // ─── CATÁLOGO PÚBLICO (CON CACHÉ) ─────────────────────────────────────────
 
@@ -69,21 +75,51 @@ export class ProductsService {
   // ─── CONSULTAS PAGINADAS (para backoffice con filtros server-side) ──────────
 
   /**
+   * [Admin] Obtiene todos los productos agrupados por catálogo.
+   * GET /product/all → { catalogs: [{owner, label, total, products}], total }
+   */
+  getAdminCatalog(): Observable<CatalogsResponse> {
+    return this.http.get<CatalogsResponse>(`${this.apiUrl}/all`).pipe(
+      catchError((err) => {
+        console.error('Error al obtener catálogo admin:', err);
+        return of({ catalogs: [], total: 0 });
+      })
+    );
+  }
+
+  /**
    * Obtiene todos los productos (incluidos inactivos) con paginación.
-   * Para uso exclusivo en el área de negocio/administración.
+   * ⚠️ El endpoint /all ahora devuelve CatalogsResponse — este método
+   * lo aplana a PaginatedResponse para compatibilidad con componentes existentes.
    */
   getProducts(
     page = 1,
     limit = 12,
     filters?: { category?: string; minPrice?: number; maxPrice?: number }
   ): Observable<PaginatedResponse> {
-    let url = `${this.apiUrl}/all?page=${page}&limit=${limit}`;
+    // Para filtros → usar /active con query params
+    let url = `${this.apiUrl}/active?page=${page}&limit=${limit}`;
     if (filters?.category) url += `&category=${filters.category}`;
     if (filters?.minPrice != null) url += `&minPrice=${filters.minPrice}`;
     if (filters?.maxPrice != null) url += `&maxPrice=${filters.maxPrice}`;
     return this.http.get<PaginatedResponse>(url).pipe(
       catchError((err) => {
         console.error('Error al obtener productos:', err);
+        return of({ data: [], total: 0, page: 1, limit });
+      })
+    );
+  }
+
+  /**
+   * [Seller] Catálogo privado del seller autenticado.
+   * GET /product/my-catalog
+   */
+  getMyCatalog(page = 1, limit = 12): Observable<PaginatedResponse> {
+    return this.http.get<PaginatedResponse>(
+      `${this.apiUrl}/my-catalog?page=${page}&limit=${limit}`
+    ).pipe(
+      catchError((err) => {
+        console.error('Error al obtener mi catálogo:', err);
         return of({ data: [], total: 0, page: 1, limit });
       })
     );
@@ -144,9 +180,13 @@ export class ProductsService {
 
   // ─── CRUD (backoffice) ─────────────────────────────────────────────────────
 
+  /** Crea/reactiva un producto (upsert por code).
+   *  El backend devuelve { product, reactivated } → extraemos solo product.
+   */
   createProduct(product: Partial<Product>): Observable<Product> {
-    return this.http.post<Product>(`${this.apiUrl}`, product).pipe(
-      tap(() => this.resetCatalog()) // invalidar caché al crear
+    return this.http.post<UpsertProductResponse>(`${this.apiUrl}`, product).pipe(
+      tap(() => this.resetCatalog()),
+      map(res => res.product),
     );
   }
 
@@ -155,20 +195,30 @@ export class ProductsService {
     return this.createProduct(product);
   }
 
+  /** Actualiza datos del producto (sin code ni isActive). */
   updateProduct(productId: string, updateData: UpdateProductDto): Observable<Product> {
     return this.http.patch<Product>(`${this.apiUrl}/${productId}`, updateData).pipe(
-      tap(() => this.resetCatalog()) // invalidar caché al editar
-    );
-  }
-
-  deleteProduct(productId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${productId}`).pipe(
       tap(() => this.resetCatalog())
     );
   }
 
-  hardDeleteProduct(productId: string): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${productId}/hard`).pipe(
+  /** Activa el producto → PATCH /:id/activate */
+  activateProduct(productId: string): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${productId}/activate`, {}).pipe(
+      tap(() => this.resetCatalog())
+    );
+  }
+
+  /** Desactiva el producto → PATCH /:id/deactivate */
+  deactivateProduct(productId: string): Observable<Product> {
+    return this.http.patch<Product>(`${this.apiUrl}/${productId}/deactivate`, {}).pipe(
+      tap(() => this.resetCatalog())
+    );
+  }
+
+  /** Elimina el producto permanentemente (hard delete) → DELETE /:id */
+  deleteProduct(productId: string): Observable<any> {
+    return this.http.delete(`${this.apiUrl}/${productId}`).pipe(
       tap(() => this.resetCatalog())
     );
   }

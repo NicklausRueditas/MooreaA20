@@ -59,26 +59,27 @@ export class StoresComponent implements OnInit {
     }
 
     /**
-     * Apply search and status filters
+     * Aplica filtros de búsqueda y estado sobre la lista de tiendas.
+     * Accede a los campos anidados del nuevo schema: location.address, contact.phone/email
      */
     applyFilters(): void {
         let filtered = [...this.stores];
 
-        // Status filter
         if (this.statusFilter === 'active') {
             filtered = filtered.filter(s => s.isActive);
         } else if (this.statusFilter === 'inactive') {
             filtered = filtered.filter(s => !s.isActive);
         }
 
-        // Search filter
         if (this.searchTerm) {
             const term = this.searchTerm.toLowerCase();
             filtered = filtered.filter(s =>
                 s.name.toLowerCase().includes(term) ||
-                s.address.toLowerCase().includes(term) ||
-                s.phone.includes(term) ||
-                s.email.toLowerCase().includes(term)
+                s.location?.address?.toLowerCase().includes(term) ||
+                s.location?.city?.toLowerCase().includes(term) ||
+                s.contact?.phone?.includes(term) ||
+                s.contact?.email?.toLowerCase().includes(term) ||
+                s.code?.toLowerCase().includes(term)
             );
         }
 
@@ -121,7 +122,8 @@ export class StoresComponent implements OnInit {
     }
 
     /**
-     * Toggle store active status
+     * Activa o desactiva una tienda.
+     * Solo envía isActive al PATCH — el resto del objeto no se modifica.
      */
     toggleStoreStatus(store: Store): void {
         const newStatus = !store.isActive;
@@ -129,9 +131,8 @@ export class StoresComponent implements OnInit {
             next: () => {
                 store.isActive = newStatus;
                 this.applyFilters();
-                console.log(`✅ Store ${newStatus ? 'activated' : 'deactivated'}`);
             },
-            error: (err) => console.error('Error updating store status:', err)
+            error: (err) => console.error('Error actualizando estado:', err)
         });
     }
 

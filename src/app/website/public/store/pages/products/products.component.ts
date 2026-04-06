@@ -2,7 +2,7 @@ import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink } from '@angular/router';
 import { take } from 'rxjs';
-import { Product } from '../../../../../core/interfaces/product.interface';
+import { Product, ThumbnailEntry } from '../../../../../core/interfaces/product.interface';
 import { ProductVariant } from '../../../../../core/interfaces/store.interface';
 import { ProductVariantsService } from '../../../../../core/services/catalog/product-variants.service';
 import { BasketService } from '../../../../../core/services/commerce/basket.service';
@@ -25,6 +25,8 @@ export class ProductsComponent {
   modalVariants: ProductVariant[] = [];
   modalLoading = false;
   modalAddingToCart = false;
+  /** URL de la imagen principal seleccionada en la galería del modal */
+  modalMainImage = '';
 
   selectedColorCode = '';
   selectedSizeValue = '';
@@ -36,7 +38,25 @@ export class ProductsComponent {
     private basketService: BasketService,
     private toastService: ToastService,
     private authService: AuthService,
-  ) {}
+  ) { }
+
+  // ─── IMAGEN DE CARD ───────────────────────────────────────────────────────────
+
+  /**
+   * Devuelve la URL de imagen a mostrar en la card del producto.
+   * Prioridad:
+   *   1. thumbnailGallery[0].image — primera entrada del campo calculado por el backend
+   *      (shape: ThumbnailEntry { colorCode, colorName, colorHex, image })
+   *   2. product.gallery[0]  — fallback para endpoints que no incluyen thumbnailGallery
+   *   3. placeholder SVG
+   * @param product Producto a mostrar
+   */
+  getCardImage(product: Product): string {
+    // thumbnailGallery ahora es ThumbnailEntry[] — extraer .image
+    const tg = product.thumbnailGallery;
+    if (tg && tg.length > 0) return tg[0].image;
+    return product.gallery?.[0] || 'assets/images/placeholder.svg';
+  }
 
   // ─── TRIGGER MODAL ───────────────────────────────────────────────────────────
 
@@ -48,9 +68,10 @@ export class ProductsComponent {
     this.selectedSizeValue = '';
     this.selectedVariant = null;
 
-    this.variantsService.getVariantsByProduct(product._id).pipe(take(1)).subscribe({
-      next: (variants) => {
-        const active = variants.filter(v => v.isActive !== false);
+    // Usar el endpoint dedicado a variantes activas (/product-variants/product/:id/active)
+    // para evitar filtrado manual en el frontend y respetar el contrato del backend.
+    this.variantsService.getActiveVariantsByProduct(product._id).pipe(take(1)).subscribe({
+      next: (active) => {
         this.modalVariants = active;
         this.modalLoading = false;
 
@@ -61,7 +82,6 @@ export class ProductsComponent {
           return;
         }
 
-        // Si todos tienen el mismo color Y misma talla (sin diferencias) → agregar directamente
         if (active.length === 0) {
           this.modalProduct = null;
           this.toastService.showError('Este producto no tiene variantes disponibles');
@@ -80,7 +100,6 @@ export class ProductsComponent {
         if (sizes.length === 1) {
           this.selectedSizeValue = sizes[0].value;
           this.resolveVariant();
-          // Si ya se resolvió, verificar si podemos agregar automáticamente
           if (this.selectedVariant && uniqueColors.length === 1) {
             this.modalProduct = null;
             this.addVariantToCart(this.selectedVariant, product);
@@ -95,17 +114,26 @@ export class ProductsComponent {
   }
 
   closeModal(): void {
-    this.modalProduct = null;
-    this.modalVariants = [];
+    this.modalProduct    = null;
+    this.modalVariants   = [];
     this.selectedColorCode = '';
     this.selectedSizeValue = '';
     this.selectedVariant = null;
+    this.modalMainImage  = ''; // reset imagen de galería del modal
   }
 
   // ─── SELECTION ───────────────────────────────────────────────────────────────
 
   selectColor(code: string): void {
     this.selectedColorCode = this.selectedColorCode === code ? '' : code;
+
+    // Saltar a la primera imagen de la variante con ese color
+    if (this.selectedColorCode) {
+      const variant = this.modalVariants.find(v => v.color?.code === this.selectedColorCode);
+      const firstImg = variant?.gallery?.[0] ?? '';
+      this.modalMainImage = firstImg;
+    }
+
     // Resetear talla si no es válida para el nuevo color
     if (this.selectedSizeValue) {
       const available = this.getAvailableSizes(this.modalVariants, this.selectedColorCode);
@@ -124,7 +152,7 @@ export class ProductsComponent {
   private resolveVariant(): void {
     this.selectedVariant = this.modalVariants.find(v => {
       const colorMatch = !this.selectedColorCode || v.color?.code === this.selectedColorCode;
-      const sizeMatch  = !this.selectedSizeValue  || v.size?.value  === this.selectedSizeValue;
+      const sizeMatch = !this.selectedSizeValue || v.size?.value === this.selectedSizeValue;
       return colorMatch && sizeMatch;
     }) ?? null;
   }
@@ -161,8 +189,55 @@ export class ProductsComponent {
       }
     });
   }
-
   // ─── COMPUTED HELPERS ────────────────────────────────────────────────────────
+
+  /**
+   * Recolecta TODAS las imágenes de las variantes cargadas en el modal (modalVariants).
+   * Si aún no se cargaron variantes, usa thumbnailGallery o gallery del maestro como fallback.
+   * Las URLs duplicadas se eliminan para evitar repeticiones.
+   * @returns Array de URLs únicas en orden de aparición
+   */
+  getModalGallery(): string[] {
+    // Con variantes cargadas → concatenar gallery de cada variante (deduplicado)
+    if (this.modalVariants.length > 0) {
+      const seen = new Set<string>();
+      const imgs: string[] = [];
+      for (const v of this.modalVariants) {
+        for (const url of (v.gallery ?? [])) {
+          if (!seen.has(url)) { seen.add(url); imgs.push(url); }
+        }
+      }
+      if (imgs.length > 0) return imgs;
+    }
+    // Fallback antes de que carguen las variantes
+    if (!this.modalProduct) return [];
+    const tg = this.modalProduct.thumbnailGallery;
+    // thumbnailGallery ahora es ThumbnailEntry[] — mapear a URLs
+    if (tg && tg.length > 0) return (tg as ThumbnailEntry[]).map(t => t.image);
+    return this.modalProduct.gallery ?? [];
+  }
+
+  /**
+   * Navega a la imagen siguiente en la galería del modal.
+   * Cicla de forma circular al llegar al final.
+   */
+  nextImage(): void {
+    const gallery = this.getModalGallery();
+    if (gallery.length <= 1) return;
+    const idx = gallery.indexOf(this.modalMainImage || gallery[0]);
+    this.modalMainImage = gallery[(idx + 1) % gallery.length];
+  }
+
+  /**
+   * Navega a la imagen anterior en la galería del modal.
+   * Cicla de forma circular al llegar al inicio.
+   */
+  prevImage(): void {
+    const gallery = this.getModalGallery();
+    if (gallery.length <= 1) return;
+    const idx = gallery.indexOf(this.modalMainImage || gallery[0]);
+    this.modalMainImage = gallery[(idx - 1 + gallery.length) % gallery.length];
+  }
 
   getUniqueColors(variants: ProductVariant[]): { name: string; hex: string; code: string }[] {
     const seen = new Set<string>();
@@ -209,9 +284,9 @@ export class ProductsComponent {
   get canConfirmAdd(): boolean {
     if (!this.modalVariants.length) return false;
     const hasColors = this.getUniqueColors(this.modalVariants).length > 0;
-    const hasSizes  = this.getAvailableSizes(this.modalVariants, this.selectedColorCode).length > 0;
+    const hasSizes = this.getAvailableSizes(this.modalVariants, this.selectedColorCode).length > 0;
     if (hasColors && !this.selectedColorCode) return false;
-    if (hasSizes  && !this.selectedSizeValue)  return false;
+    if (hasSizes && !this.selectedSizeValue) return false;
     return !!this.selectedVariant;
   }
 

@@ -1,8 +1,14 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of, tap } from 'rxjs';
-import { catchError, filter, take } from 'rxjs/operators';
+import { catchError, filter, map, take } from 'rxjs/operators';
 import { ProductVariant } from '../../interfaces/store.interface';
+
+/** Shape exacta que devuelve el backend al crear/reactivar una variante */
+interface UpsertVariantResponse {
+  variant:     ProductVariant;
+  reactivated: boolean;
+}
 import {
   VariantSizeType,
   WeightUnit,
@@ -30,10 +36,58 @@ export interface CreateVariantDto {
   };
   gallery?: string[];
   priceAdjustment?: number;
-  isActive?: boolean;
 }
 
-export type UpdateVariantDto = Partial<Omit<CreateVariantDto, 'productId'>>;
+/**
+ * Campos que acepta PATCH /product-variants/:id.
+ * NO incluye: productId, sku ni isActive (tienen endpoints propios).
+ */
+export type UpdateVariantDto = Partial<Pick<CreateVariantDto, 'color' | 'size' | 'dimensions' | 'gallery' | 'priceAdjustment'>>;
+
+// ─── Respuesta del endpoint /by-catalog y /my-catalog (grupo por producto) ───────
+// Shape actualizado: el backend retorna arreglo de { product, variants[] } en lugar
+// de un array plano con productId populado.
+// api-requests.http L300-306
+
+/**
+ * Datos del producto maestro tal como viene en cada grupo de /by-catalog.
+ * Incluye basePrice para poder calcular el costo en el modal de inventario.
+ */
+export interface CatalogProduct {
+  _id:       string;
+  code:      string;
+  name:      string;
+  brand:     string;
+  model?:    string;
+  basePrice: number;    // precio base — fuente de verdad para el costo
+  gallery?:  string[];
+}
+
+/** Un grupo en la respuesta de /by-catalog: un producto y sus variantes */
+export interface CatalogVariantGroup {
+  product:  CatalogProduct;
+  variants: ProductVariant[];
+}
+
+/**
+ * Variante aplanada con el producto adjunto — construida en el componente.
+ * Permite acceder a product.basePrice directamente desde la variante.
+ */
+export interface FlatCatalogVariant extends ProductVariant {
+  /** Referencia al producto maestro, con basePrice incluido */
+  product: CatalogProduct;
+}
+
+/** @deprecated Usar FlatCatalogVariant + CatalogVariantGroup */
+export interface CatalogVariant extends ProductVariant {
+  productId: CatalogProduct;
+}
+
+/** Respuesta de PATCH /bulk-status */
+export interface BulkStatusResponse {
+  updated: number;
+  ids: string[];
+}
 
 // ──────────────────────────────────────────────────────────────────────────────
 
@@ -77,23 +131,90 @@ export class ProductVariantsService {
     return this.http.get<{ finalPrice: number }>(`${this.apiUrl}/${variantId}/price`);
   }
 
+  /**
+   * [Público] Solo variantes ACTIVAS de un producto.
+   * GET /product-variants/product/:id/active
+   * Usado en la tienda pública y el modal de compra rápida.
+   */
+  getActiveVariantsByProduct(productId: string): Observable<ProductVariant[]> {
+    return this.http
+      .get<ProductVariant[]>(`${this.apiUrl}/product/${productId}/active`)
+      .pipe(catchError(() => of([])));
+  }
+
+  /**
+   * [Seller] Variantes activas del catálogo propio (con product embebido).
+   * GET /product-variants/my-catalog
+   * Útil para el selector de variantes al crear inventario desde el panel del seller.
+   */
+  getMyCatalogVariants(): Observable<ProductVariant[]> {
+    return this.http
+      .get<ProductVariant[]>(`${this.apiUrl}/my-catalog`)
+      .pipe(catchError(() => of([])));
+  }
+
+  /**
+   * [Admin] Variantes activas de un catálogo específico, agrupadas por producto.
+   * GET /product-variants/by-catalog?ownerId=moorea  → catálogo Moorea
+   * GET /product-variants/by-catalog?ownerId=<id>    → catálogo del seller
+   *
+   * Response shape (actualizado): Array de { product, variants[] }
+   *   product  → { _id, code, name, brand, model, basePrice }
+   *   variants → ProductVariant[] (sin productId populado — usar product._id)
+   * Ref: api-requests.http L300-306
+   *
+   * @param ownerId 'moorea' para el catálogo oficial, o un sellerId
+   * @returns Observable<CatalogVariantGroup[]> agrupado por producto
+   */
+  getVariantsByCatalog(ownerId: 'moorea' | string): Observable<CatalogVariantGroup[]> {
+    return this.http
+      .get<CatalogVariantGroup[]>(`${this.apiUrl}/by-catalog?ownerId=${ownerId}`)
+      .pipe(catchError(() => of([])));
+  }
+
   // ─── ESCRITURA ────────────────────────────────────────────────────────────
 
-  /** Crea una variante e invalida el caché del producto. */
+  /** Crea una variante e invalida el caché del producto.
+   *  El backend devuelve { variant, reactivated } → extraemos solo variant.
+   */
   createVariant(dto: CreateVariantDto): Observable<ProductVariant> {
-    return this.http.post<ProductVariant>(this.apiUrl, dto).pipe(
+    return this.http.post<UpsertVariantResponse>(this.apiUrl, dto).pipe(
       tap(() => this.invalidateProduct(dto.productId)),
+      map(res => res.variant),
     );
   }
 
-  /** Actualiza una variante e invalida el caché. */
+  /** Actualiza datos de una variante (color, talla, dimensiones, gallery, priceAdjustment).
+   *  ⚠️ NO enviar isActive aquí — usar activateVariant() / deactivateVariant().
+   */
   updateVariant(variantId: string, productId: string, dto: UpdateVariantDto): Observable<ProductVariant> {
     return this.http.patch<ProductVariant>(`${this.apiUrl}/${variantId}`, dto).pipe(
       tap(() => this.invalidateProduct(productId)),
     );
   }
 
-  /** Elimina una variante (soft delete) e invalida el caché. */
+  /** Activa una variante → PATCH /:id/activate */
+  activateVariant(variantId: string, productId: string): Observable<ProductVariant> {
+    return this.http.patch<ProductVariant>(`${this.apiUrl}/${variantId}/activate`, {}).pipe(
+      tap(() => this.invalidateProduct(productId)),
+    );
+  }
+
+  /** Desactiva una variante → PATCH /:id/deactivate */
+  deactivateVariant(variantId: string, productId: string): Observable<ProductVariant> {
+    return this.http.patch<ProductVariant>(`${this.apiUrl}/${variantId}/deactivate`, {}).pipe(
+      tap(() => this.invalidateProduct(productId)),
+    );
+  }
+
+  /** Activa o desactiva varias variantes de golpe → PATCH /bulk-status */
+  bulkStatus(ids: string[], isActive: boolean, productId: string): Observable<BulkStatusResponse> {
+    return this.http.patch<BulkStatusResponse>(`${this.apiUrl}/bulk-status`, { ids, isActive }).pipe(
+      tap(() => this.invalidateProduct(productId)),
+    );
+  }
+
+  /** Elimina una variante permanentemente (hard delete) → DELETE /:id */
   deleteVariant(variantId: string, productId: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.apiUrl}/${variantId}`).pipe(
       tap(() => this.invalidateProduct(productId)),

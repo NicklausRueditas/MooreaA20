@@ -5,7 +5,7 @@
 ###############################################################################
 
 @baseUrl = http://localhost:3000
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWE3MjVmMmM3OWY2NmJjMzVmZTQ0OTUiLCJlbWFpbCI6Im5pY2swNDd0dUBnbWFpbC5jb20iLCJyb2xlcyI6WyJ1c2VyIl0sImRpc3BsYXlOYW1lIjoiTmlja2zDoXVzIE9BIiwiaWF0IjoxNzcyNTc3MjYzLCJleHAiOjE3NzI2NjM2NjMsImF1ZCI6InRpZW5kYS12aXJ0dWFsLWFwcCIsImlzcyI6InRpZW5kYS12aXJ0dWFsLWFwaSJ9.nhFIDYCNpz_AL0Sj7QCBKjTjudEkYy0_oYj4nFJ0Bo0
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI2OWI0Mjg5ZWU0NDZiYzExYjE5YmJhZTEiLCJlbWFpbCI6Im5pY2swNDd0dUBnbWFpbC5jb20iLCJyb2xlcyI6WyJhZG1pbiJdLCJkaXNwbGF5TmFtZSI6Ik5pY2tsw6F1cyBPQSIsImlhdCI6MTc3NTQzNjM4NiwiZXhwIjoxNzc1NTIyNzg2LCJhdWQiOiJtb29yZWEtYXBwIiwiaXNzIjoibW9vcmVhLWFwaSJ9.7r6BRSzSoF2qarRgmjlnxpU1meZPhkAekJ0YHlWHfdw
 eyJhbGciOiJIUz
 ###############################################################################
 # 🔐 AUTENTICACIÓN (AUTH)
@@ -72,79 +72,134 @@ Authorization: Bearer {{token}}
 
 
 ###############################################################################
-# 👥 GESTIÓN DE USUARIOS (MANAGE - Solo Admin)
+# 👥 GESTIÓN DE USUARIOS (MANAGE — Solo Admin)
+# ──────────────────────────────────────────────────────────────────────────────
+# TODOS los endpoints requieren: Authorization: Bearer {{token}} (rol admin)
+#
+# REGLA DE ROLES:
+#   - Registro público (/auth/register)  → siempre asigna rol ['user']
+#   - POST /manage/user/create (admin)   → puede asignar cualquier rol al crear
+#   - PATCH /manage/user/:id/roles       → ÚNICO endpoint para cambiar roles
+#   - PATCH /manage/user/:id             → solo datos de perfil, NO acepta roles
 ###############################################################################
 
-### 1. Crear Usuario
+### 1. [Admin] Crear Usuario con rol específico
+# ⭐ Requiere token de admin — a diferencia de /auth/register, permite asignar rol
 POST {{baseUrl}}/manage/user/create
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "email": "nuevo@ejemplo.com",
+  "email": "seller01@ejemplo.com",
   "password": "Password123!",
-  "displayName": "Nuevo Usuario",
+  "displayName": "Tienda Ejemplo",
   "phone": "+51987654321",
   "dni": "12345678",
-  "roles": ["user"]
+  "roles": ["seller"]
 }
 
-### 2. Listar Todos los Usuarios Activos (Admin)
+### 2. [Admin] Listar Todos los Usuarios Activos
 GET {{baseUrl}}/manage/users
 Authorization: Bearer {{token}}
 
-### 3. Obtener Usuario por ID (Admin)
+### 3. [Admin] Obtener Usuario por ID
 GET {{baseUrl}}/manage/user/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 
-### 4. Actualizar Usuario (Admin)
+### 4. [Admin] Actualizar Datos de Perfil (sin roles)
+# ⚠️ Este endpoint NO acepta el campo "roles" — usa el endpoint de abajo para eso
 PATCH {{baseUrl}}/manage/user/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "displayName": "Nombre Actualizado",
-  "phone": "+51999888777",
-  "roles": ["user", "worker"]
+  "phone": "+51999888777"
 }
 
-### 5. Desactivar Usuario (Soft Delete - Admin)
+### 5. [Admin] Asignar Roles a un Usuario — ÚNICO canal para cambiar roles
+# Reemplaza TODOS los roles del usuario con el array enviado.
+# Casos de uso:
+#   Promover a admin:       { "roles": ["admin"] }
+#   Promover a seller:      { "roles": ["seller"] }
+#   Revocar a user normal:  { "roles": ["user"] }
+#   Multi-rol:              { "roles": ["seller", "affiliate"] }
+PATCH {{baseUrl}}/manage/user/67890abcdef1234567890abc/roles
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "roles": ["seller"]
+}
+
+### 6. [Admin] Desactivar Usuario (Soft Delete)
 PATCH {{baseUrl}}/manage/user/67890abcdef1234567890abc/deactivate
 Authorization: Bearer {{token}}
 
-### 6. Eliminar Usuario Permanentemente (Admin)
+### 7. [Admin] Eliminar Usuario Permanentemente — Irreversible
 DELETE {{baseUrl}}/manage/user/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 
 
-###############################################################################
-# 📦 PRODUCTOS MAESTROS (PRODUCTS)
+###############################################################################################################################################
+# 📦 PRODUCTOS — CATÁLOGOS INDEPENDIENTES
+# ───────────────────────────────────────────────────────────────────────────────
+# ARQUITECTURA DE CATÁLOGOS:
+#   ownerId = null     → Catálogo oficial de Moorea (crea solo admin)
+#   ownerId = sellerId → Catálogo privado del seller (crea solo el seller)
+#
+#   GET  /product/active      → Catálogo maestro público (incluye thumbnailUrl calculado)
+#   GET  /product/my-catalog  → Catálogo privado del seller autenticado
+#   GET  /product/all         → [Admin] Todos los productos activos + inactivos
+#   POST /product             → Admin → ownerId=null | Seller → ownerId=su ID
+#   PATCH/:id                 → Solo el dueño del producto o admin
+#   DELETE/:id                → Solo el dueño del producto o admin
 ###############################################################################
 
-### 1. Obtener Todos los Productos (Paginado, incluye inactivos)
-GET {{baseUrl}}/product/all?page=1&limit=12
-
-### 2. Obtener Solo Productos Activos (Paginado)
+### 1. Catálogo Maestro Público (todos los activos, sin auth)
+# ✅ Campo embebido calculado (sin peticiones extra):
+#    · thumbnailGallery → [{ colorCode, colorName, colorHex, image }]
+#      1 entrada por color único — incluye info completa de color + primera imagen
 GET {{baseUrl}}/product/active?page=1&limit=12
 
-### 3. Buscar Productos por Tags
-GET {{baseUrl}}/product/search?tags=laptop,gaming
+### 2. [Admin] Todos los productos agrupados por catálogo (activos + inactivos)
+# ✅ Response shape:
+#    { catalogs: [{ owner, label, total, products: [...] }], total }
+#    · owner = null      → catálogo oficial Moorea (aparece primero)
+#    · owner = <id>      → catálogo del seller
+# ✅ Cada producto incluye thumbnailGallery y availableColors embebidos (igual que /active)
+GET {{baseUrl}}/product/all
+Authorization: Bearer {{token}}
 
-### 4. Obtener Productos por Categoría
-GET {{baseUrl}}/product/category/Electrónica
+### 3. Mi Catálogo Privado (seller autenticado ve solo sus propios productos)
+GET {{baseUrl}}/product/my-catalog?page=1&limit=12
+Authorization: Bearer {{token}}
 
-### 5. Obtener Productos por IDs
+### 4. Buscar Productos por Tags
+GET {{baseUrl}}/product/search?tags=zapatilla,casual
+
+### 5. Obtener Productos por Categoría
+GET {{baseUrl}}/product/category/Calzado
+
+### 6. Obtener Productos por IDs
 GET {{baseUrl}}/product/byIds?ids=67890abc,12345def
 
-### 6. Obtener Producto por ID
+### 7. Obtener Producto por ID
 GET {{baseUrl}}/product/67890abcdef1234567890abc
 
-### 7. Obtener Producto por Código
+### 8. Obtener Producto por Código
 GET {{baseUrl}}/product/code/BASH-DALLAS
 
-### 8. Buscar Productos por Rango de Precio
+### 9. Buscar Productos por Rango de Precio
 GET {{baseUrl}}/product/price-range?minPrice=100&maxPrice=500
 
-### 9. Crear Producto Maestro
+### 10. Crear Producto en Mi Catálogo
+# Admin → producto del catálogo de Moorea (ownerId=null automático)
+# Seller → producto del catálogo propio (ownerId=su ID automático)
+# Comportamiento upsert:
+#   code nuevo           → Crea el producto        (reactivated: false)
+#   code existe INACTIVO → Reactiva + actualiza    (reactivated: true)
+#   code existe ACTIVO   → Error 400 Conflict
 POST {{baseUrl}}/product
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -157,21 +212,24 @@ Content-Type: application/json
   "description": "Zapatilla urbana de alta calidad",
   "specifications": {
     "material": "Cuero sintético",
-    "suela": "Goma antideslizante",
-    "tipo": "Casual"
+    "suela": "Goma antideslizante"
   },
   "basePrice": 199.99,
-  "category": ["Calzado", "Zapatillas", "Urbano"],
+  "category": ["Calzado", "Zapatillas"],
   "discount": 0,
   "isActive": true,
-  "tags": ["zapatilla", "urbano", "casual", "bash"],
+  "tags": ["zapatilla", "urbano", "casual"],
   "gallery": [
-    "https://res.cloudinary.com/ejemplo/image/upload/v1/lifestyle-1.jpg",
-    "https://res.cloudinary.com/ejemplo/image/upload/v1/size-chart.jpg"
-  ]
+  ],
+  "warranty": {
+    "duration": 12,
+    "unit": "months",
+    "type": "manufacturer",
+    "description": "Cubre defectos de fábrica"
+  }
 }
 
-### 10. Actualizar Producto Maestro
+### 11. Actualizar Producto (solo el dueño o admin)
 PATCH {{baseUrl}}/product/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -179,24 +237,35 @@ Content-Type: application/json
 {
   "basePrice": 179.99,
   "discount": 10,
-  "tags": ["zapatilla", "oferta", "urbano"],
-  "gallery": [
-    "https://res.cloudinary.com/ejemplo/image/upload/v1/lifestyle-1.jpg",
-    "https://res.cloudinary.com/ejemplo/image/upload/v1/size-chart.jpg"
-  ]
+  "tags": ["zapatilla", "oferta"]
 }
 
-### 11. Eliminar Producto (Soft Delete - marca como inactivo)
-DELETE {{baseUrl}}/product/67890abcdef1234567890abc
+### 12. Activar Producto (solo el dueño o admin)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc/activate
 Authorization: Bearer {{token}}
 
-### 12. Eliminar Producto Permanentemente (Hard Delete - solo admin)
-DELETE {{baseUrl}}/product/67890abcdef1234567890abc/hard
+### 13. Desactivar Producto (solo el dueño o admin)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc/deactivate
+Authorization: Bearer {{token}}
+
+### 14. Eliminar Producto Permanentemente (solo el dueño o admin)
+DELETE {{baseUrl}}/product/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 
 
 ###############################################################################
 # 👟 VARIANTES DE PRODUCTOS (PRODUCT VARIANTS)
+# ──────────────────────────────────────────────────────────────────────────────
+# CONTROL DE ACCESO POR OWNERSHIP TRANSITIVO (sin ownerId en variante):
+#   variante.productId → product.ownerId === callerId
+#
+#   GET  (todos)            → público, sin auth
+#   POST                    → admin o seller dueño del producto padre
+#   PATCH /:id              → admin o seller dueño del producto padre
+#   PATCH /:id/activate     → admin o seller dueño del producto padre
+#   PATCH /:id/deactivate   → admin o seller dueño del producto padre
+#   PATCH /bulk-status      → solo admin (operación masiva)
+#   DELETE /:id             → admin o seller dueño del producto padre
 ###############################################################################
 
 ### 1. Obtener Todas las Variantes (Paginado)
@@ -205,13 +274,16 @@ GET {{baseUrl}}/product-variants?page=1&limit=12
 ### 2. Buscar Variante por SKU
 GET {{baseUrl}}/product-variants/sku/BASH-DALLAS-WHT-36
 
-### 3. Obtener Variantes de un Producto
-GET {{baseUrl}}/product-variants/product/67890abcdef1234567890abc
+### 3. Variantes de un Producto (activas e inactivas)
+GET {{baseUrl}}/product-variants/product/69b89f2a45a2ef632887b958
 
-### 4. Buscar Variantes por Color
-GET {{baseUrl}}/product-variants/color/WHT
+### 3b. Solo Variantes Activas de un Producto — Tienda Pública
+GET {{baseUrl}}/product-variants/product/67890abcdef1234567890abc/active
 
-### 5. Buscar Variantes por Talla
+### 4. Buscar Variantes por Color (solo activas)
+GET {{baseUrl}}/product-variants/color/BLU
+
+### 5. Buscar Variantes por Talla (solo activas)
 GET {{baseUrl}}/product-variants/size/36
 
 ### 6. Obtener Variante por ID
@@ -220,7 +292,25 @@ GET {{baseUrl}}/product-variants/67890abcdef1234567890abc
 ### 7. Calcular Precio Final de Variante
 GET {{baseUrl}}/product-variants/67890abcdef1234567890abc/price
 
-### 8. Crear Variante de Producto
+### 8. [Seller] Variantes activas de MI catálogo (con code, name, brand embebidos)
+# Útil para: selector de variantes al crear inventario desde el panel del seller
+GET {{baseUrl}}/product-variants/my-catalog
+Authorization: Bearer {{token}}
+
+### 8b. [Admin] Variantes activas del catálogo Moorea (ownerId=null)
+GET {{baseUrl}}/product-variants/by-catalog?ownerId=moorea
+Authorization: Bearer {{token}}
+
+### 8c. [Admin] Variantes activas del catálogo de un seller específico
+GET {{baseUrl}}/product-variants/by-catalog?ownerId=69b4289ee446bc11b19bbae1
+Authorization: Bearer {{token}}
+
+### 8. Crear Variante (solo si eres dueño del producto padre o admin)
+# Comportamiento upsert:
+#   SKU nuevo           → Crea la variante        (reactivated: false)
+#   SKU existe INACTIVO → Reactiva + actualiza    (reactivated: true)
+#   SKU existe ACTIVO   → Error 400 Conflict
+#   productId ajeno     → Error 403 Forbidden
 POST {{baseUrl}}/product-variants
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -248,41 +338,169 @@ Content-Type: application/json
     "height": 8
   },
   "gallery": [
-    "https://ejemplo.com/bash-dallas-white-1.jpg",
-    "https://ejemplo.com/bash-dallas-white-2.jpg"
+    "https://ejemplo.com/bash-dallas-white-1.jpg"
   ],
   "priceAdjustment": 0,
   "isActive": true
 }
 
-### 9. Actualizar Variante
+### 9. Actualizar Variante (solo el dueño del producto padre o admin)
+# No acepta: productId, sku, isActive (tienen endpoints propios)
 PATCH {{baseUrl}}/product-variants/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "priceAdjustment": 10,
-  "gallery": [
-    "https://ejemplo.com/nueva-imagen-1.jpg",
-    "https://ejemplo.com/nueva-imagen-2.jpg"
-  ]
+  "color": {
+    "name": "Negro",
+    "hex": "#000000",
+    "code": "BLK"
+  }
 }
 
-### 10. Eliminar Variante (Soft Delete)
+### 10. Activar Variante (solo el dueño del producto padre o admin)
+PATCH {{baseUrl}}/product-variants/67890abcdef1234567890abc/activate
+Authorization: Bearer {{token}}
+
+### 11. Desactivar Variante (solo el dueño del producto padre o admin)
+PATCH {{baseUrl}}/product-variants/67890abcdef1234567890abc/deactivate
+Authorization: Bearer {{token}}
+
+### 12. Cambio Masivo de Estado — Solo Admin
+# Activa o desactiva varias variantes sin verificación de ownership individual
+PATCH {{baseUrl}}/product-variants/bulk-status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "ids": [
+    "507f1f77bcf86cd799439011",
+    "507f1f77bcf86cd799439012"
+  ],
+  "isActive": false
+}
+
+### 13. Eliminar Variante Permanentemente (solo el dueño del producto padre o admin)
 DELETE {{baseUrl}}/product-variants/67890abcdef1234567890abc
 Authorization: Bearer {{token}}
 
-### 11. Eliminar Variante Permanentemente
-DELETE {{baseUrl}}/product-variants/67890abcdef1234567890abc/hard
+
+
+
+
+###############################################################################
+# 🏪 TIENDAS (STORES)
+# ─────────────────────────────────────────────────────────────────────────────
+# Reglas de ownership:
+#   ownerId = null    → tienda Moorea (solo admin puede crearla/editarla)
+#   ownerId = userId  → tienda del seller (solo ese seller puede editarla)
+#   Un seller puede tener máximo UNA tienda.
+#
+# Rutas públicas:   GET /stores/active, GET /stores/:id
+# Rutas seller:     POST /stores/my-store, GET /stores/my-store, PATCH /stores/my-store/:id
+# Rutas admin:      GET /stores, POST /stores, PATCH /stores/:id, DELETE /stores/:id
+###############################################################################
+
+### ST.1. [Seller] Crear mi tienda (máximo 1 por seller)
+POST {{baseUrl}}/stores/my-store
 Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "SELLER-LIMA-001",
+  "name": "Mi Tienda Artesanal",
+  "type": "virtual",
+  "location": {
+    "address": "Av. La Marina 123",
+    "city": "Lima",
+    "state": "Lima",
+    "country": "Peru",
+    "postalCode": "15001",
+    "coordinates": { "type": "Point", "coordinates": [-77.0428, -12.0464] }
+  },
+  "contact": { "phone": "999888777", "email": "tienda@seller.com" },
+  "capabilities": { "hasPickup": true, "hasDelivery": true, "deliveryRadius": 10, "acceptsReturns": true }
+}
+
+### ST.2. [Seller] Obtener mi tienda
+GET {{baseUrl}}/stores/my-store
+Authorization: Bearer {{token}}
+
+### ST.3. [Seller] Actualizar mi tienda
+PATCH {{baseUrl}}/stores/my-store/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "contact": { "phone": "999000111" },
+  "capabilities": { "deliveryRadius": 15 }
+}
+
+### ST.4. [Público] Tiendas activas
+GET {{baseUrl}}/stores/active
+
+### ST.5. [Público] Ver una tienda por ID
+GET {{baseUrl}}/stores/507f1f77bcf86cd799439011
+
+### ST.6. [Admin] Listar todas las tiendas
+GET {{baseUrl}}/stores
+Authorization: Bearer {{token}}
+
+### ST.7. [Admin] Crear tienda Moorea (ownerId = null)
+POST {{baseUrl}}/stores
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "LIM-CENTRO-001",
+  "name": "Moorea Lima Centro",
+  "type": "physical",
+  "location": {
+    "address": "Jr. de la Unión 700",
+    "city": "Lima",
+    "state": "Lima",
+    "country": "Peru",
+    "coordinates": { "type": "Point", "coordinates": [-77.0282, -12.0432] }
+  }
+}
+
+### ST.8. [Admin] Actualizar cualquier tienda
+PATCH {{baseUrl}}/stores/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "isActive": false }
+
+### ST.9. [Admin] Eliminar tienda
+DELETE {{baseUrl}}/stores/507f1f77bcf86cd799439011
+Authorization: Bearer {{token}}
+
+### ST.10. [Admin/Seller] Agregar trabajador a tienda
+POST {{baseUrl}}/stores/507f1f77bcf86cd799439011/workers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "userId": "507f1f77bcf86cd799439099", "role": "cashier" }
 
 
 ###############################################################################
 # 📊 INVENTARIO (INVENTORY)
+# ─────────────────────────────────────────────────────────────────────────────
+# Seguridad:
+#   - POST /inventory   → Admin o Seller (seller solo en SU tienda)
+#   - GET /inventory/my-store → Seller (inventario de su propia tienda)
+#   - Resto de consultas → sin auth (público)
+#   - Modificar/Eliminar → Admin
 ###############################################################################
 
-### 1. Obtener Todo el Inventario (Paginado)
+### INV.0. [Seller] Obtener inventario de MI tienda
+GET {{baseUrl}}/inventory/my-store
+Authorization: Bearer {{token}}
+
+### 1. Obtener Todo el Inventario (Paginado) — Admin
 GET {{baseUrl}}/inventory?page=1&limit=50
+Authorization: Bearer {{token}}
 
 ### 2. Obtener Inventario de una Tienda
 GET {{baseUrl}}/inventory/store/67890abcdef1234567890abc
@@ -305,7 +523,8 @@ GET {{baseUrl}}/inventory/low-stock?storeId=507f1f77bcf86cd799439012
 ### 8. Buscar Productos Sin Stock
 GET {{baseUrl}}/inventory/out-of-stock
 
-### 9. Crear Registro de Inventario
+### 9. [Admin/Seller] Crear Registro de Inventario
+# Seller: storeId debe ser SU tienda (se valida en el servicio)
 POST {{baseUrl}}/inventory
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -819,90 +1038,6 @@ Authorization: Bearer {{token}}
 DELETE {{baseUrl}}/image/tienda-virtual/gi9wwkhnk1nryp5dsvxq
 Authorization: Bearer {{token}}
 
-
-
-
-###############################################################################
-# 🏪 TIENDAS (STORES)
-###############################################################################
-
-### 1. Crear Tienda
-POST {{baseUrl}}/stores
-Content-Type: application/json
-
-{
-  "name": "Tienda Central",
-  "address": "Av. Principal 123, Lima",
-  "lat": -12.046373,
-  "lng": -77.042754,
-  "phone": "+51999999999",
-  "email": "central@tienda.com",
-  "isActive": true,
-  "businessHours": [
-    {
-      "dayOfWeek": 1,
-      "openTime": "09:00",
-      "closeTime": "18:00",
-      "isOpen": true
-    },
-    {
-      "dayOfWeek": 2,
-      "openTime": "09:00",
-      "closeTime": "18:00",
-      "isOpen": true
-    }
-  ]
-}
-
-### 2. Obtener Todas las Tiendas
-GET {{baseUrl}}/stores
-
-### 3. Obtener Solo Tiendas Activas
-GET {{baseUrl}}/stores/active
-
-### 4. Obtener Tienda por ID
-GET {{baseUrl}}/stores/67890abcdef1234567890abc
-
-### 5. Actualizar Tienda
-PATCH {{baseUrl}}/stores/67890abcdef1234567890abc
-Content-Type: application/json
-
-{
-  "name": "Tienda Central Actualizada",
-  "isActive": false
-}
-
-### 6. Eliminar Tienda
-DELETE {{baseUrl}}/stores/67890abcdef1234567890abc
-
-### 7. Agregar Trabajador a Tienda
-POST {{baseUrl}}/stores/67890abcdef1234567890abc/workers
-Content-Type: application/json
-
-{
-  "userId": "507f1f77bcf86cd799439011",
-  "role": "manager"
-}
-
-### 8. Agregar Zona de Cobertura
-POST {{baseUrl}}/stores/67890abcdef1234567890abc/coverage-zones
-Content-Type: application/json
-
-{
-  "name": "Centro de Lima",
-  "coordinates": [
-    [-77.042754, -12.046373],
-    [-77.042754, -12.056373],
-    [-77.032754, -12.056373],
-    [-77.032754, -12.046373],
-    [-77.042754, -12.046373]
-  ],
-  "deliveryFee": 5.0
-}
-
-
-
-
 ###############################################################################
 # 💳 TARJETAS (CARDS)
 ###############################################################################
@@ -952,29 +1087,284 @@ GET {{baseUrl}}/config
 ### Acceder a Swagger UI
 # GET {{baseUrl}}/api-docs
 
-
 ###############################################################################
-# 💡 NOTAS IMPORTANTES
-###############################################################################
-
-# 1. Reemplaza {{token}} con el token JWT obtenido del login
-# 2. Después de hacer login, copia el access_token y pégalo en la variable @token
-# 3. Los IDs de ejemplo (67890abcdef1234567890abc) deben ser reemplazados con IDs reales
-# 4. Para subir imágenes, ajusta la ruta del archivo en la sección de imágenes
-# 5. Algunos endpoints requieren roles específicos (admin, worker)
-# 6. La paginación por defecto es: page=1, limit=12
-
-###############################################################################
-# 🔄 FLUJO TÍPICO DE USO
+# 🏪 SELLERS — Vendedores Independientes
+# Roles requeridos:
+#   - seller:  gestión de perfil y listings
+#   - admin:   aprobar/rechazar sellers
+#   - público: ver catálogo de listings
 ###############################################################################
 
-# 1. Registrarse: POST /auth/register
-# 2. Login: POST /auth/login (guardar el token)
-# 3. Ver productos: GET /product/all
-# 4. Ver reseñas de un producto: GET /reviews/product/:productId
-# 5. Agregar al carrito: POST /basket/add
-# 6. Ver carrito: GET /basket/summary
-# 7. Crear dirección: POST /addresses
-# 8. Crear pedido: POST /operations
-# 9. Ver mis pedidos: GET /operations
-# 10. Calificar producto comprado: POST /reviews
+# ── REGISTRO DE NUEVO SELLER ──────────────────────────────────────────────────
+
+### S.1. Crear usuario con rol seller (Admin)
+POST {{baseUrl}}/manage/user/create
+Content-Type: application/json
+
+{
+  "email": "tienda@ejemplo.com",
+  "password": "Password123!",
+  "displayName": "Tienda Ejemplo",
+  "phone": "+51987654321",
+  "dni": "12345678",
+  "roles": ["seller"]
+}
+
+# ── PERFIL DEL SELLER ─────────────────────────────────────────────────────────
+
+### S.2. Crear perfil de tienda (Seller autenticado)
+POST {{baseUrl}}/sellers/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "storeName": "Tienda Deportes Lima",
+  "description": "Especialistas en ropa y calzado deportivo",
+  "logoUrl": "https://cdn.ejemplo.com/logo-tienda.png",
+  "bankInfo": {
+    "bank": "BCP",
+    "account": "1234567890123",
+    "cci": "00218710412345678901"
+  }
+}
+
+### S.3. Ver mi perfil de tienda (Seller autenticado)
+GET {{baseUrl}}/sellers/profile
+Authorization: Bearer {{token}}
+
+### S.4. Actualizar perfil de tienda (Seller autenticado)
+PATCH {{baseUrl}}/sellers/profile
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "description": "Descripción actualizada de la tienda",
+  "logoUrl": "https://cdn.ejemplo.com/nuevo-logo.png"
+}
+
+# ── ADMIN: GESTIÓN DE SELLERS ─────────────────────────────────────────────────
+
+### S.5. [Admin] Listar todos los sellers
+GET {{baseUrl}}/admin/sellers
+Authorization: Bearer {{token}}
+
+### S.6. [Admin] Listar solo sellers pendientes de aprobación
+GET {{baseUrl}}/admin/sellers?pending=true
+Authorization: Bearer {{token}}
+
+### S.7. [Admin] Aprobar un seller
+# ⚠️ Reemplaza :sellerId con el _id del usuario con rol seller
+PATCH {{baseUrl}}/admin/sellers/67890abcdef1234567890abc/approve
+Authorization: Bearer {{token}}
+
+### S.8. [Admin] Rechazar/Suspender un seller
+PATCH {{baseUrl}}/admin/sellers/67890abcdef1234567890abc/reject
+Authorization: Bearer {{token}}
+
+# ── CATÁLOGO DEL SELLER (usa ProductsController) ─────────────────────────────
+# Con el nuevo modelo de catálogos independientes, el seller gestiona sus
+# propios productos directamente a través de /product.
+# Cada producto creado por un seller queda con ownerId = su ID.
+
+### S.9. Ver mi catálogo privado (Seller autenticado — solo sus productos)
+GET {{baseUrl}}/product/my-catalog?page=1&limit=12
+Authorization: Bearer {{token}}
+
+### S.10. Crear producto en mi catálogo (Seller aprobado)
+# El backend asigna automáticamente ownerId = ID del seller autenticado.
+POST {{baseUrl}}/product
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "TIENDA-ZAPATO-001",
+  "name": "Zapatilla Exclusiva Tienda",
+  "brand": "MiBrand",
+  "model": "Modelo A",
+  "description": "Producto propio del seller",
+  "basePrice": 189.90,
+  "category": ["Calzado", "Zapatillas"],
+  "discount": 5,
+  "isActive": true,
+  "tags": ["zapatilla", "exclusivo"],
+  "gallery": ["https://cdn.ejemplo.com/producto1.jpg"]
+}
+
+### S.11. Actualizar mi producto (solo si soy el dueño)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "basePrice": 175.00,
+  "discount": 10,
+  "tags": ["zapatilla", "oferta"]
+}
+
+### S.12. Desactivar mi producto (soft delete — solo si soy el dueño)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc/deactivate
+Authorization: Bearer {{token}}
+
+### S.13. Activar mi producto (solo si soy el dueño)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc/activate
+Authorization: Bearer {{token}}
+
+### S.14. Eliminar mi producto permanentemente (solo si soy el dueño)
+DELETE {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+# ── CATÁLOGO PÚBLICO (maestro — todos los owners) ─────────────────────────────
+
+### S.15. Ver catálogo maestro público (productos de Moorea + todos los sellers)
+GET {{baseUrl}}/product/active?page=1&limit=12
+
+# ── FLUJO COMPLETO: SELLER NUEVO ──────────────────────────────────────────────
+# 1. Admin crea usuario con rol seller            (S.1)
+# 2. Seller hace login → obtiene token
+# 3. Seller crea su perfil de tienda              (S.2)
+# 4. Admin ve sellers pendientes                  (S.6)
+# 5. Admin aprueba al seller                      (S.7)
+# 6. Seller crea sus productos propios            (S.10)
+# 7. Público ve el catálogo maestro unificado     (S.15)
+
+
+###############################################################################
+# 🤝 AFFILIATES — Vendedores Afiliados
+# Roles requeridos:
+#   - affiliate: ver sus propias comisiones
+#   - admin:     gestionar y pagar comisiones
+###############################################################################
+
+# ── REGISTRO DE AFILIADO ──────────────────────────────────────────────────────
+
+### A.1. Crear usuario con rol affiliate (Admin)
+POST {{baseUrl}}/manage/user/create
+Content-Type: application/json
+
+{
+  "email": "afiliado@ejemplo.com",
+  "password": "Password123!",
+  "displayName": "Carlos Afiliado",
+  "phone": "+51912345678",
+  "dni": "87654321",
+  "roles": ["affiliate"]
+}
+
+# ── COMISIONES DEL AFILIADO ───────────────────────────────────────────────────
+
+### A.2. Ver mis comisiones (Afiliado autenticado)
+GET {{baseUrl}}/affiliates/commissions
+Authorization: Bearer {{token}}
+
+### A.3. Resumen de ganancias del afiliado
+# Devuelve totales agrupados por estado: pending, paid, cancelled
+GET {{baseUrl}}/affiliates/commissions/summary
+Authorization: Bearer {{token}}
+
+# ── ADMIN: GESTIÓN DE COMISIONES ─────────────────────────────────────────────
+
+### A.4. [Admin] Ver todas las comisiones
+GET {{baseUrl}}/admin/commissions
+Authorization: Bearer {{token}}
+
+### A.5. [Admin] Filtrar comisiones por afiliado
+GET {{baseUrl}}/admin/commissions?affiliateId=67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+
+### A.6. [Admin] Filtrar comisiones pendientes
+GET {{baseUrl}}/admin/commissions?status=pending
+Authorization: Bearer {{token}}
+
+### A.7. [Admin] Marcar comisión como pagada
+PATCH {{baseUrl}}/admin/commissions/67890abcdef1234567890abc/pay
+Authorization: Bearer {{token}}
+
+# ── FLUJO COMPLETO: AFILIADO ──────────────────────────────────────────────────
+# 1. Admin crea usuario con rol affiliate   (A.1)
+# 2. Afiliado referencia órdenes → sistema genera comisiones automáticamente
+# 3. Afiliado consulta sus ganancias        (A.2 / A.3)
+# 4. Admin revisa comisiones pendientes     (A.6)
+# 5. Admin marca como pagadas              (A.7)
+
+# ── PRUEBAS DE SEGURIDAD (Guards) ─────────────────────────────────────────────
+
+### SEC.1. Acceso sin token a ruta protegida → debe retornar 401
+GET {{baseUrl}}/product/my-catalog
+
+### SEC.2. Usuario normal intenta crear producto → debe retornar 403
+# (usa token de usuario con rol 'user' — no tiene rol admin ni seller)
+POST {{baseUrl}}/product
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "code": "TEST-001",
+  "name": "Test",
+  "brand": "X",
+  "model": "X",
+  "basePrice": 10,
+  "category": ["Test"]
+}
+
+### SEC.3. Seller intenta editar producto ajeno → debe retornar 403
+# (usa token de seller cuyo ID no coincide con el ownerId del producto)
+PATCH {{baseUrl}}/product/67890abcdef1234567890abc
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "basePrice": 1
+}
+
+### SEC.4. Afiliado intenta acceder a ruta de seller → debe retornar 403
+GET {{baseUrl}}/sellers/profile
+Authorization: Bearer {{token}}
+
+
+###############################################################################
+# 📋 AUDITORÍA (AUDIT) — Solo Admin
+# ──────────────────────────────────────────────────────────────────────────────
+# Registra cada acción de gestión realizada por admin/seller/affiliate/worker.
+# Los registros se crean automáticamente — estos endpoints son solo de consulta.
+#
+# Acciones registradas automáticamente:
+#   USER_CREATED / USER_UPDATED / USER_ROLES_CHANGED / USER_DEACTIVATED / USER_DELETED
+#   SELLER_PROFILE_CREATED / SELLER_PROFILE_UPDATED / SELLER_APPROVED / SELLER_REJECTED
+#   PRODUCT_CREATED / PRODUCT_UPDATED / PRODUCT_ACTIVATED / PRODUCT_DEACTIVATED / PRODUCT_DELETED
+#   VARIANT_CREATED / VARIANT_UPDATED / VARIANT_ACTIVATED / VARIANT_DEACTIVATED / VARIANT_DELETED
+#   COMMISSION_PAID / USER_LOGIN / USER_LOGOUT
+###############################################################################
+
+### AUD.1. Historial completo (sin filtros, paginado)
+GET {{baseUrl}}/audit?page=1&limit=20
+Authorization: Bearer {{token}}
+
+### AUD.2. Filtrar por tipo de acción
+GET {{baseUrl}}/audit?action=USER_ROLES_CHANGED&page=1&limit=20
+Authorization: Bearer {{token}}
+
+### AUD.3. Filtrar por entidad afectada
+GET {{baseUrl}}/audit?targetEntity=PRODUCT&page=1
+Authorization: Bearer {{token}}
+
+### AUD.4. Filtrar por usuario que realizó la acción
+GET {{baseUrl}}/audit?userId=67890abcdef1234567890abc&page=1
+Authorization: Bearer {{token}}
+
+### AUD.5. Filtrar por documento afectado (targetId)
+GET {{baseUrl}}/audit?targetId=67890abcdef1234567890abc&page=1
+Authorization: Bearer {{token}}
+
+### AUD.6. Filtrar por rango de fechas
+GET {{baseUrl}}/audit?from=2026-03-01&to=2026-03-31&page=1
+Authorization: Bearer {{token}}
+
+### AUD.7. Combinación de filtros (acción + rango de fechas)
+GET {{baseUrl}}/audit?action=SELLER_APPROVED&from=2026-03-01&to=2026-03-31
+Authorization: Bearer {{token}}
+
+### AUD.8. Historial de acciones de un usuario específico
+# Retorna todas las acciones realizadas POR ese usuario (como actor)
+GET {{baseUrl}}/audit/user/67890abcdef1234567890abc?page=1&limit=20
+Authorization: Bearer {{token}}
+

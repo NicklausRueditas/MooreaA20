@@ -1,262 +1,300 @@
-<div class="p-6">
-    <!-- Header -->
-    <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-200">
-        <div>
-            <h2 class="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                <svg class="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                </svg>
-                {{ isEditMode ? 'Editar Tienda' : 'Nueva Tienda' }}
-            </h2>
-            <p class="text-gray-600 text-sm mt-1">
-                {{ isEditMode ? 'Actualiza la información de la tienda' : 'Completa los datos para crear una nueva
-                tienda' }}
-            </p>
-        </div>
-        <button (click)="onClose()" class="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-        </button>
+<div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" (click)="onClose()">
+  <div class="relative w-full max-w-2xl max-h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+       (click)="$event.stopPropagation()">
+
+    <!-- ── Header ────────────────────────────────────────────────────────── -->
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 shrink-0">
+      <div>
+        <h2 class="text-lg font-bold text-gray-900">
+          {{ isEditMode ? 'Editar tienda' : 'Nueva tienda' }}
+        </h2>
+        <p class="text-xs text-gray-400 mt-0.5">
+          {{ isEditMode ? 'Actualiza los datos de la tienda' : 'Completa los datos para crear la tienda' }}
+        </p>
+      </div>
+      <button (click)="onClose()"
+        class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
     </div>
 
-    <!-- Form -->
-    <form [formGroup]="storeForm" (ngSubmit)="onSubmit()">
-        <div class="space-y-6">
-            <!-- Basic Information -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    Información Básica
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Name -->
-                    <div class="md:col-span-2">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nombre de la Tienda <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="name" type="text" id="name"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="Tienda Central">
-                    </div>
+    <!-- ── Body (scrollable) ──────────────────────────────────────────────── -->
+    <form [formGroup]="storeForm" (ngSubmit)="onSubmit()" class="overflow-y-auto flex-1 px-6 py-5 space-y-6">
 
-                    <!-- Address -->
-                    <div class="md:col-span-2">
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
-                            Dirección <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="address" type="text" id="address"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="Av. Principal 123, Lima">
-                    </div>
+      <!-- ════ 1. DATOS BÁSICOS ════ -->
+      <section>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Datos básicos</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
 
-                    <!-- Phone -->
-                    <div>
-                        <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
-                            Teléfono <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="phone" type="tel" id="phone"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="+51999999999">
-                    </div>
+          <!-- Nombre -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Nombre *</label>
+            <input formControlName="name" type="text" placeholder="Ej: Moorea Lima Centro"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              [class.border-red-400]="storeForm.get('name')?.invalid && storeForm.get('name')?.touched"/>
+          </div>
 
-                    <!-- Email -->
-                    <div>
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                            Email <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="email" type="email" id="email"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="central@tienda.com">
-                    </div>
-
-                    <!-- Active Status -->
-                    <div class="md:col-span-2">
-                        <label class="flex items-center gap-3 cursor-pointer">
-                            <input formControlName="isActive" type="checkbox"
-                                class="w-5 h-5 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
-                            <span class="text-sm font-medium text-gray-700">Tienda Activa</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Location -->
-            <div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Ubicación
-                </h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <!-- Latitude -->
-                    <div>
-                        <label for="lat" class="block text-sm font-medium text-gray-700 mb-2">
-                            Latitud <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="lat" type="number" step="0.000001" id="lat"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="-12.046373">
-                    </div>
-
-                    <!-- Longitude -->
-                    <div>
-                        <label for="lng" class="block text-sm font-medium text-gray-700 mb-2">
-                            Longitud <span class="text-red-500">*</span>
-                        </label>
-                        <input formControlName="lng" type="number" step="0.000001" id="lng"
-                            class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                            placeholder="-77.042754">
-                    </div>
-
-                    <!-- Map Container -->
-                    <div class="md:col-span-2 mt-4">
-                        <div class="rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-gray-100 relative"
-                            style="height: 350px;">
-                            <!-- Google Maps Container -->
-                            <div #mapContainer class="w-full h-full"></div>
-
-                            <!-- Loading State -->
-                            <div *ngIf="!googleMapsApiKey"
-                                class="absolute inset-0 flex items-center justify-center bg-gray-100 z-50">
-                                <div class="text-center">
-                                    <svg class="animate-spin h-8 w-8 text-primary mx-auto mb-2" fill="none"
-                                        viewBox="0 0 24 24">
-                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-                                            stroke-width="4"></circle>
-                                        <path class="opacity-75" fill="currentColor"
-                                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-                                        </path>
-                                    </svg>
-                                    <span class="text-gray-500 text-sm">Cargando mapa...</span>
-                                </div>
-                            </div>
-
-                            <!-- Instructions -->
-                            <div
-                                class="absolute bottom-4 left-4 bg-white/95 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md z-10">
-                                <p class="text-xs text-gray-700 flex items-center gap-2">
-                                    <svg class="w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24"
-                                        stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                    </svg>
-                                    Haz clic en el mapa para seleccionar la ubicación
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Business Hours -->
-            <div>
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        Horarios de Atención
-                    </h3>
-                    <button type="button" (click)="addBusinessHour()"
-                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-sm flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Agregar Horario
-                    </button>
-                </div>
-
-                <div formArrayName="businessHours" class="space-y-3">
-                    @for (hour of businessHoursArray.controls; track $index; let i = $index) {
-                    <div [formGroupName]="i"
-                        class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-primary/50 transition-colors">
-                        <div class="grid grid-cols-1 md:grid-cols-5 gap-4 items-end">
-                            <!-- Day of Week -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Día</label>
-                                <select formControlName="dayOfWeek"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                                    @for (day of daysOfWeek; track day.value) {
-                                    <option [value]="day.value">{{ day.label }}</option>
-                                    }
-                                </select>
-                            </div>
-
-                            <!-- Open Time -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Apertura</label>
-                                <input formControlName="openTime" type="time"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-
-                            <!-- Close Time -->
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Cierre</label>
-                                <input formControlName="closeTime" type="time"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent">
-                            </div>
-
-                            <!-- Is Open -->
-                            <div>
-                                <label class="flex items-center gap-2 cursor-pointer">
-                                    <input formControlName="isOpen" type="checkbox"
-                                        class="w-4 h-4 text-primary border-gray-300 rounded focus:ring-2 focus:ring-primary">
-                                    <span class="text-sm font-medium text-gray-700">Abierto</span>
-                                </label>
-                            </div>
-
-                            <!-- Remove Button -->
-                            <div>
-                                <button type="button" (click)="removeBusinessHour(i)"
-                                    class="w-full px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors flex items-center justify-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                    </svg>
-                                    Eliminar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    }
-                </div>
-
-                @if (businessHoursArray.length === 0) {
-                <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-                    <svg class="mx-auto h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-gray-500 text-sm">No hay horarios configurados</p>
-                </div>
-                }
-            </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex items-center justify-end gap-3 mt-8 pt-6 border-t border-gray-200">
-            <button type="button" (click)="onClose()"
-                class="px-6 py-2.5 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors">
-                Cancelar
-            </button>
-            <button type="submit" [disabled]="!storeForm.valid"
-                class="px-6 py-2.5 bg-gradient-to-r from-primary to-blue-600 text-white rounded-lg hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
-                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+          <!-- Código (auto-generado, readonly) -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">
+              Código
+              <span class="ml-1 text-[10px] font-normal text-primary bg-primary/10 px-1.5 py-0.5 rounded-full">⚡ Auto•generado</span>
+            </label>
+            <div class="relative">
+              <input formControlName="code" type="text" readonly
+                class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm font-mono tracking-widest text-gray-500 cursor-not-allowed"/>
+              <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-300">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
                 </svg>
-                {{ isEditMode ? 'Actualizar' : 'Crear' }} Tienda
-            </button>
+              </span>
+            </div>
+          </div>
+
+          <!-- Tipo -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Tipo *</label>
+            <select formControlName="type"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition">
+              <option value="physical">Física</option>
+              <option value="virtual">Virtual</option>
+              <option value="hybrid">Híbrida</option>
+            </select>
+          </div>
+
+          <!-- Estado -->
+          <div class="sm:col-span-2 flex items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" formControlName="isActive" class="sr-only peer">
+              <div class="w-10 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+            </label>
+            <span class="text-sm font-medium text-gray-700">Tienda activa</span>
+          </div>
         </div>
+      </section>
+
+      <!-- ════ 2. UBICACIÓN ════ -->
+      <section formGroupName="location">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Ubicación</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <!-- Dirección -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Dirección *</label>
+            <input formControlName="address" type="text" placeholder="Jr. de la Unión 700"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              [class.border-red-400]="storeForm.get('location.address')?.invalid && storeForm.get('location.address')?.touched"/>
+          </div>
+
+          <!-- Departamento (state) -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Departamento *</label>
+            <select
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              (change)="onDeptChange($any($event.target).value)"
+              [class.border-red-400]="storeForm.get('location.state')?.invalid && storeForm.get('location.state')?.touched">
+              <option value="">Selecciona departamento...</option>
+              @for (dept of departments; track dept.id) {
+                <option [value]="dept.id">{{ dept.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Provincia (city) -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Provincia *</label>
+            <select
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              [disabled]="!provinces.length"
+              (change)="onProvinceChange($any($event.target).value)">
+              <option value="">{{ provinces.length ? 'Selecciona provincia...' : 'Elige departamento primero' }}</option>
+              @for (prov of provinces; track prov.id) {
+                <option [value]="prov.id">{{ prov.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- Distrito -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Distrito</label>
+            <select
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              [disabled]="!districts.length"
+              (change)="onDistrictChange($any($event.target).value)">
+              <option value="">{{ districts.length ? 'Selecciona distrito...' : 'Elige provincia primero' }}</option>
+              @for (dist of districts; track dist.id) {
+                <option [value]="dist.id">{{ dist.name }}</option>
+              }
+            </select>
+          </div>
+
+          <!-- País (fijo: Peru) -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">País</label>
+            <input formControlName="country" type="text" readonly
+              class="w-full rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-sm text-gray-500 cursor-not-allowed"/>
+          </div>
+
+          <!-- Código postal -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Código postal</label>
+            <input formControlName="postalCode" type="text" placeholder="15001"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+          </div>
+
+          <!-- Coordenadas -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Latitud</label>
+            <input formControlName="lat" type="number" step="any" placeholder="-12.046"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Longitud</label>
+            <input formControlName="lng" type="number" step="any" placeholder="-77.042"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+          </div>
+
+          <!-- Mapa para seleccionar coordenadas -->
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-gray-600 mb-2">
+              📍 Marcar ubicación en el mapa
+              <span class="font-normal text-gray-400 ml-1">(clic o arrastra el pin)</span>
+            </label>
+            <div #mapContainer
+              class="w-full h-64 rounded-xl overflow-hidden border border-gray-200 bg-gray-100 flex items-center justify-center">
+              @if (!googleMapsApiKey) {
+                <div class="text-center text-gray-400">
+                  <svg class="w-8 h-8 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                      d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                  </svg>
+                  <p class="text-xs">Mapa no disponible (sin API key)</p>
+                </div>
+              }
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Lat: {{ storeForm.get('location.lat')?.value | number:'1.5-5' }} &nbsp;·&nbsp;
+              Lng: {{ storeForm.get('location.lng')?.value | number:'1.5-5' }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ 3. CONTACTO ════ -->
+      <section formGroupName="contact">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Contacto</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Teléfono</label>
+            <input formControlName="phone" type="tel" placeholder="987654321"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-600 mb-1">Email</label>
+            <input formControlName="email" type="email" placeholder="store@moorea.com"
+              class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"
+              [class.border-red-400]="storeForm.get('contact.email')?.invalid && storeForm.get('contact.email')?.touched"/>
+          </div>
+        </div>
+      </section>
+
+      <!-- ════ 4. HORARIOS ════ -->
+      <section>
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Horario de atención</h3>
+        <div class="space-y-2">
+          @for (day of days; track day.key) {
+            @let ctrl = getDayGroup(day.key);
+            <div class="flex items-center gap-3 rounded-xl border border-gray-100 px-4 py-2.5" [formGroup]="ctrl"
+                 [class.bg-gray-50]="!ctrl.get('enabled')?.value">
+
+              <!-- Toggle día -->
+              <label class="relative inline-flex items-center cursor-pointer shrink-0">
+                <input type="checkbox" formControlName="enabled" class="sr-only peer">
+                <div class="w-9 h-5 bg-gray-200 rounded-full peer peer-checked:bg-primary transition-colors"></div>
+                <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform peer-checked:translate-x-4"></div>
+              </label>
+
+              <!-- Nombre del día -->
+              <span class="w-24 text-sm font-semibold text-gray-700 shrink-0">{{ day.label }}</span>
+
+              <!-- Horas (solo si está habilitado) -->
+              @if (ctrl.get('enabled')?.value) {
+                <div class="flex items-center gap-2 flex-1">
+                  <input type="time" formControlName="open"
+                    class="rounded-lg border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+                  <span class="text-gray-400 text-xs">–</span>
+                  <input type="time" formControlName="close"
+                    class="rounded-lg border border-gray-200 px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition"/>
+                </div>
+              } @else {
+                <span class="text-xs text-gray-400 italic">Cerrado</span>
+              }
+            </div>
+          }
+        </div>
+      </section>
+
+      <!-- ════ 5. CAPACIDADES ════ -->
+      <section formGroupName="capabilities">
+        <h3 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Capacidades</h3>
+        <div class="grid grid-cols-2 gap-3">
+
+          <!-- hasPickup -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-xl border border-gray-100 px-4 py-3 hover:bg-gray-50 transition">
+            <input type="checkbox" formControlName="hasPickup" class="w-4 h-4 accent-primary"/>
+            <span class="text-sm font-medium text-gray-700">Recojo en tienda</span>
+          </label>
+
+          <!-- hasDelivery -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-xl border border-gray-100 px-4 py-3 hover:bg-gray-50 transition">
+            <input type="checkbox" formControlName="hasDelivery" class="w-4 h-4 accent-primary"/>
+            <span class="text-sm font-medium text-gray-700">Delivery</span>
+          </label>
+
+          <!-- acceptsReturns -->
+          <label class="flex items-center gap-2 cursor-pointer rounded-xl border border-gray-100 px-4 py-3 hover:bg-gray-50 transition">
+            <input type="checkbox" formControlName="acceptsReturns" class="w-4 h-4 accent-primary"/>
+            <span class="text-sm font-medium text-gray-700">Acepta devoluciones</span>
+          </label>
+
+          <!-- deliveryRadius -->
+          <div class="rounded-xl border border-gray-100 px-4 py-2.5">
+            <label class="block text-xs font-semibold text-gray-500 mb-1">Radio delivery (km)</label>
+            <input formControlName="deliveryRadius" type="number" min="0" placeholder="0"
+              class="w-full text-sm focus:outline-none"/>
+          </div>
+        </div>
+      </section>
+
     </form>
+
+    <!-- ── Footer ─────────────────────────────────────────────────────────── -->
+    <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 shrink-0">
+      <button type="button" (click)="onClose()"
+        class="px-5 py-2.5 rounded-xl text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+        Cancelar
+      </button>
+      <button type="button" (click)="onSubmit()" [disabled]="isSaving"
+        class="px-6 py-2.5 rounded-xl text-sm font-bold text-white transition-all duration-200"
+        [class.bg-gray-900]="!isSaving" [class.hover:bg-primary]="!isSaving"
+        [class.bg-gray-300]="isSaving" [class.cursor-not-allowed]="isSaving">
+        @if (isSaving) {
+          <span class="flex items-center gap-2">
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            Guardando...
+          </span>
+        } @else {
+          {{ isEditMode ? 'Actualizar tienda' : 'Crear tienda' }}
+        }
+      </button>
+    </div>
+  </div>
 </div>

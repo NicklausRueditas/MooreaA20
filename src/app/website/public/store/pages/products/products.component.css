@@ -1,18 +1,8 @@
 /* Modern Product Card Animations */
 
-/* Card lift effect */
-.group:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-}
-
-/* Image zoom with smooth transition */
+/* Image smooth transition (sin zoom — controlado desde Tailwind) */
 .group img {
-  transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.group:hover img {
-  transform: scale(1.1);
+  transition: transform 0.4s ease;
 }
 
 /* Quick action buttons entrance */
@@ -21,29 +11,33 @@
     opacity: 0;
     transform: translateX(20px);
   }
+
   to {
     opacity: 1;
     transform: translateX(0);
   }
 }
 
-.group:hover .absolute.right-3 > button {
+.group:hover .absolute.right-3>button {
   animation: slide-in-right 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) backwards;
 }
 
-.group:hover .absolute.right-3 > button:nth-child(1) {
+.group:hover .absolute.right-3>button:nth-child(1) {
   animation-delay: 0.05s;
 }
 
-.group:hover .absolute.right-3 > button:nth-child(2) {
+.group:hover .absolute.right-3>button:nth-child(2) {
   animation-delay: 0.1s;
 }
 
 /* Gradient animation for badges */
 @keyframes gradient-shift {
-  0%, 100% {
+
+  0%,
+  100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
@@ -60,9 +54,12 @@ span[class*="bg-gradient"] {
 }
 
 @keyframes pulse-warning {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.8;
   }
@@ -89,7 +86,8 @@ span[class*="bg-gradient"] {
 /* ===== END ADD TO CART BUTTON ===== */
 
 /* Smooth transitions for all interactive elements */
-button, a {
+button,
+a {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -106,9 +104,12 @@ button, a {
 
 /* Empty state icon bounce */
 @keyframes bounce-gentle {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }

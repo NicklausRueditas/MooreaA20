@@ -55,6 +55,18 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
     return this.productForm.get('specifications')?.value ?? {};
   }
 
+  /* ── Garantía ───────────────────────────────────────────────────────────── */
+  get warrantyGroup(): FormGroup { return this.productForm.get('warranty') as FormGroup; }
+  get hasWarranty():   boolean   { return !!this.productForm.get('hasWarranty')?.value; }
+  get warrantyType():  string    { return this.warrantyGroup?.get('type')?.value ?? ''; }
+
+  /** Precio real que ve el cliente = basePrice × (1 - discount/100) */
+  get clientPrice(): number {
+    const base     = +(this.productForm.get('basePrice')?.value ?? 0);
+    const discount = +(this.productForm.get('discount')?.value  ?? 0);
+    return base * (1 - discount / 100);
+  }
+
   /* ── Categorías ─────────────────────────────────────────────────────────── */
   addCategory(event: Event): void {
     const value = (event.target as HTMLSelectElement).value;
@@ -79,6 +91,49 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
   removeTag(i: number): void { this.tagsArray.removeAt(i); }
 
   /* ── Especificaciones ───────────────────────────────────────────────────── */
+  specJsonMode  = false;
+  jsonSpecError = '';
+  readonly specJsonCtrl   = new FormControl('');
+  readonly jsonPlaceholder = '{\n  "material": "Cuero sintético",\n  "suela": "Goma"\n}';
+
+  toggleJsonMode(): void {
+    this.specJsonMode = !this.specJsonMode;
+    this.jsonSpecError = '';
+    if (this.specJsonMode) {
+      // Precarga el textarea con las specs actuales formateadas
+      const current = this.specifications;
+      this.specJsonCtrl.setValue(
+        Object.keys(current).length
+          ? JSON.stringify(current, null, 2)
+          : '{\n  \n}'
+      );
+    }
+  }
+
+  applyJsonSpecs(): void {
+    try {
+      const raw  = JSON.parse(this.specJsonCtrl.value ?? '{}');
+      // Solo acepta objetos planos con valores string
+      if (typeof raw !== 'object' || Array.isArray(raw)) {
+        this.jsonSpecError = 'Debe ser un objeto JSON (clave: valor)'; return;
+      }
+      const parsed: Record<string, string> = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (typeof v !== 'string' && typeof v !== 'number') {
+          this.jsonSpecError = `El valor de "${k}" debe ser string o número`; return;
+        }
+        parsed[k] = String(v);
+      }
+      this.productForm.get('specifications')?.setValue(
+        Object.keys(parsed).length ? parsed : null
+      );
+      this.jsonSpecError = '';
+      this.specJsonMode  = false;
+    } catch {
+      this.jsonSpecError = 'JSON inválido — revisa la sintaxis';
+    }
+  }
+
   addSpecification(): void {
     const key = this.specKeyCtrl.value?.trim();
     const val = this.specValueCtrl.value?.trim();

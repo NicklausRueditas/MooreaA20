@@ -170,96 +170,47 @@
                 </h3>
               </div>
             </div>
-            <div class="p-4 space-y-1.5 overflow-y-auto custom-scrollbar">
-              @for (category of categories; track category.id) {
-                <div (mouseleave)="onCategoryLeave(category.id)">
-                  <!-- Main Category Button -->
-                  <button
-                    type="button"
-                    (click)="selectCategory(category.id)"
-                    (mouseenter)="onCategoryHover(category.id)"
-                    [class]="
-                      selectedCategory === category.id
-                        ? 'bg-gradient-to-r from-primary via-primary to-rose-600 text-white shadow-lg shadow-primary/30 scale-[1.02]'
-                        : 'hover:bg-gradient-to-r hover:from-gray-50 hover:to-blue-50/50 text-gray-700'
-                    "
-                    class="group w-full flex items-center justify-between rounded-xl px-4 py-3.5 text-left text-sm font-semibold transition-all duration-300 hover:scale-[1.01]"
-                  >
-                    <span class="flex items-center gap-3">
-                      <span
-                        [class]="
-                          selectedCategory === category.id
-                            ? 'bg-white/20 text-white'
-                            : 'bg-gray-100 text-gray-600 group-hover:bg-primary/10 group-hover:text-primary'
-                        "
-                        class="flex items-center justify-center h-9 w-9 rounded-xl transition-all duration-300"
-                      >
-                        <svg
-                          class="h-5 w-5"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          stroke-width="2"
-                        >
-                          <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            [attr.d]="getCategoryIcon(category.icon)"
-                          ></path>
-                        </svg>
-                      </span>
-                      <span class="font-medium">{{ category.name }}</span>
-                    </span>
-                    @if (
-                      category.subcategories &&
-                      category.subcategories.length > 0
-                    ) {
-                      <svg
-                        [class.rotate-180]="isCategoryExpanded(category.id)"
-                        [class]="
-                          selectedCategory === category.id
-                            ? 'text-white'
-                            : 'text-gray-400 group-hover:text-primary'
-                        "
-                        class="category-arrow h-4 w-4"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                        stroke-width="2.5"
-                      >
-                        <path
-                          stroke-linecap="round"
-                          stroke-linejoin="round"
-                          d="M19.5 8.25l-7.5 7.5-7.5-7.5"
-                        />
-                      </svg>
-                    }
-                  </button>
+            <div class="p-4 space-y-1.5 overflow-y-auto custom-scrollbar max-h-72">
+              <!-- Todos -->
+              <button type="button" (click)="selectCategory('all')"
+                class="group w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all duration-300"
+                [class.bg-gradient-to-r]="selectedCategory === 'all'"
+                [class.from-primary]="selectedCategory === 'all'"
+                [class.to-rose-600]="selectedCategory === 'all'"
+                [class.text-white]="selectedCategory === 'all'"
+                [class.text-gray-700]="selectedCategory !== 'all'">
+                <span class="flex items-center justify-center h-8 w-8 rounded-lg"
+                  [class.bg-white\/20]="selectedCategory === 'all'"
+                  [class.bg-gray-100]="selectedCategory !== 'all'">
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getCategoryIcon('grid')" />
+                  </svg>
+                </span>
+                Todos los productos
+              </button>
 
-                  <!-- Subcategories -->
-                  @if (
-                    category.subcategories && isCategoryExpanded(category.id)
-                  ) {
-                    <div
-                      class="category-expand-animation ml-12 mt-2 space-y-1 pl-4 relative before:absolute before:left-0 before:top-0 before:bottom-0 before:w-0.5 before:bg-gradient-to-b before:from-primary/40 before:via-blue-400/30 before:to-transparent before:rounded-full"
-                    >
-                      @for (sub of category.subcategories; track sub.id) {
-                        <button
-                          type="button"
-                          (click)="selectSubcategory(sub.id)"
-                          [class]="
-                            selectedSubcategory === sub.id
-                              ? 'text-primary font-bold bg-primary/10'
-                              : 'text-gray-600 hover:text-primary hover:bg-gray-50'
-                          "
-                          class="subcategory-item block w-full text-left text-sm py-2.5 px-3 rounded-lg hover:translate-x-1"
-                        >
-                          {{ sub.name }}
-                        </button>
-                      }
-                    </div>
-                  }
-                </div>
+              <!-- Categorías dinámicas del backend -->
+              @if (dynamicCategories.length === 0) {
+                <p class="text-xs text-gray-400 text-center py-4 italic">Cargando categorías…</p>
+              }
+              @for (cat of dynamicCategories; track cat) {
+                <button type="button" (click)="selectCategory(cat)"
+                  class="group w-full flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-semibold transition-all duration-300 hover:bg-gray-50"
+                  [class.bg-gradient-to-r]="selectedCategory === cat"
+                  [class.from-primary]="selectedCategory === cat"
+                  [class.to-rose-600]="selectedCategory === cat"
+                  [class.text-white]="selectedCategory === cat"
+                  [class.shadow-lg]="selectedCategory === cat"
+                  [class.text-gray-700]="selectedCategory !== cat">
+                  <span class="flex items-center justify-center h-8 w-8 rounded-lg"
+                    [class.bg-white\/20]="selectedCategory === cat"
+                    [class.bg-gray-100]="selectedCategory !== cat">
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" [attr.d]="getCategoryIcon('grid')" />
+                    </svg>
+                  </span>
+                  {{ cat }}
+                </button>
               }
             </div>
           </div>
@@ -293,60 +244,20 @@
               </div>
             </div>
             <div class="p-5 space-y-3">
-              <!-- Price Range Buttons -->
-              <div class="space-y-2">
-                @for (range of priceRanges; track range.id) {
-                  <button
-                    type="button"
-                    (click)="selectPriceRange(range.id)"
-                    [class]="
-                      selectedPriceRange === range.id
-                        ? 'bg-gradient-to-r from-primary to-rose-600 text-white border-transparent shadow-lg shadow-primary/30'
-                        : 'bg-white text-gray-700 border-gray-200 hover:border-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-blue-500/5'
-                    "
-                    class="w-full rounded-xl border-2 px-4 py-3 text-sm font-semibold transition-all duration-300 hover:scale-[1.02] hover:shadow-md"
-                  >
-                    {{ range.label }}
-                  </button>
-                }
-              </div>
-
-              <!-- Custom Price Slider -->
-              <div class="space-y-3 pt-4 border-t-2 border-gray-100">
+              <!-- Solo slider personalizado -->
+              <div class="space-y-3">
                 <div class="flex items-center justify-between">
-                  <span
-                    class="flex items-center gap-1.5 text-xs font-bold text-gray-600 uppercase tracking-wide"
-                  >
-                    <svg
-                      class="h-4 w-4 text-primary"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      stroke-width="2"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75"
-                      />
-                    </svg>
-                    Personalizado
-                  </span>
-                  <span
-                    class="rounded-xl bg-gradient-to-r from-primary/10 to-blue-500/10 px-3.5 py-1.5 text-sm font-bold text-primary border border-primary/20"
-                  >
-                    S/ {{ priceValue }}
+                  <span class="text-xs font-bold text-gray-600 uppercase tracking-wide">Máximo</span>
+                  <span class="rounded-xl bg-gradient-to-r from-primary/10 to-blue-500/10 px-3.5 py-1.5 text-sm font-bold text-primary border border-primary/20">
+                    @if (priceValue < 2000) { S/ {{ priceValue }} } @else { Sin límite }
                   </span>
                 </div>
-                <input
-                  type="range"
-                  min="0"
-                  max="2000"
-                  step="50"
-                  [value]="priceValue"
+                <input type="range" min="0" max="2000" step="50" [value]="priceValue"
                   (input)="onPriceChange($event)"
-                  class="w-full h-3 bg-gradient-to-r from-gray-200 to-gray-300 rounded-full appearance-none cursor-pointer accent-primary slider-thumb hover:accent-rose-600 transition-all"
-                />
+                  class="w-full h-3 rounded-full appearance-none cursor-pointer accent-primary" />
+                <div class="flex justify-between text-xs text-gray-400">
+                  <span>S/ 0</span><span>S/ 2000+</span>
+                </div>
               </div>
             </div>
           </div>
@@ -382,16 +293,23 @@
               </div>
               <div>
                 <div class="flex items-baseline gap-2">
-                  <span
-                    class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent"
-                  >
-                    {{ products.length }}
-                  </span>
-                  <span class="text-sm font-medium text-gray-600"
-                    >productos encontrados</span
-                  >
+                  <!-- Loading spinner -->
+                  @if (isLoading) {
+                    <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                    </svg>
+                  } @else {
+                    <span class="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                      {{ totalItems }}
+                    </span>
+                    <span class="text-sm font-medium text-gray-600">productos encontrados</span>
+                  }
                 </div>
-                <p class="text-xs text-gray-500 mt-0.5">Actualizado ahora</p>
+                <p class="text-xs text-gray-500 mt-0.5">
+                  @if (selectedCategory && selectedCategory !== 'all') { Categoría: <strong>{{ selectedCategory }}</strong> }
+                  @else { Catálogo completo }
+                </p>
               </div>
             </div>
 
@@ -593,73 +511,21 @@
               }
 
               @if (selectedCategory && selectedCategory !== "all") {
-                <button
-                  type="button"
-                  (click)="selectCategory(selectedCategory)"
-                  class="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 px-4 py-2 text-sm font-bold text-primary hover:from-primary hover:via-primary hover:to-rose-600 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-primary/20"
-                >
-                  <svg
-                    class="h-3.5 w-3.5"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      [attr.d]="
-                        getCategoryIcon(
-                          getCategoryById(selectedCategory)?.icon || 'grid'
-                        )
-                      "
-                    ></path>
-                  </svg>
-                  <span>{{ getCategoryById(selectedCategory)?.name }}</span>
-                  <svg
-                    class="h-3.5 w-3.5 group-hover:rotate-90 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+                <button type="button" (click)="selectCategory(selectedCategory)"
+                  class="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 px-4 py-2 text-sm font-bold text-primary hover:from-primary hover:via-primary hover:to-rose-600 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-primary/20">
+                  <span>{{ selectedCategory }}</span>
+                  <svg class="h-3.5 w-3.5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               }
 
-              @if (selectedPriceRange !== "all") {
-                <button
-                  type="button"
-                  (click)="selectPriceRange('all')"
-                  class="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 px-4 py-2 text-sm font-bold text-primary hover:from-primary hover:via-primary hover:to-rose-600 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 border border-primary/20"
-                >
-                  <svg
-                    class="h-3.5 w-3.5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                    />
-                  </svg>
-                  <span>{{ getPriceRangeLabel() }}</span>
-                  <svg
-                    class="h-3.5 w-3.5 group-hover:rotate-90 transition-transform duration-300"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    stroke-width="2.5"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M6 18L18 6M6 6l12 12"
-                    />
+              @if (priceValue < 2000) {
+                <button type="button" (click)="clearFilters()"
+                  class="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary/10 via-primary/5 to-blue-500/10 px-4 py-2 text-sm font-bold text-primary hover:from-primary hover:to-rose-600 hover:text-white transition-all duration-300 shadow-md border border-primary/20">
+                  <span>Precio ≤ S/ {{ priceValue }}</span>
+                  <svg class="h-3.5 w-3.5 group-hover:rotate-90 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
               }

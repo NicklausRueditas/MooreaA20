@@ -79,12 +79,23 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.subscriptions.add(summarySub);
   }
 
+  /**
+   * Cierra sesión del usuario.
+   * Estrategia local-first: limpia el estado inmediatamente y navega,
+   * mientras el HTTP logout se dispara en segundo plano.
+   * Evita que el usuario quede "bloqueado" si el backend tarda o falla.
+   */
   logout(): void {
-    this.authService.logout();
+    // 1. Limpiar estado local de manera inmediata
     this.userData = null;
     this.basket = null;
     this.basketSummary = { itemCount: 0, totalQuantity: 0, estimatedTotal: 0 };
     this.closeAllMenus();
+
+    // 2. Disparar HTTP logout (debe suscribirse para que se ejecute)
+    this.authService.logout().pipe(take(1)).subscribe({
+      error: (err) => console.warn('[Header] logout HTTP error (ignorado):', err)
+    });
   }
 
   toggleMenu(menu: 'user' | 'cart' | 'mobile', event: Event): void {
