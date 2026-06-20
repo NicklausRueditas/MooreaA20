@@ -1,0 +1,147 @@
+<!-- ═══ Tab Variantes (agrupado por color) ══════════════════════════════════ -->
+<div class="max-w-6xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+  <!-- Cabecera -->
+  <div class="flex items-center justify-between">
+    <div>
+      <h2 class="text-xl font-bold text-gray-900">Variantes de {{ product?.name }}</h2>
+      <p class="text-sm text-gray-500 mt-1">
+        Precio base:
+        <strong>S/ {{ product?.basePrice?.toFixed(2) }}</strong>
+        @if ((product?.discount ?? 0) > 0) {
+          · Descuento:
+          <strong>{{ product?.discount }}%</strong>
+        }
+      </p>
+    </div>
+    <button (click)="openModal()" class="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition-all shadow-sm">
+      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+      </svg>
+      Nueva Variante
+    </button>
+  </div>
+
+  <!-- Loading -->
+  @if (isLoadingVariants) {
+    <div class="flex justify-center py-12">
+      <div class="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>
+
+    <!-- Sin variantes -->
+  } @else if (variants.length === 0) {
+    <div class="bg-white rounded-2xl border border-dashed border-gray-300 py-16 text-center">
+      <div class="text-5xl mb-4">🎨</div>
+      <h3 class="text-base font-semibold text-gray-700">Sin variantes</h3>
+      <p class="text-sm text-gray-400 mt-1 mb-5">Agrega la primera variante para este producto</p>
+      <button (click)="openModal()" class="px-5 py-2 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition">Agregar variante</button>
+    </div>
+
+    <!-- Grupos por color -->
+  } @else {
+    <div class="space-y-5">
+      @for (group of colorGroups; track group.colorCode) {
+        <!-- Cabecera de grupo de color -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="flex items-center gap-4 px-6 py-4 border-b border-gray-100 bg-gray-50">
+            <!-- Swatch -->
+            <div class="w-8 h-8 rounded-lg border-2 border-white shadow-md ring-1 ring-gray-200 flex-shrink-0" [style.background-color]="group.colorHex"></div>
+            <div class="flex-1">
+              <h3 class="font-bold text-gray-900 text-sm">{{ group.colorName }}</h3>
+              <p class="text-xs text-gray-400 font-mono">{{ group.colorCode }} · {{ group.variants.length }} talla(s)</p>
+            </div>
+            <!-- Botón de clonar del grupo (añade talla nueva del mismo color) -->
+            <button (click)="openModal(undefined, group.variants[0])" title="Añadir talla para este color" class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-primary border border-primary rounded-lg hover:bg-primary/5 transition">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+              </svg>
+              + Talla
+            </button>
+          </div>
+
+          <!-- Chips de variante (tallas) -->
+          <div class="p-5 flex flex-wrap gap-3">
+            @for (variant of group.variants; track variant._id) {
+              <div class="relative group flex flex-col gap-2 p-3.5 rounded-xl border transition-all min-w-[140px]" [class.border-green-300]="variant.isActive" [class.bg-green-50]="variant.isActive" [class.border-gray-200]="!variant.isActive" [class.bg-gray-50]="!variant.isActive">
+                <!-- Estado -->
+                <div class="flex items-center justify-between">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold" [class.bg-green-100]="variant.isActive" [class.text-green-700]="variant.isActive" [class.bg-gray-100]="!variant.isActive" [class.text-gray-400]="!variant.isActive">
+                    {{ variant.isActive ? '✓ Activo' : '✗ Inactivo' }}
+                  </span>
+                </div>
+
+                <!-- Talla -->
+                <p class="text-lg font-black" [class.text-gray-900]="variant.isActive" [class.text-gray-400]="!variant.isActive">{{ variant.size?.value ?? '—' }}</p>
+                <p class="text-xs text-gray-400 -mt-1">{{ sizeLabel(variant) }}</p>
+
+                <!-- Precio al cliente -->
+                <div>
+                  @if ((product?.discount ?? 0) > 0) {
+                    <p class="text-xs line-through"
+                       [class.text-gray-400]="true">
+                      S/ {{ rawPrice(variant).toFixed(2) }}
+                    </p>
+                  }
+                  <p class="text-sm font-bold leading-tight"
+                     [class.text-green-600]="variant.isActive && (product?.discount ?? 0) > 0"
+                     [class.text-primary]="variant.isActive && !((product?.discount ?? 0) > 0)"
+                     [class.text-gray-400]="!variant.isActive">
+                    S/ {{ finalPrice(variant).toFixed(2) }}
+                  </p>
+                  @if ((variant.priceAdjustment ?? 0) !== 0) {
+                    <p class="text-xs -mt-0.5"
+                       [class.text-emerald-500]="(variant.priceAdjustment ?? 0) > 0 && variant.isActive"
+                       [class.text-red-400]="(variant.priceAdjustment ?? 0) < 0 && variant.isActive"
+                       [class.text-gray-400]="!variant.isActive">
+                      {{ (variant.priceAdjustment ?? 0) > 0 ? '+' : '' }}{{ variant.priceAdjustment }} ajuste
+                    </p>
+                  }
+                </div>
+
+                <!-- Mini galería -->
+                @if (variant.gallery && variant.gallery.length > 0) {
+                  <div class="flex gap-1" [class.opacity-40]="!variant.isActive">
+                    @for (img of variant.gallery.slice(0, 3); track img) {
+                      <img [src]="img" class="w-8 h-8 object-cover rounded-lg border border-gray-200" />
+                    }
+                    @if (variant.gallery.length > 3) {
+                      <div class="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center text-xs text-gray-500 font-bold">+{{ variant.gallery.length - 3 }}</div>
+                    }
+                  </div>
+                }
+
+                <!-- Acciones -->
+                <div class="flex gap-1.5 mt-1">
+                  <!-- Editar -->
+                  <button (click)="openModal(variant)" class="flex-1 px-2 py-1.5 border border-gray-200 text-gray-600 rounded-lg text-xs font-semibold hover:bg-gray-100 transition text-center">✏️</button>
+                  <!-- Clonar -->
+                  <button (click)="openModal(undefined, variant)" title="Clonar: misma galería y color, nueva talla" class="px-2 py-1.5 border border-blue-200 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-50 transition">📋</button>
+                  <!-- Toggle activo/inactivo (soft, reversible) -->
+                  <button (click)="toggleVariantActive(variant)" [title]="variant.isActive ? 'Desactivar variante' : 'Activar variante'" class="px-2 py-1.5 rounded-lg text-xs font-semibold border transition" [ngClass]="variant.isActive ? 'border-amber-200 text-amber-600 hover:bg-amber-50' : 'border-green-200 text-green-600 hover:bg-green-50'">
+                    {{ variant.isActive ? '⭕' : '✅' }}
+                  </button>
+                  <!-- Eliminar permanente (hard delete) -->
+                  <button (click)="deleteVariant(variant)" title="Eliminar permanentemente (libera el SKU)" class="px-2 py-1.5 border border-red-200 text-red-500 rounded-lg text-xs font-semibold hover:bg-red-50 transition">🗑️</button>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Consejo -->
+    <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-4">
+      <span class="text-2xl flex-shrink-0">📦</span>
+      <div>
+        <p class="text-sm font-semibold text-amber-900">¿Listo para asignar stock?</p>
+        <p class="text-xs text-amber-700 mt-1">Desde el inventario de cada tienda puedes asignar las variantes creadas aquí.</p>
+        <a routerLink="/business/stores" class="inline-block mt-3 px-4 py-2 bg-amber-700 text-white text-xs rounded-lg font-semibold hover:bg-amber-600 transition">Ir a Tiendas → Inventario</a>
+      </div>
+    </div>
+  }
+</div>
+
+<!-- Modal de variante -->
+@if (isModalOpen) {
+  <app-variant-modal [productId]="productId" [product]="product" [variants]="variants" [editingVariant]="editingVariant" [cloneSource]="cloneSource" (saved)="onVariantSaved($event)" (closed)="closeModal()"></app-variant-modal>
+}

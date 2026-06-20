@@ -1,0 +1,418 @@
+<div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
+
+    <!-- Header -->
+    <div class="bg-gradient-to-r from-primary to-pink-600 px-8 py-6 flex items-center justify-between">
+      <div>
+        <h2 class="text-2xl font-bold text-white">
+          {{ isEditMode ? 'Editar Producto' : (selectedProduct ? 'Ver Producto' : 'Nuevo Producto') }}
+        </h2>
+        <p class="text-white/80 text-sm mt-1">{{ isEditMode ? 'Actualiza la información del producto' : 'Completa los
+          datos del producto' }}</p>
+      </div>
+      <button (click)="onCloseModal()" class="text-white hover:bg-white/20 rounded-full p-2 transition-colors">
+        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Form Content -->
+    <form [formGroup]="productForm" (ngSubmit)="onSubmit()" class="flex-1 overflow-y-auto">
+      <div class="p-8 space-y-8">
+
+        <!-- Basic Information Section -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="h-10 w-10 bg-blue-100 rounded-lg flex items-center justify-center">
+              <svg class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Información Básica</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Code -->
+            <div>
+              <label for="code" class="block text-sm font-medium text-gray-700 mb-2">
+                Código <span class="text-red-500">*</span>
+              </label>
+              <input formControlName="code" type="text" id="code"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="BASH-DALLAS">
+            </div>
+
+            <!-- Name -->
+            <div>
+              <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                Nombre <span class="text-red-500">*</span>
+              </label>
+              <input formControlName="name" type="text" id="name"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Zapatilla Bash Dallas">
+            </div>
+
+            <!-- Brand -->
+            <div>
+              <label for="brand" class="block text-sm font-medium text-gray-700 mb-2">
+                Marca <span class="text-red-500">*</span>
+              </label>
+              <input formControlName="brand" type="text" id="brand"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Bash">
+            </div>
+
+            <!-- Model -->
+            <div>
+              <label for="model" class="block text-sm font-medium text-gray-700 mb-2">
+                Modelo <span class="text-red-500">*</span>
+              </label>
+              <input formControlName="model" type="text" id="model"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="Dallas">
+            </div>
+          </div>
+        </div>
+
+        <!-- Pricing & Stock Section -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="h-10 w-10 bg-green-100 rounded-lg flex items-center justify-center">
+              <svg class="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Precio e Inventario</h3>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Base Price -->
+            <div>
+              <label for="basePrice" class="block text-sm font-medium text-gray-700 mb-2">
+                Precio Base (S/) <span class="text-red-500">*</span>
+              </label>
+              <input formControlName="basePrice" type="number" id="basePrice" step="0.01"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="199.99">
+            </div>
+
+            <!-- Discount -->
+            <div>
+              <label for="discount" class="block text-sm font-medium text-gray-700 mb-2">
+                Descuento (%)
+              </label>
+              <input formControlName="discount" type="number" id="discount" min="0" max="100"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                placeholder="10">
+            </div>
+
+
+            <!-- Active Status -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Estado
+              </label>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input formControlName="isActive" type="checkbox" class="sr-only peer">
+                <div
+                  class="w-14 h-7 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-primary">
+                </div>
+                <span class="ml-3 text-sm font-medium text-gray-700">Activo</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Product Details Section -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="h-10 w-10 bg-purple-100 rounded-lg flex items-center justify-center">
+              <svg class="h-6 w-6 text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900">Detalles del Producto</h3>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Description -->
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                Descripción
+              </label>
+              <textarea formControlName="description" id="description" rows="3"
+                class="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all resize-none"
+                placeholder="Laptop potente para trabajo y entretenimiento"></textarea>
+            </div>
+
+            <!-- Categories -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Categorías <span class="text-red-500">*</span>
+              </label>
+              <div class="flex gap-2">
+                <select (change)="addCategory($event)"
+                  class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                  <option value="" selected>Selecciona una categoría</option>
+                  @for (option of categoryOptions; track option) {
+                  <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              </div>
+              @if (categoryArray.length > 0) {
+              <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
+                <div class="flex flex-wrap gap-2">
+                  @for (category of categoryArray.controls; track category; let idx = $index) {
+                  <div draggable="true" (dragstart)="onCategoryDragStart($event, idx)"
+                    (dragover)="onCategoryDragOver($event)" (drop)="onCategoryDrop($event, idx)"
+                    class="group relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg shadow-sm hover:shadow-md transition-all cursor-move">
+                    <svg class="w-4 h-4 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                    </svg>
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                    </svg>
+                    <span class="font-medium">{{ category.value }}</span>
+                    <button type="button" (click)="removeCategory(idx)"
+                      class="ml-1 hover:bg-white/20 rounded-full p-1 transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  }
+                </div>
+              </div>
+              } @else {
+              <div class="mt-4 bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 text-center">
+                <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                </svg>
+                <p class="text-sm text-gray-500">No hay categorías seleccionadas</p>
+              </div>
+              }
+            </div>
+
+            <!-- Tags -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Tags (Etiquetas de búsqueda)
+              </label>
+              <div class="flex gap-2">
+                <input [formControl]="tagControl" type="text"
+                  class="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                  placeholder="Escribe un tag y presiona Enter" (keydown.enter)="$event.preventDefault(); addTag()">
+                <button type="button" (click)="addTag()" [disabled]="!buttonSaveEnable"
+                  class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Agregar
+                </button>
+              </div>
+              @if (tagsArray.length > 0) {
+              <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
+                <div class="flex flex-wrap gap-2">
+                  @for (tag of tagsArray.controls; track tag; let idx = $index) {
+                  <div draggable="true" (dragstart)="onTagDragStart($event, idx)" (dragover)="onTagDragOver($event)"
+                    (drop)="onTagDrop($event, idx)"
+                    class="group relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full shadow-sm hover:shadow-md transition-all cursor-move">
+                    <svg class="w-3.5 h-3.5 opacity-60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16M4 16h16" />
+                    </svg>
+                    <span class="text-sm font-medium">#{{ tag.value }}</span>
+                    <button type="button" (click)="removeTag(idx)"
+                      class="hover:bg-white/20 rounded-full p-1 transition-colors">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  }
+                </div>
+              </div>
+              } @else {
+              <div class="mt-4 bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 text-center">
+                <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14" />
+                </svg>
+                <p class="text-sm text-gray-500">No hay tags agregados</p>
+              </div>
+              }
+            </div>
+
+
+
+            <!-- Specifications -->
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">Especificaciones Técnicas</label>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <input [formControl]="specKeyControl" type="text" placeholder="Clave (ej: procesador)"
+                  class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                <input [formControl]="specValueControl" type="text" placeholder="Valor (ej: Intel Core i5)"
+                  class="px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all">
+                <button type="button" (click)="addOrUpdateSpecification()" [disabled]="!buttonSaveEnable"
+                  class="px-6 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                  </svg>
+                  Agregar
+                </button>
+              </div>
+              @if (objectKeys(listSpecifications()).length > 0) {
+              <div class="mt-4 bg-white rounded-lg border border-gray-200 p-4">
+                <div class="flex flex-wrap gap-2">
+                  @for (key of objectKeys(listSpecifications()); track key) {
+                  <div
+                    class="group relative inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-lg shadow-sm hover:shadow-md transition-all">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span class="font-semibold text-sm">{{ key }}:</span>
+                    <span class="text-sm">{{ listSpecifications()[key] }}</span>
+                    <button type="button" (click)="removeSpecification(key)"
+                      class="ml-1 hover:bg-white/20 rounded-full p-1 transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  }
+                </div>
+              </div>
+              } @else {
+              <div class="mt-4 bg-white rounded-lg border-2 border-dashed border-gray-300 p-6 text-center">
+                <svg class="mx-auto h-8 w-8 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p class="text-sm text-gray-500">No hay especificaciones técnicas</p>
+              </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="h-10 w-10 bg-orange-100 rounded-lg flex items-center justify-center">
+              <svg class="h-6 w-6 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+            </div>
+            <div class="flex-1">
+              <h3 class="text-lg font-semibold text-gray-900">Galería de Imágenes</h3>
+              <p class="text-sm text-gray-500 mt-1">Arrastra las imágenes para reordenarlas</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <label for="file-upload"
+              class="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed border-primary/30 rounded-xl cursor-pointer bg-gradient-to-br from-primary/5 to-pink-500/5 hover:from-primary/10 hover:to-pink-500/10 transition-all group">
+              <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                <div
+                  class="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+                  <svg class="w-8 h-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                  </svg>
+                </div>
+                <p class="mb-2 text-sm text-gray-700"><span class="font-semibold">Click para subir</span> o arrastra y
+                  suelta</p>
+                <p class="text-xs text-gray-500">PNG, JPG, GIF hasta 10MB · Puedes seleccionar múltiples archivos</p>
+              </div>
+              <input (change)="onImageSelected($event)" id="file-upload" type="file" class="hidden" accept="image/*"
+                multiple>
+            </label>
+
+            @if (galleryArray.length > 0) {
+            <div class="bg-white rounded-xl border border-gray-200 p-4">
+              <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                @for (image of galleryArray.controls; track image; let i = $index) {
+                <div draggable="true" (dragstart)="onDragStart(i)" (drop)="onDrop($event, i)"
+                  (dragover)="$event.preventDefault()"
+                  class="relative group aspect-square rounded-xl overflow-hidden border-2 border-gray-200 hover:border-primary transition-all cursor-move bg-gray-100 hover:shadow-lg">
+                  <img [src]="image.value" alt="Imagen del producto" class="w-full h-full object-cover">
+
+                  <!-- Drag indicator -->
+                  <div
+                    class="absolute top-2 left-2 bg-white/90 backdrop-blur-sm rounded-lg px-2 py-1 text-xs font-medium text-gray-700 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <svg class="w-4 h-4 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4" />
+                    </svg>
+                  </div>
+
+                  <!-- Image number -->
+                  <div
+                    class="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-white rounded-full h-7 w-7 flex items-center justify-center text-xs font-bold">
+                    {{ i + 1 }}
+                  </div>
+
+                  <!-- Delete button -->
+                  <div
+                    class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-3">
+                    <button type="button" (click)="removeImage(i, image.value)"
+                      class="bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2 text-sm font-medium shadow-lg flex items-center gap-2 transition-colors">
+                      <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                      Eliminar
+                    </button>
+                  </div>
+                </div>
+                }
+              </div>
+              <div class="mt-4 flex items-center gap-2 text-sm text-gray-600">
+                <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{{ galleryArray.length }} imagen{{ galleryArray.length !== 1 ? 'es' : '' }} · Arrastra para
+                  reordenar</span>
+              </div>
+            </div>
+            } @else {
+            <div class="bg-white rounded-xl border-2 border-dashed border-gray-300 p-8 text-center">
+              <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p class="text-sm text-gray-500">No hay imágenes en la galería</p>
+              <p class="text-xs text-gray-400 mt-1">Sube al menos una imagen del producto</p>
+            </div>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer Actions -->
+      <div class="border-t border-gray-200 px-8 py-6 bg-gray-50 flex items-center justify-between">
+        <button type="button" (click)="onCloseModal()"
+          class="px-6 py-2.5 text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 font-medium transition-colors">
+          Cancelar
+        </button>
+        <button type="submit" [disabled]="!buttonSaveEnable || productForm.invalid"
+          class="px-8 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 font-semibold shadow-lg shadow-primary/30 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none">
+          {{ isEditMode ? 'Actualizar Producto' : 'Guardar Producto' }}
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>

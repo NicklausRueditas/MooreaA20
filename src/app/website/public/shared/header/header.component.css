@@ -1,0 +1,42 @@
+.opacity-100 {
+  opacity: 1;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.translate-x-0 {
+  transform: translateX(0);
+}
+
+.translate-x-full {
+  transform: translateX(100%);
+}
+
+.transition-opacity {
+  transition: opacity 0.5s ease-in-out;
+}
+
+.transition-transform {
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Logo Text Animation */
+.animate-shine {
+  background: linear-gradient(to right,
+      var(--color-primary) 0%,
+      #ff8fa3 50%,
+      var(--color-primary) 100%);
+  background-size: 200% auto;
+  color: transparent;
+  background-clip: text;
+  -webkit-background-clip: text;
+  animation: shine 3s linear infinite;
+}
+
+@keyframes shine {
+  to {
+    background-position: 200% center;
+  }
+}

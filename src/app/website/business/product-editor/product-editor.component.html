@@ -1,0 +1,71 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- ═══ Header sticky ════════════════════════════════════════════════════ -->
+  <div class="bg-white border-b border-gray-200 sticky top-0 z-20 shadow-sm">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between gap-4">
+      <!-- Título -->
+      <div class="flex items-center gap-3 min-w-0">
+        <a routerLink="/business/products" class="text-gray-400 hover:text-gray-700 transition-colors flex-shrink-0">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </a>
+        <div class="min-w-0">
+          <h1 class="text-lg font-bold text-gray-900 truncate">
+            {{ isNew ? 'Nuevo Producto' : (product?.name ?? 'Editor de Producto') }}
+          </h1>
+          @if (!isNew && product) {
+            <p class="text-xs text-gray-400 font-mono">{{ product.code }}</p>
+          }
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div class="flex items-center gap-3 flex-shrink-0">
+        @if (!isNew && product) {
+          <span class="hidden sm:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" [class.bg-green-100]="product.isActive" [class.text-green-700]="product.isActive" [class.bg-gray-100]="!product.isActive" [class.text-gray-500]="!product.isActive">
+            {{ product.isActive ? 'Activo' : 'Inactivo' }}
+          </span>
+        }
+        <button (click)="saveProduct()" [disabled]="isSaving || (isNew && activeTab() !== 'info')" class="px-5 py-2 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 disabled:opacity-50 transition-all flex items-center gap-2">
+          @if (isSaving) {
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+          }
+          {{ isSaving ? 'Guardando...' : isNew ? 'Crear Producto' : 'Guardar cambios' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Tabs (solo en modo edición) -->
+    @if (!isNew) {
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 flex gap-0 border-t border-gray-100">
+        @for (
+          tab of [
+            { id: 'info', label: 'Información General', icon: '📋' },
+            { id: 'variants', label: 'Variantes', icon: '🎨' },
+          ];
+          track tab.id
+        ) {
+          <button (click)="activeTab.set($any(tab.id))" class="px-5 py-3 text-sm font-medium border-b-2 transition-colors" [class.border-primary]="activeTab() === tab.id" [class.text-primary]="activeTab() === tab.id" [class.border-transparent]="activeTab() !== tab.id" [class.text-gray-500]="activeTab() !== tab.id">{{ tab.icon }} {{ tab.label }}</button>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ═══ Contenido por tab ════════════════════════════════════════════════ -->
+  @if (isLoading) {
+    <div class="flex justify-center items-center py-20">
+      <div class="animate-spin h-10 w-10 border-4 border-primary border-t-transparent rounded-full"></div>
+    </div>
+  } @else {
+    @if (activeTab() === 'info') {
+      <app-product-info-tab [productForm]="productForm" [product]="product" [isNew]="isNew"></app-product-info-tab>
+    }
+
+    @if (activeTab() === 'variants' && !isNew && productId) {
+      <app-product-variants-tab [productId]="productId" [product]="product"></app-product-variants-tab>
+    }
+  }
+</div>

@@ -1,0 +1,234 @@
+/* ============================================================
+   products.component.css
+   Solo estilos que Tailwind no cubre:
+   · Animaciones del modal  (qa-*)
+   · Hover del botón CTA    (gradiente)
+   ============================================================ */
+
+/* ── Botón CTA hover con gradiente más brillante ─────────── */
+article button[style*="linear-gradient"]:hover {
+  filter: brightness(1.15);
+  box-shadow: 0 6px 18px rgba(0,0,0,.30);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   QUICK-ADD MODAL  (qa-*)
+══════════════════════════════════════════════════════════════ */
+.qa-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: rgba(0,0,0,.52);
+  backdrop-filter: blur(4px);
+  padding: 16px;
+  animation: qa-fade-in .18s ease;
+}
+
+@media (min-width: 640px) {
+  .qa-backdrop { align-items: center; }
+}
+
+.qa-panel {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 24px 64px rgba(0,0,0,.22);
+  animation: qa-slide-up .28s cubic-bezier(.22,1,.36,1);
+}
+
+/* ── Galería del modal ───────────────────────────────────── */
+.qa-header        { border-bottom: 1px solid #f0f0f0; }
+
+.qa-gallery__main {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: #f8f8f8;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.qa-gallery__img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+  transition: opacity .3s;
+}
+
+.qa-gallery__arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(0,0,0,.38);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background .15s;
+}
+.qa-gallery__arrow:hover { background: rgba(0,0,0,.6); }
+.qa-gallery__arrow svg   { width: 14px; height: 14px; color: #fff; }
+.qa-gallery__arrow--prev { left: 12px; }
+.qa-gallery__arrow--next { right: 12px; }
+
+.qa-gallery__dots {
+  position: absolute;
+  bottom: 10px;
+  left: 0; right: 0;
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+}
+.qa-gallery__dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.45);
+  transition: all .2s;
+}
+.qa-gallery__dot--active { width: 16px; border-radius: 3px; background: #fff; }
+
+.qa-gallery__strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px 16px;
+  scrollbar-width: none;
+}
+.qa-gallery__strip::-webkit-scrollbar { display: none; }
+
+.qa-gallery__thumb {
+  flex-shrink: 0;
+  width: 44px; height: 44px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  transition: border-color .15s;
+}
+.qa-gallery__thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.qa-gallery__thumb--active { border-color: #111; }
+
+/* ── Info modal ──────────────────────────────────────────── */
+.qa-info {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 14px;
+}
+.qa-info__brand {
+  font-size: 11px; font-weight: 600;
+  letter-spacing: .8px; color: #888;
+  text-transform: uppercase; margin: 0 0 2px;
+}
+.qa-info__name {
+  font-size: 14px; font-weight: 700;
+  color: #111; margin: 0 0 4px; line-height: 1.3;
+}
+.qa-info__price { font-size: 16px; font-weight: 800; color: #111; margin: 0; }
+
+.qa-close {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  border: none; background: #f5f5f5;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.qa-close:hover { background: #eee; }
+.qa-close svg { width: 16px; height: 16px; color: #555; }
+
+/* ── Body modal ──────────────────────────────────────────── */
+.qa-body { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+
+.qa-section__label {
+  font-size: 11px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .6px;
+  color: #888; margin: 0 0 10px;
+}
+.qa-section__value { color: #111; text-transform: none; font-weight: 700; }
+
+.qa-colors { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.qa-color {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+  box-shadow: 0 0 0 1px rgba(0,0,0,.15);
+}
+.qa-color--active { box-shadow: 0 0 0 2px #fff, 0 0 0 4px #111; transform: scale(1.1); }
+.qa-color svg { width: 14px; height: 14px; }
+
+.qa-sizes { display: flex; flex-wrap: wrap; gap: 8px; }
+.qa-size {
+  min-width: 48px; height: 40px; padding: 0 12px;
+  border-radius: 8px; border: 2px solid #ddd;
+  background: #fff; font-size: 13px; font-weight: 600; color: #222;
+  cursor: pointer; transition: all .15s;
+}
+.qa-size:hover:not(.qa-size--disabled) { border-color: #888; }
+.qa-size--active { border-color: #111; background: #111; color: #fff; }
+.qa-size--disabled { opacity: .35; cursor: not-allowed; text-decoration: line-through; }
+
+.qa-sku {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 12px; color: #16a34a;
+  background: #f0fdf4; border-radius: 10px; padding: 8px 12px;
+}
+.qa-sku svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+/* Skeleton */
+.qa-skeleton { display: flex; flex-direction: column; gap: 14px; }
+.qa-skeleton__line { height: 12px; background: #eee; border-radius: 6px; animation: qa-pulse 1.4s ease-in-out infinite; }
+.qa-skeleton__line--short  { width: 40%; }
+.qa-skeleton__line--xshort { width: 30%; }
+.qa-skeleton__dots  { display: flex; gap: 8px; }
+.qa-skeleton__dot   { width: 36px; height: 36px; border-radius: 50%; background: #eee; animation: qa-pulse 1.4s ease-in-out infinite; }
+.qa-skeleton__sizes { display: flex; gap: 8px; }
+.qa-skeleton__size  { width: 48px; height: 40px; border-radius: 8px; background: #eee; animation: qa-pulse 1.4s ease-in-out infinite; }
+
+/* ── Footer modal ────────────────────────────────────────── */
+.qa-footer { padding: 0 16px 20px; }
+
+.qa-confirm {
+  width: 100%;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 14px 0; border-radius: 12px;
+  font-size: 14px; font-weight: 700; border: none;
+  cursor: pointer; transition: all .2s; letter-spacing: .2px;
+}
+.qa-confirm svg { width: 16px; height: 16px; }
+
+.qa-confirm__spin { animation: spin 1s linear infinite; width: 16px; height: 16px; }
+
+.qa-confirm--ready    { background: #111; color: #fff; }
+.qa-confirm--ready:hover { background: #333; }
+.qa-confirm--ready:active { transform: scale(.98); }
+.qa-confirm--disabled { background: #f0f0f0; color: #aaa; cursor: not-allowed; }
+
+/* ── Animaciones ─────────────────────────────────────────── */
+@keyframes qa-fade-in  { from { opacity: 0; }      to { opacity: 1; } }
+@keyframes qa-slide-up {
+  from { opacity: 0; transform: translateY(28px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes qa-pulse    { 0%, 100% { opacity: 1; } 50% { opacity: .5; } }
+@keyframes spin        { to { transform: rotate(360deg); } }

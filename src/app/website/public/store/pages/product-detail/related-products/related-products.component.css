@@ -1,0 +1,25 @@
+/* ── Related Products Carousel ───────────────────────────────────────────── */
+
+.related-section {
+  animation: fade-up 0.45s ease both;
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.related-slider {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+}
+
+.related-slider::-webkit-scrollbar {
+  display: none;
+}
+
+.related-card {
+  scroll-snap-align: start;
+}

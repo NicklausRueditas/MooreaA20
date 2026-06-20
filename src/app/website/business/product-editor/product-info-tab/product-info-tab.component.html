@@ -1,0 +1,487 @@
+<!-- ═══ Tab Información General ════════════════════════════════════════════ -->
+<form [formGroup]="productForm" class="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <!-- Columna izquierda (2/3) -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Datos básicos -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="font-bold text-gray-900 text-base">Datos básicos</h2>
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+          <input
+            formControlName="code"
+            type="text"
+            placeholder="BASH-DALLAS"
+            class="w-full px-3 py-2 border rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            [class.border-red-400]="isFieldInvalid('code')"
+            [class.border-gray-300]="!isFieldInvalid('code')"
+          />
+          @if (isFieldInvalid('code')) {
+            <p class="text-red-500 text-xs mt-1">Requerido (mín. 3 caracteres)</p>
+          }
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <input
+            formControlName="name"
+            type="text"
+            placeholder="Zapatilla Bash Dallas"
+            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            [class.border-red-400]="isFieldInvalid('name')"
+            [class.border-gray-300]="!isFieldInvalid('name')"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
+          <input
+            formControlName="brand"
+            type="text"
+            placeholder="Bash"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+          <input
+            formControlName="model"
+            type="text"
+            placeholder="Dallas"
+            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          />
+        </div>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <textarea
+          formControlName="description"
+          rows="3"
+          placeholder="Descripción del producto..."
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+        ></textarea>
+      </div>
+    </section>
+
+    <!-- Categorías -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+      <h2 class="font-bold text-gray-900 text-base">Categorías *</h2>
+      <select
+        (change)="addCategory($event)"
+        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+      >
+        <option value="">— Agregar categoría —</option>
+        @for (group of categoryGroups; track group.group) {
+          <optgroup [label]="group.icon + ' ' + group.group">
+            @for (opt of group.options; track opt) {
+              <option [value]="opt">{{ opt }}</option>
+            }
+          </optgroup>
+        }
+      </select>
+      <div class="flex flex-wrap gap-2">
+        @for (cat of categoryArray.controls; track $index) {
+          <span
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
+          >
+            {{ cat.value }}
+            <button
+              type="button"
+              (click)="removeCategory($index)"
+              class="text-primary/60 hover:text-primary transition-colors leading-none"
+            >
+              &times;
+            </button>
+          </span>
+        }
+        @if (categoryArray.length === 0) {
+          <p class="text-sm text-gray-400">Selecciona al menos una categoría</p>
+        }
+      </div>
+    </section>
+
+    <!-- Tags -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="font-bold text-gray-900 text-base">Tags</h2>
+      <div class="flex gap-2">
+        <input
+          [formControl]="tagCtrl"
+          type="text"
+          placeholder="tag personalizado..."
+          (keydown)="onTagKeydown($event)"
+          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+        <button
+          type="button"
+          (click)="addTag()"
+          class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+        >
+          Agregar
+        </button>
+      </div>
+      @if (tagsArray.length > 0) {
+        <div class="flex flex-wrap gap-2">
+          @for (tag of tagsArray.controls; track $index) {
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold"
+            >
+              #{{ tag.value }}
+              <button
+                type="button"
+                (click)="removeTag($index)"
+                class="text-primary/60 hover:text-primary transition-colors"
+              >
+                &times;
+              </button>
+            </span>
+          }
+        </div>
+      }
+      <div class="space-y-3 pt-1">
+        @for (group of tagGroups; track group.group) {
+          <div>
+            <p class="text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+              {{ group.icon }} {{ group.group }}
+            </p>
+            <div class="flex flex-wrap gap-1.5">
+              @for (tag of group.tags; track tag) {
+                <button
+                  type="button"
+                  (click)="addTag(tag)"
+                  class="px-2.5 py-1 rounded-full text-xs border transition-all"
+                  [class.bg-primary]="tagsArray.value.includes(tag)"
+                  [class.text-white]="tagsArray.value.includes(tag)"
+                  [class.border-primary]="tagsArray.value.includes(tag)"
+                  [class.bg-white]="!tagsArray.value.includes(tag)"
+                  [class.text-gray-600]="!tagsArray.value.includes(tag)"
+                  [class.border-gray-200]="!tagsArray.value.includes(tag)"
+                >
+                  {{ tag }}
+                </button>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- Especificaciones -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+      <!-- Cabecera con toggle de modo -->
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-base">Especificaciones técnicas</h2>
+        <button
+          type="button"
+          (click)="toggleJsonMode()"
+          class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all"
+          [class.bg-amber-500]="specJsonMode"
+          [class.text-white]="specJsonMode"
+          [class.border-amber-500]="specJsonMode"
+          [class.bg-white]="!specJsonMode"
+          [class.text-gray-600]="!specJsonMode"
+          [class.border-gray-300]="!specJsonMode"
+        >
+          <span>&#123; &#125;</span>
+          {{ specJsonMode ? 'Cancelar JSON' : 'Importar JSON' }}
+        </button>
+      </div>
+
+      <!-- ── Modo JSON ─────────────────────────────────────────────────────── -->
+      @if (specJsonMode) {
+        <div class="space-y-2">
+          <p class="text-xs text-gray-500">Pega o escribe un objeto JSON con las especificaciones. Los valores deben ser string o número.</p>
+          <textarea
+            [formControl]="specJsonCtrl"
+            rows="8"
+            spellcheck="false"
+            [placeholder]="jsonPlaceholder"
+            class="w-full px-3 py-2.5 border border-amber-300 rounded-xl text-xs font-mono bg-gray-50 resize-none focus:ring-2 focus:ring-amber-400 focus:border-transparent leading-relaxed"
+          ></textarea>
+          @if (jsonSpecError) {
+            <p class="text-red-500 text-xs flex items-center gap-1">
+              <span>⚠️</span> {{ jsonSpecError }}
+            </p>
+          }
+          <div class="flex gap-2">
+            <button
+              type="button"
+              (click)="applyJsonSpecs()"
+              class="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition"
+            >
+              ✓ Aplicar JSON
+            </button>
+            <button
+              type="button"
+              (click)="toggleJsonMode()"
+              class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      } @else {
+        <div class="flex gap-2">
+          <input
+            [formControl]="specKeyCtrl"
+            type="text"
+            placeholder="material"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <input
+            [formControl]="specValueCtrl"
+            type="text"
+            placeholder="Cuero sintético"
+            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          />
+          <button
+            type="button"
+            (click)="addSpecification()"
+            class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+          >
+            +
+          </button>
+        </div>
+      }
+
+      <!-- Tabla de especificaciones actuales (siempre visible) -->
+      @if (objectKeys(specifications).length > 0) {
+        <table class="w-full text-sm">
+          <tbody class="divide-y divide-gray-100">
+            @for (key of objectKeys(specifications); track key) {
+              <tr class="flex items-center">
+                <td class="flex-1 py-2 font-medium text-gray-600 capitalize">
+                  {{ key }}
+                </td>
+                <td class="flex-1 py-2 text-gray-800">
+                  {{ specifications[key] }}
+                </td>
+                <td class="py-2">
+                  <button
+                    type="button"
+                    (click)="removeSpecification(key)"
+                    class="text-red-400 hover:text-red-600 text-xs transition-colors"
+                  >
+                    Eliminar
+                  </button>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      }
+    </section>
+  </div>
+
+  <!-- Columna derecha (1/3) -->
+  <div class="space-y-6">
+    <!-- Precio y estado -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <h2 class="font-bold text-gray-900 text-base">Precio y estado</h2>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Precio base (S/) *</label>
+        <input
+          formControlName="basePrice"
+          type="number"
+          min="0"
+          step="0.01"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">Descuento (%)</label>
+        <input
+          formControlName="discount"
+          type="number"
+          min="0"
+          max="100"
+          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+        />
+      </div>
+
+      <!-- Precio real al cliente -->
+      @if ((productForm.get('basePrice')?.value ?? 0) > 0) {
+        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
+             [class.bg-green-50]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.bg-gray-50]="!((productForm.get('discount')?.value ?? 0) > 0)"
+             [class.border]="true"
+             [class.border-green-200]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.border-gray-200]="!((productForm.get('discount')?.value ?? 0) > 0)">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">💰 Precio al cliente</p>
+            @if ((productForm.get('discount')?.value ?? 0) > 0) {
+              <p class="text-xs text-gray-400 line-through mt-0.5">
+                S/ {{ (+productForm.get('basePrice')!.value).toFixed(2) }}
+              </p>
+            }
+          </div>
+          <p class="text-xl font-bold"
+             [class.text-green-600]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.text-gray-800]="!((productForm.get('discount')?.value ?? 0) > 0)">
+            S/ {{ clientPrice.toFixed(2) }}
+          </p>
+        </div>
+      }
+
+      <div class="flex items-center gap-3 pt-2">
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input formControlName="isActive" type="checkbox" class="sr-only peer" />
+          <div
+            class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"
+          ></div>
+          <div
+            class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"
+          ></div>
+        </label>
+        <span class="text-sm font-medium text-gray-700">Producto activo</span>
+      </div>
+    </section>
+
+    <!-- Galería -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-base">Galería</h2>
+        <span class="text-xs text-gray-400">{{ galleryArray.length }} imagen(es)</span>
+      </div>
+      @if (galleryArray.length > 0) {
+        <div class="grid grid-cols-2 gap-2">
+          @for (img of galleryArray.controls; track $index) {
+            <div class="relative group rounded-xl overflow-hidden aspect-square bg-gray-100">
+              <img [src]="img.value" alt="Imagen" class="w-full h-full object-cover" />
+              <button
+                type="button"
+                (click)="removeGalleryImage($index)"
+                class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-lg"
+              >
+                🗑️
+              </button>
+            </div>
+          }
+        </div>
+      }
+      <label
+        class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+      >
+        @if (isUploadingImage) {
+          <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span class="text-xs text-gray-500">Subiendo...</span>
+        } @else {
+          <svg class="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="1.5"
+              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <span class="text-xs text-gray-500">Subir imágenes</span>
+        }
+        <input type="file" accept="image/*" multiple class="hidden" (change)="onGalleryFileSelected($event)" />
+      </label>
+    </section>
+
+    @if (!isNew) {
+      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+        <p class="text-xs text-blue-700 font-medium">💡 Para asignar stock a tiendas específicas, ve a</p>
+        <a routerLink="/business/stores" class="text-xs text-blue-600 underline font-semibold mt-1 block">
+          Gestión de Tiendas → Inventario
+        </a>
+      </div>
+    }
+
+    <!-- Garantía -->
+    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+      <div class="flex items-center justify-between">
+        <h2 class="font-bold text-gray-900 text-base">🛡️ Garantía</h2>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input formControlName="hasWarranty" type="checkbox" class="sr-only peer" />
+          <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"></div>
+          <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
+        </label>
+      </div>
+
+      <ng-container *ngIf="hasWarranty">
+        <div [formGroup]="warrantyGroup" class="space-y-3">
+          <!-- Duración + Unidad -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Duración *</label>
+              <input
+                formControlName="duration"
+                type="number"
+                min="1"
+                placeholder="12"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Unidad</label>
+              <select
+                formControlName="unit"
+                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              >
+                <option value="months">Meses</option>
+                <option value="days">Días</option>
+                <option value="years">Años</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Tipo de garantía -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Tipo de garantía</label>
+            <div class="grid grid-cols-2 gap-2">
+              <label
+                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                [class.border-primary]="warrantyType === 'manufacturer'"
+                [class.bg-primary]="warrantyType === 'manufacturer'"
+                [class.text-white]="warrantyType === 'manufacturer'"
+                [class.border-gray-200]="warrantyType !== 'manufacturer'"
+                [class.text-gray-700]="warrantyType !== 'manufacturer'"
+              >
+                <input type="radio" formControlName="type" value="manufacturer" class="sr-only" />
+                🏭 Fabricante
+              </label>
+              <label
+                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                [class.border-primary]="warrantyType === 'store'"
+                [class.bg-primary]="warrantyType === 'store'"
+                [class.text-white]="warrantyType === 'store'"
+                [class.border-gray-200]="warrantyType !== 'store'"
+                [class.text-gray-700]="warrantyType !== 'store'"
+              >
+                <input type="radio" formControlName="type" value="store" class="sr-only" />
+                🏪 Tienda
+              </label>
+            </div>
+          </div>
+
+          <!-- Descripción de cobertura -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Descripción de cobertura</label>
+            <textarea
+              formControlName="description"
+              rows="2"
+              placeholder="Ej. Cubre defectos de fábrica"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+            ></textarea>
+          </div>
+
+          <!-- URL de política -->
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">URL de política (opcional)</label>
+            <input
+              formControlName="policyUrl"
+              type="url"
+              placeholder="https://marca.com/garantia"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            />
+          </div>
+        </div>
+      </ng-container>
+      <p *ngIf="!hasWarranty" class="text-xs text-gray-400 text-center py-2">
+        Activa el interruptor para agregar garantía al producto
+      </p>
+    </section>
+  </div>
+</form>
