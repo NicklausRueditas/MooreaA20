@@ -8,6 +8,7 @@ import { ProductVariantsService } from '../../../../../core/services/catalog/pro
 import { BasketService } from '../../../../../core/services/commerce/basket.service';
 import { ToastService } from '../../../../../core/services/ui/toast.service';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
+import { GeoService } from '../../../../../core/services/utils/geo.service';
 import { CloudinaryPipe } from '../../../../../shared/pipes/cloudinary.pipe';
 
 @Component({
@@ -45,6 +46,7 @@ export class ProductsComponent {
     private basketService: BasketService,
     private toastService: ToastService,
     private authService: AuthService,
+    private geoService: GeoService,
   ) { }
 
   // ─── CARD SLIDER ──────────────────────────────────────────────────────────────
@@ -133,47 +135,83 @@ export class ProductsComponent {
     this.selectedSizeValue = '';
     this.selectedVariant = null;
 
-    // Usar el endpoint dedicado a variantes activas (/product-variants/product/:id/active)
-    // para evitar filtrado manual en el frontend y respetar el contrato del backend.
-    this.variantsService.getActiveVariantsByProduct(product._id).pipe(take(1)).subscribe({
-      next: (active) => {
-        this.modalVariants = active;
-        this.modalLoading = false;
+    // Obtener la geolocalización y luego cargar variantes GEO
+    this.geoService.resolve().pipe(take(1)).subscribe({
+      next: (location) => {
+        this.variantsService.getGeoVariantsByProduct(product._id, location.lat, location.lng).pipe(take(1)).subscribe({
+          next: (active) => {
+            this.modalVariants = active;
+            this.modalLoading = false;
 
-        // Si solo hay 1 variante → agregar directamente sin mostrar modal
-        if (active.length === 1) {
-          this.modalProduct = null;
-          this.addVariantToCart(active[0], product);
-          return;
-        }
+            // Si solo hay 1 variante → agregar directamente sin mostrar modal
+            if (active.length === 1) {
+              this.modalProduct = null;
+              this.addVariantToCart(active[0], product);
+              return;
+            }
 
-        if (active.length === 0) {
-          this.modalProduct = null;
-          this.toastService.showError('Este producto no tiene variantes disponibles');
-          return;
-        }
+            if (active.length === 0) {
+              this.modalProduct = null;
+              this.toastService.showError('Este producto no tiene variantes disponibles');
+              return;
+            }
 
-        // Auto-seleccionar si solo hay 1 color
-        const uniqueColors = this.getUniqueColors(active);
-        if (uniqueColors.length === 1) {
-          this.selectedColorCode = uniqueColors[0].code;
-          this.resolveVariant();
-        }
+            // Auto-seleccionar si solo hay 1 color
+            const uniqueColors = this.getUniqueColors(active);
+            if (uniqueColors.length === 1) {
+              this.selectedColorCode = uniqueColors[0].code;
+              this.resolveVariant();
+            }
 
-        // Auto-seleccionar si solo hay 1 talla
-        const sizes = this.getAvailableSizes(active, this.selectedColorCode);
-        if (sizes.length === 1) {
-          this.selectedSizeValue = sizes[0].value;
-          this.resolveVariant();
-          if (this.selectedVariant && uniqueColors.length === 1) {
-            this.modalProduct = null;
-            this.addVariantToCart(this.selectedVariant, product);
+            // Auto-seleccionar si solo hay 1 talla
+            const sizes = this.getAvailableSizes(active, this.selectedColorCode);
+            if (sizes.length === 1) {
+              this.selectedSizeValue = sizes[0].value;
+              this.resolveVariant();
+              if (this.selectedVariant && uniqueColors.length === 1) {
+                this.modalProduct = null;
+                this.addVariantToCart(this.selectedVariant, product);
+              }
+            }
+          },
+          error: () => {
+            this.modalLoading = false;
+            this.toastService.showError('Error al cargar las opciones del producto');
           }
-        }
+        });
       },
       error: () => {
-        this.modalLoading = false;
-        this.toastService.showError('Error al cargar las opciones del producto');
+        // Fallback si falla GeoService (no debería ocurrir ya que tiene su propio fallback interno)
+        this.variantsService.getActiveVariantsByProduct(product._id).pipe(take(1)).subscribe({
+          next: (active) => {
+            this.modalVariants = active;
+            this.modalLoading = false;
+            if (active.length === 1) {
+              this.modalProduct = null;
+              this.addVariantToCart(active[0], product);
+              return;
+            }
+            if (active.length === 0) {
+              this.modalProduct = null;
+              this.toastService.showError('Este producto no tiene variantes disponibles');
+              return;
+            }
+            const uniqueColors = this.getUniqueColors(active);
+            if (uniqueColors.length === 1) {
+              this.selectedColorCode = uniqueColors[0].code;
+              this.resolveVariant();
+            }
+            const sizes = this.getAvailableSizes(active, this.selectedColorCode);
+            if (sizes.length === 1) {
+              this.selectedSizeValue = sizes[0].value;
+              this.resolveVariant();
+            }
+          },
+          error: () => {
+            this.modalLoading = false;
+            this.toastService.showError('Error al cargar las opciones del producto');
+          }
+        });
       }
     });
   }

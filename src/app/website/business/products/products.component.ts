@@ -1,13 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
-import { Product } from '../../../core/interfaces/product.interface';
+import { RouterLink, ActivatedRoute } from '@angular/router';
+import { Product, ProductCatalog } from '../../../core/interfaces/product.interface';
 import { ProductsService } from '../../../core/services/catalog/products.service';
 import { SellersService } from '../../../core/services/catalog/sellers.service';
 import { AuthService }    from '../../../core/services/auth/auth.service';
 import { UpdateProductDto } from '../../../core/dtos/update-product.dto';
 import { ImageService } from '../../../core/services/utils/image.service';
+import { ProductVariantsService } from '../../../core/services/catalog/product-variants.service';
 
 @Component({
   selector: 'app-products',
@@ -20,6 +21,8 @@ export class ProductsComponent implements OnInit {
   // Product data
   products: Product[] = [];
   filteredProducts: Product[] = [];
+  catalogs: ProductCatalog[] = [];
+  filteredCatalogs: ProductCatalog[] = [];
 
   // UI state
   isAddModalOpen = false;
@@ -52,41 +55,135 @@ export class ProductsComponent implements OnInit {
   /** true cuando el usuario autenticado tiene rol 'seller' (catálogo filtrado) */
   isSeller = false;
 
+  /** true cuando el usuario autenticado tiene rol 'admin' */
+  isAdmin = false;
+
+  /** ID del seller cuando el admin navega desde /business/sellers/:id */
+  ownerFilter: string | null = null;
+
+  /** Nombre del seller para el banner de contexto */
+  ownerName = '';
+
   constructor(
     private productsService: ProductsService,
     private sellersService:  SellersService,
     private authService:     AuthService,
-    private imageService:    ImageService
+    private imageService:    ImageService,
+    private variantsService: ProductVariantsService,
+    private route:           ActivatedRoute
   ) { }
 
   ngOnInit(): void {
-    this.isSeller = this.authService.hasRole('seller');
+    this.isSeller    = this.authService.hasRole('seller');
+    this.isAdmin     = this.authService.hasRole('admin');
+    this.ownerFilter = this.route.snapshot.queryParamMap.get('owner');
+    this.ownerName   = this.route.snapshot.queryParamMap.get('ownerName') ?? '';
     this.loadProducts();
   }
 
   /**
    * Carga el catálogo según el rol del usuario autenticado.
-   * - Admin/Worker: GET /product/all  (todos los productos)
+   * - Admin/Worker: GET /product/all  (todos los productos agrupados)
    * - Seller:       GET /product/my-catalog  (solo los suyos)
    */
   private loadProducts(): void {
     this.isLoading = true;
-    const req$ = this.isSeller
-      ? this.sellersService.getMyCatalog(this.currentPage, this.itemsPerPage)
-      : this.productsService.getProducts(this.currentPage, this.itemsPerPage);
 
-    req$.subscribe({
-      next: (result) => {
-        this.products   = result.data;
-        this.totalItems = result.total;
-        this.applyFilters();
-        this.calculateStats();
-        this.isLoading = false;
-      },
-      error: (err) => {
-        console.error('Error cargando productos:', err);
-        this.isLoading = false;
-      },
+    // Admin viendo catálogo de un seller específico via query param ?owner=:id
+    if (this.ownerFilter && !this.isSeller) {
+      this.productsService.getProductsByOwner(this.ownerFilter).subscribe({
+        next: (result: any) => {
+          const products = result.data ?? result;
+          const total    = result.total ?? products.length;
+          const label    = this.ownerName ? `Catálogo de ${this.ownerName}` : 'Catálogo del Seller';
+          this.catalogs = [{ owner: this.ownerFilter!, label, total, products }];
+          this.products = products;
+          this.resolveVariantsImages(products);
+        },
+        error: () => { this.isLoading = false; }
+      });
+      return;
+    }
+
+    if (this.isSeller) {
+      this.sellersService.getMyCatalog(this.currentPage, this.itemsPerPage).subscribe({
+        next: (result) => {
+          this.totalItems = result.total;
+          const products = result.data;
+          
+          // Mapea a un catálogo único para el seller
+          const myCatalog: ProductCatalog = {
+            owner: this.authService.getCurrentUser()?._id ?? 'me',
+            label: 'Mi Catálogo',
+            total: result.total,
+            products: products
+          };
+          this.catalogs = [myCatalog];
+          this.products = products;
+          
+          this.resolveVariantsImages(products);
+        },
+        error: (err) => {
+          console.error('Error cargando catálogo del seller:', err);
+          this.isLoading = false;
+        }
+      });
+    } else {
+      this.productsService.getAdminCatalog().subscribe({
+        next: (result) => {
+          this.totalItems = result.total;
+          this.catalogs = result.catalogs;
+          this.products = result.catalogs.flatMap(c => c.products);
+          
+          this.resolveVariantsImages(this.products);
+        },
+        error: (err) => {
+          console.error('Error cargando catálogo admin:', err);
+          this.isLoading = false;
+        }
+      });
+    }
+  }
+
+  /**
+   * Resuelve la primera variante de cada producto para usar su imagen en la vista del catálogo
+   */
+  private resolveVariantsImages(products: Product[]): void {
+    if (!products || products.length === 0) {
+      this.applyFilters();
+      this.calculateStats();
+      this.isLoading = false;
+      return;
+    }
+
+    let pendingCount = products.length;
+    products.forEach(product => {
+      this.variantsService.getVariantsByProduct(product._id).subscribe({
+        next: (variants) => {
+          const firstWithImage = variants.find(v => v.gallery && v.gallery.length > 0);
+          if (firstWithImage) {
+            product.firstVariantImage = firstWithImage.gallery?.[0] || null;
+          } else {
+            product.firstVariantImage = null;
+          }
+          pendingCount--;
+          if (pendingCount === 0) {
+            this.applyFilters();
+            this.calculateStats();
+            this.isLoading = false;
+          }
+        },
+        error: (err) => {
+          console.error(`Error cargando variantes para ${product._id}:`, err);
+          (product as any).firstVariantImage = null;
+          pendingCount--;
+          if (pendingCount === 0) {
+            this.applyFilters();
+            this.calculateStats();
+            this.isLoading = false;
+          }
+        }
+      });
     });
   }
 
@@ -94,60 +191,76 @@ export class ProductsComponent implements OnInit {
    * Apply search and filters to products
    */
   applyFilters(): void {
-    let filtered = [...this.products];
+    const term = this.searchTerm ? this.searchTerm.toLowerCase() : '';
 
-    // Search filter
-    if (this.searchTerm) {
-      const term = this.searchTerm.toLowerCase();
-      filtered = filtered.filter(p => {
-        const categoryMatch = Array.isArray(p.category)
-          ? p.category.some(cat => cat.toLowerCase().includes(term))
-          : false;
-        return p.name.toLowerCase().includes(term) ||
-          p.brand?.toLowerCase().includes(term) ||
-          categoryMatch;
-      });
-    }
+    this.filteredCatalogs = this.catalogs.map(cat => {
+      let filtered = [...cat.products];
 
-    // Category filter
-    if (this.selectedCategory) {
-      filtered = filtered.filter(p =>
-        Array.isArray(p.category) ? p.category.includes(this.selectedCategory) : p.category === this.selectedCategory
-      );
-    }
-
-    // Brand filter
-    if (this.selectedBrand) {
-      filtered = filtered.filter(p => p.brand === this.selectedBrand);
-    }
-
-    // Active filter
-    if (this.activeFilter !== 'all') {
-      filtered = filtered.filter(p => {
-        if (this.activeFilter === 'active') return p.isActive === true;
-        if (this.activeFilter === 'inactive') return p.isActive === false;
-        return true;
-      });
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      let comparison = 0;
-      switch (this.sortBy) {
-        case 'name':
-          comparison = a.name.localeCompare(b.name);
-          break;
-        case 'basePrice':
-          comparison = (a.basePrice || 0) - (b.basePrice || 0);
-          break;
-        case 'date':
-          comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
-          break;
+      // Search filter
+      if (term) {
+        filtered = filtered.filter(p => {
+          const categoryMatch = Array.isArray(p.category)
+            ? p.category.some(c => c.toLowerCase().includes(term))
+            : false;
+          return p.name.toLowerCase().includes(term) ||
+            p.brand?.toLowerCase().includes(term) ||
+            categoryMatch;
+        });
       }
-      return this.sortOrder === 'asc' ? comparison : -comparison;
-    });
 
-    this.filteredProducts = filtered;
+      // Category filter
+      if (this.selectedCategory) {
+        filtered = filtered.filter(p =>
+          Array.isArray(p.category) ? p.category.includes(this.selectedCategory) : p.category === this.selectedCategory
+        );
+      }
+
+      // Brand filter
+      if (this.selectedBrand) {
+        filtered = filtered.filter(p => p.brand === this.selectedBrand);
+      }
+
+      // Active filter
+      if (this.activeFilter !== 'all') {
+        filtered = filtered.filter(p => {
+          if (this.activeFilter === 'active') return p.isActive === true;
+          if (this.activeFilter === 'inactive') return p.isActive === false;
+          return true;
+        });
+      }
+
+      // Sort
+      filtered.sort((a, b) => {
+        let comparison = 0;
+        switch (this.sortBy) {
+          case 'name':
+            comparison = a.name.localeCompare(b.name);
+            break;
+          case 'basePrice':
+            comparison = (a.basePrice || 0) - (b.basePrice || 0);
+            break;
+          case 'date':
+            comparison = new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+            break;
+        }
+        return this.sortOrder === 'asc' ? comparison : -comparison;
+      });
+
+      return {
+        ...cat,
+        products: filtered
+      };
+    }).filter(cat => cat.products.length > 0);
+
+    // Keep filteredProducts updated for stats/count checks
+    this.filteredProducts = this.filteredCatalogs.flatMap(c => c.products);
+  }
+
+  /**
+   * Carga una imagen por defecto en caso de error
+   */
+  setDefaultImage(event: Event): void {
+    (event.target as HTMLImageElement).src = 'assets/images/placeholder.svg';
   }
 
   /**

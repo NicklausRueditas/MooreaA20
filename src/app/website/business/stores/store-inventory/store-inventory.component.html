@@ -275,11 +275,18 @@
         <!-- Cuerpo del modal — selectedProductId usa standalone fuera del form -->
         <div class="px-6 py-5 space-y-5 max-h-[70vh] overflow-y-auto">
 
-          <!-- PASO 1: Producto -->
+          <!-- PASO 1: Producto con Buscador y Previsualización -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">
-              1 · Producto
-            </label>
+            <div class="flex items-center justify-between mb-2">
+              <label class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                1 · Seleccionar Producto
+              </label>
+              @if (allProducts.length > 0) {
+                <span class="text-[11px] font-semibold text-gray-400">
+                  {{ filteredModalProducts.length }} de {{ allProducts.length }} productos
+                </span>
+              }
+            </div>
 
             @if (allProducts.length === 0) {
               <div class="flex items-center gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
@@ -287,17 +294,30 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.538-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                 </svg>
-                No se encontraron productos del catálogo Moorea.
+                No se encontraron productos en este catálogo.
               </div>
             } @else {
+              <!-- Buscador de Producto -->
+              <div class="relative mb-2.5">
+                <input type="text" [(ngModel)]="modalProductSearch" [ngModelOptions]="{standalone: true}"
+                  placeholder="🔍 Buscar por nombre, código o marca..."
+                  class="w-full pl-9 pr-8 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs focus:ring-2 focus:ring-primary/30 focus:border-primary focus:bg-white outline-none transition">
+                <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                @if (modalProductSearch) {
+                  <button (click)="modalProductSearch = ''" class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs">✕</button>
+                }
+              </div>
+
+              <!-- Selector Dropdown -->
               <div class="relative">
-                <!-- standalone: true porque NO está dentro de [formGroup] -->
                 <select [(ngModel)]="selectedProductId" [ngModelOptions]="{standalone: true}"
                   (ngModelChange)="onModalProductChange($event)"
-                  class="w-full pl-4 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition appearance-none bg-white">
+                  class="w-full pl-4 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition appearance-none bg-white font-medium text-gray-800">
                   <option value="">— Selecciona un producto —</option>
-                  @for (p of allProducts; track p._id) {
-                    <option [value]="p._id">{{ p.name }}  ·  {{ p.code }}</option>
+                  @for (p of filteredModalProducts; track p._id) {
+                    <option [value]="p._id">{{ p.name }} · {{ p.code }} ({{ p.brand }})</option>
                   }
                 </select>
                 <svg class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -305,6 +325,36 @@
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </div>
+
+              <!-- 🖼️ TARJETA DE PREVISUALIZACIÓN DEL PRODUCTO SELECCIONADO -->
+              @if (selectedModalProduct) {
+                <div class="mt-3 p-3.5 bg-gradient-to-r from-violet-50/80 to-blue-50/60 border border-violet-200/80 rounded-xl flex items-center gap-3.5 shadow-xs">
+                  <!-- Thumbnail / Imagen -->
+                  <div class="w-14 h-14 rounded-lg bg-white border border-violet-100 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-xs">
+                    @if (getProductPreviewImage(selectedModalProduct)) {
+                      <img [src]="getProductPreviewImage(selectedModalProduct)" [alt]="selectedModalProduct.name" class="w-full h-full object-cover">
+                    } @else {
+                      <svg class="w-7 h-7 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  </div>
+
+                  <!-- Datos Clave del Producto -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="px-2 py-0.5 bg-violet-100 text-violet-800 rounded text-[10px] font-bold font-mono">{{ selectedModalProduct.code }}</span>
+                      <span class="text-xs text-gray-500 font-semibold truncate">{{ selectedModalProduct.brand }}</span>
+                    </div>
+                    <p class="text-sm font-bold text-gray-900 truncate mt-0.5">{{ selectedModalProduct.name }}</p>
+                    <div class="flex items-center gap-3 mt-1 text-xs text-gray-600">
+                      <span>Precio base: <strong class="text-violet-700 font-bold">S/ {{ selectedModalProduct.basePrice || 0 }}</strong></span>
+                      <span>·</span>
+                      <span>Variantes: <strong class="text-emerald-700 font-bold">{{ variantsForModal.length }} disponibles</strong></span>
+                    </div>
+                  </div>
+                </div>
+              }
             }
           </div>
 

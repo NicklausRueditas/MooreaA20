@@ -7,6 +7,7 @@ import { ProductVariantsService } from '../../../../../core/services/catalog/pro
 import { BasketService } from '../../../../../core/services/commerce/basket.service';
 import { ToastService } from '../../../../../core/services/ui/toast.service';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
+import { GeoService } from '../../../../../core/services/utils/geo.service';
 import { Product } from '../../../../../core/interfaces/product.interface';
 import { ProductVariant } from '../../../../../core/interfaces/store.interface';
 import { CloudinaryPipe } from '../../../../../shared/pipes/cloudinary.pipe';
@@ -53,8 +54,11 @@ export class ProductDetailComponent implements OnInit {
     private variantsService: ProductVariantsService,
     private basketService: BasketService,
     private toastService: ToastService,
-    private authService: AuthService
+    private authService: AuthService,
+    private geoService: GeoService
   ) {}
+
+  // ─── Lifecycle ────────────────────────────────────────────────────────────
 
   ngOnInit(): void {
     const productId = this.route.snapshot.paramMap.get('id');
@@ -97,16 +101,33 @@ export class ProductDetailComponent implements OnInit {
 
   loadVariants(productId: string): void {
     this.loadingVariants = true;
-    this.variantsService.getVariantsByProduct(productId).subscribe({
-      next: (variants) => {
-        this.variants = variants.filter(v => v.isActive !== false);
-        this.loadingVariants = false;
-        // Auto-seleccionar la primera variante al cargar (muestra sus imágenes en la galería)
-        if (this.variants.length > 0) {
-          this.autoSelectVariant(this.variants[0]);
-        }
+    this.geoService.resolve().subscribe({
+      next: (location) => {
+        this.variantsService.getGeoVariantsByProduct(productId, location.lat, location.lng).subscribe({
+          next: (variants) => {
+            this.variants = variants.filter(v => v.isActive !== false);
+            this.loadingVariants = false;
+            // Auto-seleccionar la primera variante al cargar (muestra sus imágenes en la galería)
+            if (this.variants.length > 0) {
+              this.autoSelectVariant(this.variants[0]);
+            }
+          },
+          error: () => { this.loadingVariants = false; }
+        });
       },
-      error: () => { this.loadingVariants = false; }
+      error: () => {
+        // Fallback si falla la geolocalización
+        this.variantsService.getVariantsByProduct(productId).subscribe({
+          next: (variants) => {
+            this.variants = variants.filter(v => v.isActive !== false);
+            this.loadingVariants = false;
+            if (this.variants.length > 0) {
+              this.autoSelectVariant(this.variants[0]);
+            }
+          },
+          error: () => { this.loadingVariants = false; }
+        });
+      }
     });
   }
 

@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
+import { RouterLink, ActivatedRoute } from '@angular/router';
 import { StoresService } from '../../../core/services/catalog/stores.service';
+import { AuthService }   from '../../../core/services/auth/auth.service';
 import { Store } from '../../../core/interfaces/store.interface';
 import { FormStoreComponent } from './form-store/form-store.component';
 
@@ -20,6 +21,18 @@ export class StoresComponent implements OnInit {
     // Filters
     searchTerm: string = '';
     statusFilter: 'all' | 'active' | 'inactive' = 'all';
+
+    /** true cuando el usuario autenticado tiene rol 'admin' */
+    isAdmin = false;
+
+    /** true cuando el usuario autenticado tiene rol 'seller' (solo ve su tienda) */
+    isSeller = false;
+
+    /** ID del seller cuando el admin entra via /business/stores?seller=:sellerId */
+    sellerFilter: string | null = null;
+
+    /** Nombre del seller para mostrar en el banner */
+    sellerName = '';
 
     // UI State
     showFormModal: boolean = false;
@@ -39,16 +52,61 @@ export class StoresComponent implements OnInit {
         return this.stores.filter(s => !s.isActive).length;
     }
 
-    constructor(private storesService: StoresService) { }
+    constructor(
+        private storesService: StoresService,
+        private route:         ActivatedRoute,
+        private authService:   AuthService
+    ) { }
 
     ngOnInit(): void {
+        // Si el admin llega desde /business/sellers/:id con ?seller=:sellerId,
+        // mostramos solo las tiendas de ese seller.
+        this.isAdmin      = this.authService.hasRole('admin');
+        this.isSeller     = this.authService.hasRole('seller');
+        this.sellerFilter = this.route.snapshot.queryParamMap.get('seller');
+        this.sellerName   = this.route.snapshot.queryParamMap.get('sellerName') ?? '';
         this.loadStores();
     }
 
     /**
-     * Load all stores
+     * Carga tiendas según el contexto:
+     * - Con ?seller=:id → carga solo las tiendas del seller filtrado
+     * - Sin param       → carga todas las tiendas (vista general admin)
      */
     loadStores(): void {
+        // 1. Seller autenticado: consulta sus propias tiendas
+        if (this.isSeller && !this.isAdmin) {
+            this.storesService.getMyStore().subscribe({
+                next: (stores: Store[]) => {
+                    this.stores = Array.isArray(stores) ? stores : (stores ? [stores] : []);
+                    this.applyFilters();
+                },
+                error: (err) => {
+                    console.warn('No se pudieron cargar tiendas del seller:', err);
+                    this.stores = [];
+                    this.applyFilters();
+                }
+            });
+            return;
+        }
+
+        // 2. Admin viendo tiendas de un seller específico (?seller=:id)
+        if (this.sellerFilter) {
+            this.storesService.getStoresBySeller(this.sellerFilter).subscribe({
+                next: (stores) => {
+                    this.stores = stores;
+                    this.applyFilters();
+                },
+                error: (err) => {
+                    console.error('Error loading stores for seller:', err);
+                    this.stores = [];
+                    this.applyFilters();
+                }
+            });
+            return;
+        }
+
+        // 3. Admin / Worker general: carga todas las tiendas
         this.storesService.getAllStores().subscribe({
             next: (stores) => {
                 this.stores = stores;
@@ -127,7 +185,11 @@ export class StoresComponent implements OnInit {
      */
     toggleStoreStatus(store: Store): void {
         const newStatus = !store.isActive;
-        this.storesService.updateStore(store._id!, { isActive: newStatus }).subscribe({
+        const request$ = (this.isSeller && !this.isAdmin)
+            ? this.storesService.updateMyStore(store._id!, { isActive: newStatus })
+            : this.storesService.updateStore(store._id!, { isActive: newStatus });
+
+        request$.subscribe({
             next: () => {
                 store.isActive = newStatus;
                 this.applyFilters();
@@ -142,7 +204,11 @@ export class StoresComponent implements OnInit {
     deleteStore(store: Store): void {
         const confirmDelete = confirm(`¿Estás seguro de eliminar la tienda "${store.name}"?`);
         if (confirmDelete) {
-            this.storesService.deleteStore(store._id!).subscribe({
+            const req$ = (this.isSeller && !this.isAdmin)
+                ? this.storesService.deleteMyStore(store._id!)
+                : this.storesService.deleteStore(store._id!);
+
+            req$.subscribe({
                 next: () => {
                     this.loadStores();
                     console.log('✅ Store deleted');

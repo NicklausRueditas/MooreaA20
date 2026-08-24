@@ -46,6 +46,20 @@ export const businessRoutes: Routes = [
     loadComponent: () => import('./sellers/seller-register/seller-register.component').then(m => m.SellerRegisterComponent)
   },
   {
+    path: 'sellers/:id',
+    loadComponent: () => import('./sellers/seller-detail/seller-detail.component').then(m => m.SellerDetailComponent)
+  },
+  {
+    // Perfil del Seller autenticado — resumen con accesos directos a Catálogo, Tiendas y Pedidos
+    path: 'profile',
+    loadComponent: () => import('./seller-profile/seller-profile.component').then(m => m.SellerProfileComponent)
+  },
+  {
+    // Alias de perfil del seller
+    path: 'my-shop',
+    loadComponent: () => import('./seller-profile/seller-profile.component').then(m => m.SellerProfileComponent)
+  },
+  {
     path: '',
     redirectTo: 'products',
     pathMatch: 'full'

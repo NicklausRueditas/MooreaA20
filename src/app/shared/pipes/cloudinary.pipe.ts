@@ -20,6 +20,11 @@ export class CloudinaryPipe implements PipeTransform {
   transform(url: string | null | undefined, transform?: string): string {
     if (!url) return 'assets/images/placeholder.svg';
 
+    // Retorna fallback local para URLs de prueba/mock
+    if (url.includes('example.com') || url.includes('ejemplo.com')) {
+      return 'assets/images/placeholder.svg';
+    }
+
     // Solo modifica URLs de Cloudinary
     if (!url.includes(CloudinaryPipe.CLOUDINARY_HOST)) return url;
 

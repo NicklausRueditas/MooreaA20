@@ -213,4 +213,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/basket']);
     this.closeAllMenus();
   }
+
+  get isSeller(): boolean {
+    return this.userData?.roles?.includes('seller') ?? false;
+  }
+
+  get isAdmin(): boolean {
+    return this.userData?.roles?.includes('admin') ?? false;
+  }
 }

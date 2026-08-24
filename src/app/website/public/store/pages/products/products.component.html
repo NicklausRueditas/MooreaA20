@@ -18,7 +18,7 @@
 
       <!-- Imágenes (cross-fade) -->
       <a [routerLink]="['/product', product._id]" class="block w-full h-full" [attr.aria-label]="product.name">
-        @for (img of imgs; track img; let i = $index) {
+        @for (img of imgs; track $index; let i = $index) {
         <img class="absolute inset-0 w-full h-full object-contain p-3 transition-opacity duration-300 select-none"
           [class.opacity-100]="i === activeIdx" [class.opacity-0]="i !== activeIdx"
           [src]="img | cloudinary:'w_500,h_500,c_fit,q_auto,f_auto'" [alt]="product.name + ' imagen ' + (i + 1)"
@@ -45,7 +45,7 @@
 
       <!-- Dots indicadores -->
       <div class="absolute bottom-2 left-0 right-0 flex justify-center gap-1 z-10">
-        @for (img of imgs; track img; let i = $index) {
+        @for (img of imgs; track $index; let i = $index) {
         <button class="rounded-full border-0 bg-none transition-all duration-200"
           [class]="i === activeIdx ? 'w-4 h-1.5 bg-gray-700' : 'w-1.5 h-1.5 bg-gray-400/50'"
           (click)="cardGoTo($event, product, i)" [attr.aria-label]="'Ver imagen ' + (i + 1)">
@@ -164,12 +164,12 @@
         <div class="flex items-baseline gap-1.5 flex-wrap">
           <!-- Precio final -->
           <span class="text-[17px] font-extrabold text-gray-900 leading-none">
-            S/ {{ product.basePrice | number:'1.0-0' }}
+            S/ {{ (product.finalPrice || product.basePrice) | number:'1.0-0' }}
           </span>
           <!-- Precio original tachado -->
           @if (getDiscountPercentage(product) > 0) {
           <span class="text-xs text-gray-400 line-through">
-            S/ {{ getOriginalPrice(product) | number:'1.0-0' }}
+            S/ {{ (product.finalPrice ? product.basePrice : getOriginalPrice(product)) | number:'1.0-0' }}
           </span>
           }
         </div>
@@ -194,6 +194,24 @@
             }
           </div>
           <span class="text-[10px] text-gray-400">({{ product.rating.count }})</span>
+        </div>
+        }
+
+        <!-- Delivery & Pickup -->
+        @if (product.delivery || product.pickup) {
+        <div class="pt-1.5 space-y-1 border-t border-gray-50 mt-1">
+          @if (product.delivery) {
+          <div class="flex items-center gap-1 text-[10px] text-gray-500 font-medium">
+            <span>🚚</span>
+            <span class="truncate">{{ product.delivery.label }}</span>
+          </div>
+          }
+          @if (product.pickup && product.pickup.available) {
+          <div class="flex items-center gap-1 text-[10px] text-emerald-600 font-semibold">
+            <span>🏪</span>
+            <span class="truncate">{{ product.pickup.label }}</span>
+          </div>
+          }
         </div>
         }
       </div>
@@ -263,7 +281,7 @@
             </svg>
           </button>
           <div class="qa-gallery__dots">
-            @for (img of getModalGallery(); track img) {
+            @for (img of getModalGallery(); track $index) {
             <span class="qa-gallery__dot"
               [class.qa-gallery__dot--active]="(modalMainImage || getModalGallery()[0]) === img">
             </span>
@@ -275,7 +293,7 @@
         <!-- Thumbnails strip -->
         @if (getModalGallery().length > 1) {
         <div class="qa-gallery__strip">
-          @for (img of getModalGallery(); track img; let idx = $index) {
+          @for (img of getModalGallery(); track $index; let idx = $index) {
           <button class="qa-gallery__thumb"
             [class.qa-gallery__thumb--active]="(modalMainImage || getModalGallery()[0]) === img"
             (click)="modalMainImage = img" [attr.aria-label]="'Ver imagen ' + (idx + 1)">
@@ -372,6 +390,52 @@
         </svg>
         SKU: <strong>{{ selectedVariant.sku }}</strong>
       </div>
+
+      <!-- Disponibilidad física y delivery por tienda -->
+      @if ($any(selectedVariant).storeAvailability?.length > 0) {
+      <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-2 text-left">
+        <h4 class="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          Disponibilidad en Tiendas
+        </h4>
+        <div class="divide-y divide-slate-100 max-h-32 overflow-y-auto pr-1">
+          @for (store of $any(selectedVariant).storeAvailability; track store.storeCode) {
+          <div class="py-1.5 flex items-center justify-between text-[11px] gap-3 first:pt-0 last:pb-0">
+            <div class="min-w-0">
+              <p class="font-bold text-slate-900 truncate">{{ store.storeName }}</p>
+              <p class="text-slate-500 text-[10px] truncate">{{ store.address }} &middot; {{ store.distanceKm | number:'1.1-1' }} km</p>
+            </div>
+            <div class="text-right shrink-0">
+              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold"
+                    [class]="store.availableQty > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
+                {{ store.availableQty > 0 ? store.availableQty + ' uds' : 'Sin stock' }}
+              </span>
+              @if (store.pickupLabel && store.pickupLabel !== 'No disponible') {
+              <p class="text-[9px] font-semibold mt-0.5"
+                 [class]="store.pickupLabel.includes('costo') ? 'text-amber-500' : 'text-emerald-600'">
+                🏪 {{ store.pickupLabel }}
+              </p>
+              }
+              @if (store.deliveryLabel) {
+              <p class="text-[9px] mt-0.5"
+                 [class]="store.isFreeDelivery ? 'text-emerald-600 font-bold' : 'text-gray-500'">
+                🚚 {{ store.deliveryLabel }}
+              </p>
+              }
+              @if (store.weightSurcharge && store.weightSurcharge > 0) {
+              <p class="text-[9px] text-amber-500 mt-0.5">
+                ⚖️ +S/ {{ store.weightSurcharge | number:'1.2-2' }} por peso
+              </p>
+              }
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
       }
 
       }

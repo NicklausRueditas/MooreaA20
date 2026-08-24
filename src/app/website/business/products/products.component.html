@@ -1,6 +1,32 @@
 <div class="min-h-screen bg-gray-50">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
+    <!-- ── Banner: Filtrado por Seller (solo cuando admin navega desde /sellers/:id) ── -->
+    @if (ownerFilter && ownerName) {
+      <div class="mb-6 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <div class="h-8 w-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+          </div>
+          <div>
+            <p class="text-xs font-bold text-violet-800">Viendo catálogo de: {{ ownerName }}</p>
+            <p class="text-xs text-violet-600">Mostrando únicamente los productos de este seller</p>
+          </div>
+        </div>
+        @if (isAdmin) {
+          <a [routerLink]="['/business/sellers', ownerFilter]"
+            class="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg text-xs transition shadow-sm cursor-pointer flex-shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            Volver al Seller
+          </a>
+        }
+      </div>
+    }
+
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center gap-3">
@@ -217,197 +243,235 @@
 
     <!-- Products Table View -->
     @if (!isLoading && viewMode === 'table') {
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
-            <tr>
-              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Producto</th>
-              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Categoría
-              </th>
-              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Marca</th>
-              <th class="px-6 py-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Precio</th>
-              <th class="px-6 py-4 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Acciones
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            @for (product of filteredProducts; track product._id) {
-            <tr class="hover:bg-gray-50 transition-colors">
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex items-center">
-                  <div class="h-10 w-10 flex-shrink-0">
-                    @if (product.gallery && product.gallery[0]) {
-                    <img class="h-10 w-10 rounded-lg object-cover" [src]="product.gallery[0]" [alt]="product.name">
-                    } @else {
-                    <div class="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center">
-                      <svg class="h-6 w-6 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
+    <div class="space-y-8">
+      @for (catalog of filteredCatalogs; track catalog.owner) {
+      <div class="bg-white rounded-3xl border border-slate-200/80 shadow-md shadow-slate-150/30 overflow-hidden">
+        <!-- Cabecera del Catálogo / Creador (Dentro del contorno) -->
+        <div class="flex items-center justify-between px-6 py-4.5 bg-slate-50/70 border-b border-slate-200/60">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border"
+                  [class.bg-indigo-50]="catalog.owner !== null" [class.text-indigo-700]="catalog.owner !== null" [class.border-indigo-150]="catalog.owner !== null"
+                  [class.bg-slate-100]="catalog.owner === null" [class.text-slate-600]="catalog.owner === null" [class.border-slate-250]="catalog.owner === null">
+              {{ catalog.owner === null ? '👑 Admin' : '🏪 Seller' }}
+            </span>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight">
+              {{ catalog.label }}
+            </h3>
+          </div>
+          <span class="text-xs text-slate-400 font-bold bg-white px-2.5 py-1 border border-slate-200/60 rounded-xl shadow-inner shadow-slate-100">
+            {{ catalog.products.length }} {{ catalog.products.length === 1 ? 'producto' : 'productos' }}
+          </span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80 border-b border-slate-200/40">
+              <tr>
+                <th class="px-6 py-4.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Producto</th>
+                <th class="px-6 py-4.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Categoría</th>
+                <th class="px-6 py-4.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Marca</th>
+                <th class="px-6 py-4.5 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Precio</th>
+                <th class="px-6 py-4.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Estado</th>
+                <th class="px-6 py-4.5 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-slate-100">
+              @for (product of catalog.products; track product._id) {
+              <tr class="hover:bg-slate-50/50 transition-colors duration-150">
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="h-11 w-11 flex-shrink-0">
+                      <img class="h-11 w-11 rounded-xl object-cover border border-gray-100 shadow-sm"
+                           [src]="product.firstVariantImage || (product.gallery && product.gallery[0]) || 'assets/images/placeholder.svg'"
+                           [alt]="product.name"
+                           (error)="setDefaultImage($event)" />
                     </div>
+                    <div class="ml-4 min-w-0">
+                      <div class="text-sm font-semibold text-gray-900 truncate max-w-xs md:max-w-md">{{ product.name }}</div>
+                      <div class="text-xs text-gray-400 font-mono mt-0.5">{{ product.code }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <div class="flex flex-wrap gap-1">
+                    @if (product.category && product.category.length > 0) {
+                    @for (cat of product.category; track cat) {
+                    <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-semibold rounded-full bg-blue-50 text-blue-700 border border-blue-100">
+                      {{ cat }}
+                    </span>
+                    }
+                    } @else {
+                    <span class="px-2.5 py-0.5 inline-flex text-[11px] leading-5 font-semibold rounded-full bg-slate-50 text-slate-500 border border-slate-200">
+                      Sin categoría
+                    </span>
                     }
                   </div>
-                  <div class="ml-4">
-                    <div class="text-sm font-medium text-gray-900">{{ product.name }}</div>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-500">
+                  {{ product.brand || '-' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                  S/ {{ product.basePrice | number:'1.2-2' }}
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold shadow-sm border"
+                    [class.bg-emerald-50]="product.isActive" [class.text-emerald-700]="product.isActive" [class.border-emerald-200]="product.isActive"
+                    [class.bg-slate-50]="!product.isActive" [class.text-slate-500]="!product.isActive" [class.border-slate-200]="!product.isActive">
+                    <span class="w-1.5 h-1.5 rounded-full" [class.bg-emerald-500]="product.isActive" [class.bg-slate-400]="!product.isActive"></span>
+                    {{ product.isActive ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-center">
+                  <div class="flex justify-center gap-1.5">
+                    <!-- Editar -->
+                    <a [routerLink]="['/business/products', product._id, 'edit']"
+                      class="p-2 text-blue-600 hover:bg-blue-50 hover:text-blue-700 rounded-xl transition-all duration-200 hover:scale-105" title="Ver/Editar">
+                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </a>
+                    <!-- Activar / Desactivar -->
+                    <button (click)="toggleProductActive(product)"
+                      [title]="product.isActive ? 'Desactivar producto' : 'Activar producto'"
+                      class="p-2 rounded-xl transition-all duration-200 hover:scale-105"
+                      [class.text-amber-500]="product.isActive"
+                      [class.hover:bg-amber-50]="product.isActive"
+                      [class.text-emerald-600]="!product.isActive"
+                      [class.hover:bg-emerald-50]="!product.isActive">
+                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </button>
+                    <!-- Eliminar -->
+                    <button (click)="deleteProduct(product._id)"
+                      class="p-2 text-red-600 hover:bg-red-50 hover:text-red-700 rounded-xl transition-all duration-200 hover:scale-105"
+                      title="Eliminar permanentemente">
+                      <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
                   </div>
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="flex flex-wrap gap-1">
-                  @if (product.category && product.category.length > 0) {
-                  @for (cat of product.category; track cat) {
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                    {{ cat }}
-                  </span>
-                  }
-                  } @else {
-                  <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                    Sin categoría
-                  </span>
-                  }
-                </div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                {{ product.brand || '-' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                S/ {{ product.basePrice | number:'1.2-2' }}
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap text-center">
-                <div class="flex justify-center gap-1">
-                  <!-- Editar -->
-                  <a [routerLink]="['/business/products', product._id, 'edit']"
-                    class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="Ver/Editar">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </a>
-                  <!-- Activar / Desactivar -->
-                  <button (click)="toggleProductActive(product)"
-                    [title]="product.isActive ? 'Desactivar producto' : 'Activar producto'"
-                    class="p-2 rounded-lg transition-colors"
-                    [class.text-amber-500]="product.isActive"
-                    [class.hover:bg-amber-50]="product.isActive"
-                    [class.text-green-600]="!product.isActive"
-                    [class.hover:bg-green-50]="!product.isActive">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                  </button>
-                  <!-- Eliminar -->
-                  <button (click)="deleteProduct(product._id)"
-                    class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                    title="Eliminar permanentemente">
-                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-              </td>
-            </tr>
-            } @empty {
-            <tr>
-              <td colspan="5" class="px-6 py-12 text-center text-sm text-gray-500">
-                No se encontraron productos
-              </td>
-            </tr>
-            }
-          </tbody>
-        </table>
+                </td>
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       </div>
+      } @empty {
+      <div class="bg-white rounded-2xl border-2 border-dashed border-gray-200 py-16 text-center shadow-sm">
+        <div class="text-4xl mb-3">📦</div>
+        <p class="font-semibold text-slate-700 text-sm">No se encontraron productos</p>
+        <p class="text-xs text-gray-400 mt-1">Intenta ajustando los filtros o crea un nuevo producto.</p>
+      </div>
+      }
     </div>
     }
 
     <!-- Products Grid View -->
     @if (!isLoading && viewMode === 'grid') {
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      @for (product of filteredProducts; track product._id) {
-      <div
-        class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
-        <div class="aspect-square bg-gray-100 relative">
-          @if (product.gallery && product.gallery[0]) {
-          <img class="w-full h-full object-cover" [src]="product.gallery[0]" [alt]="product.name">
-          } @else {
-          <div class="w-full h-full flex items-center justify-center">
-            <svg class="h-16 w-16 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-            </svg>
+    <div class="space-y-8">
+      @for (catalog of filteredCatalogs; track catalog.owner) {
+      <div class="bg-slate-50/50 rounded-3xl border border-slate-200/80 p-6.5 space-y-5">
+        <!-- Cabecera del Catálogo / Creador (Dentro del contorno) -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider border"
+                  [class.bg-indigo-50]="catalog.owner !== null" [class.text-indigo-700]="catalog.owner !== null" [class.border-indigo-150]="catalog.owner !== null"
+                  [class.bg-slate-100]="catalog.owner === null" [class.text-slate-600]="catalog.owner === null" [class.border-slate-250]="catalog.owner === null">
+              {{ catalog.owner === null ? '👑 Admin' : '🏪 Seller' }}
+            </span>
+            <h3 class="text-sm font-black text-slate-800 tracking-tight">
+              {{ catalog.label }}
+            </h3>
           </div>
-          }
-          @if (product.discount && product.discount > 0) {
-          <div class="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded">
-            -{{ product.discount }}%
-          </div>
-          }
+          <span class="text-xs text-slate-400 font-bold bg-white px-2.5 py-1 border border-slate-200/60 rounded-xl shadow-inner shadow-slate-100">
+            {{ catalog.products.length }} {{ catalog.products.length === 1 ? 'producto' : 'productos' }}
+          </span>
         </div>
-        <div class="p-4">
-          <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">{{ product.name }}</h3>
-          <div class="flex flex-wrap items-center gap-2 mb-3">
-            @if (product.category && product.category.length > 0) {
-            @for (cat of product.category.slice(0, 2); track cat) {
-            <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
-              {{ cat }}
-            </span>
-            }
-            } @else {
-            <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
-              Sin categoría
-            </span>
-            }
-            @if (product.brand) {
-            <span class="text-xs text-gray-500">{{ product.brand }}</span>
-            }
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          @for (product of catalog.products; track product._id) {
+          <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
+            <div class="aspect-square bg-gray-100 relative">
+              <img class="w-full h-full object-cover"
+                   [src]="product.firstVariantImage || (product.gallery && product.gallery[0]) || 'assets/images/placeholder.svg'"
+                   [alt]="product.name"
+                   (error)="setDefaultImage($event)">
+              @if (product.discount && product.discount > 0) {
+              <div class="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs font-semibold rounded">
+                -{{ product.discount }}%
+              </div>
+              }
+            </div>
+            <div class="p-4">
+              <h3 class="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">{{ product.name }}</h3>
+              <div class="flex flex-wrap items-center gap-2 mb-3">
+                @if (product.category && product.category.length > 0) {
+                @for (cat of product.category.slice(0, 2); track cat) {
+                <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded">
+                  {{ cat }}
+                </span>
+                }
+                } @else {
+                <span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-800 rounded">
+                  Sin categoría
+                </span>
+                }
+                @if (product.brand) {
+                <span class="text-xs text-gray-500">{{ product.brand }}</span>
+                }
+              </div>
+              <div class="flex items-center justify-between mb-4">
+                <span class="text-lg font-bold text-gray-900">S/ {{ product.basePrice | number:'1.2-2' }}</span>
+                <span class="text-xs text-gray-500">
+                  {{ product.updatedAt ? (product.updatedAt | date:'dd/MM/yyyy') : (product.createdAt | date:'dd/MM/yyyy') }}
+                </span>
+              </div>
+              <div class="flex gap-2">
+                <a [routerLink]="['/business/products', product._id, 'edit']"
+                  class="flex-1 px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors text-center">
+                  Editar
+                </a>
+                <!-- Activar / Desactivar -->
+                <button (click)="toggleProductActive(product)"
+                  [title]="product.isActive ? 'Desactivar' : 'Activar'"
+                  class="px-3 py-2 rounded-lg transition-colors"
+                  [class.text-amber-600]="product.isActive"
+                  [class.bg-amber-50]="product.isActive"
+                  [class.hover:bg-amber-100]="product.isActive"
+                  [class.text-green-600]="!product.isActive"
+                  [class.bg-green-50]="!product.isActive"
+                  [class.hover:bg-green-100]="!product.isActive">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M13 10V3L4 14h7v7l9-11h-7z" />
+                  </svg>
+                </button>
+                <!-- Eliminar -->
+                <button (click)="deleteProduct(product._id)"
+                  class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
+                  <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="flex items-center justify-between mb-4">
-            <span class="text-lg font-bold text-gray-900">S/ {{ product.basePrice | number:'1.2-2' }}</span>
-            <span class="text-xs text-gray-500">
-              {{ product.updatedAt ? (product.updatedAt | date:'dd/MM/yyyy') : (product.createdAt | date:'dd/MM/yyyy')
-              }}
-            </span>
-          </div>
-          <div class="flex gap-2">
-            <a [routerLink]="['/business/products', product._id, 'edit']"
-              class="flex-1 px-3 py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors text-center">
-              Editar
-            </a>
-            <!-- Activar / Desactivar -->
-            <button (click)="toggleProductActive(product)"
-              [title]="product.isActive ? 'Desactivar' : 'Activar'"
-              class="px-3 py-2 rounded-lg transition-colors"
-              [class.text-amber-600]="product.isActive"
-              [class.bg-amber-50]="product.isActive"
-              [class.hover:bg-amber-100]="product.isActive"
-              [class.text-green-600]="!product.isActive"
-              [class.bg-green-50]="!product.isActive"
-              [class.hover:bg-green-100]="!product.isActive">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-            </button>
-            <!-- Eliminar -->
-            <button (click)="deleteProduct(product._id)"
-              class="px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100 transition-colors">
-              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-            </button>
-          </div>
+          }
         </div>
       </div>
       } @empty {
-      <div class="col-span-full text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <div class="text-center py-16 bg-white rounded-2xl border-2 border-dashed border-gray-200 shadow-sm max-w-sm mx-auto">
+        <svg class="mx-auto h-12 w-12 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
             d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
         </svg>
-        <p class="mt-2 text-sm text-gray-500">No se encontraron productos</p>
+        <p class="mt-3 text-sm font-semibold text-slate-700">No se encontraron productos</p>
       </div>
       }
     </div>

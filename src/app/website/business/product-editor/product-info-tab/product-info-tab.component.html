@@ -3,131 +3,182 @@
   <!-- Columna izquierda (2/3) -->
   <div class="lg:col-span-2 space-y-6">
     <!-- Datos básicos -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-      <h2 class="font-bold text-gray-900 text-base">Datos básicos</h2>
-      <div class="grid grid-cols-2 gap-4">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-5">
+      <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+        <span>📋</span> Datos básicos
+      </h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Código *</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Código *</label>
           <input
             formControlName="code"
             type="text"
             placeholder="BASH-DALLAS"
-            class="w-full px-3 py-2 border rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            class="w-full px-3.5 py-2.5 border rounded-xl text-sm font-mono uppercase focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all duration-200 shadow-sm placeholder-slate-300"
             [class.border-red-400]="isFieldInvalid('code')"
-            [class.border-gray-300]="!isFieldInvalid('code')"
+            [class.border-gray-200]="!isFieldInvalid('code')"
           />
           @if (isFieldInvalid('code')) {
-            <p class="text-red-500 text-xs mt-1">Requerido (mín. 3 caracteres)</p>
+            <p class="text-red-500 text-xs mt-1 font-medium">Requerido (mín. 3 caracteres)</p>
           }
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre *</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Nombre *</label>
           <input
             formControlName="name"
             type="text"
             placeholder="Zapatilla Bash Dallas"
-            class="w-full px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            class="w-full px-3.5 py-2.5 border rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all duration-200 shadow-sm placeholder-slate-300"
             [class.border-red-400]="isFieldInvalid('name')"
-            [class.border-gray-300]="!isFieldInvalid('name')"
+            [class.border-gray-200]="!isFieldInvalid('name')"
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Marca *</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Marca *</label>
           <input
             formControlName="brand"
             type="text"
             placeholder="Bash"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all duration-200 shadow-sm placeholder-slate-300"
           />
         </div>
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Modelo</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Modelo</label>
           <input
             formControlName="model"
             type="text"
             placeholder="Dallas"
-            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent transition"
+            class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all duration-200 shadow-sm placeholder-slate-300"
           />
         </div>
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Descripción</label>
         <textarea
           formControlName="description"
           rows="3"
           placeholder="Descripción del producto..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent transition"
+          class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all duration-200 shadow-sm placeholder-slate-300 leading-relaxed"
         ></textarea>
       </div>
     </section>
 
     <!-- Categorías -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
-      <h2 class="font-bold text-gray-900 text-base">Categorías *</h2>
-      <select
-        (change)="addCategory($event)"
-        class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
-      >
-        <option value="">— Agregar categoría —</option>
-        @for (group of categoryGroups; track group.group) {
-          <optgroup [label]="group.icon + ' ' + group.group">
-            @for (opt of group.options; track opt) {
-              <option [value]="opt">{{ opt }}</option>
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-4">
+      <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+        <span>🏷️</span> Categorías *
+      </h2>
+      <div class="relative">
+        <div class="relative">
+          <input
+            [formControl]="categorySearchCtrl"
+            type="text"
+            placeholder="🔍 Buscar y agregar categoría..."
+            (focus)="isCategoryDropdownOpen = true"
+            class="w-full px-3.5 py-2.5 pl-10 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white shadow-sm font-semibold text-slate-700 placeholder-slate-300"
+          />
+          @if (categorySearchCtrl.value) {
+            <button
+              type="button"
+              (click)="categorySearchCtrl.setValue('')"
+              class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 text-sm font-bold"
+            >
+              &times;
+            </button>
+          }
+        </div>
+
+        <!-- Dropdown menu -->
+        @if (isCategoryDropdownOpen) {
+          <!-- Overlay para cerrar al hacer clic afuera -->
+          <div class="fixed inset-0 z-10" (click)="isCategoryDropdownOpen = false"></div>
+
+          <div class="absolute z-20 w-full mt-2 bg-white rounded-2xl border border-slate-100 shadow-xl max-h-64 overflow-y-auto p-2.5 space-y-2.5 animate-fade-in">
+            @for (group of filteredCategoryGroups; track group.group) {
+              <div class="space-y-1">
+                <p class="text-[10px] font-extrabold text-slate-400 px-2 py-1 bg-slate-50 rounded-lg uppercase tracking-wider">
+                  {{ group.icon }} {{ group.group }}
+                </p>
+                <div class="grid grid-cols-2 gap-1.5 p-1">
+                  @for (opt of group.options; track opt) {
+                    @let isSelected = categoryArray.value.includes(opt);
+                    <button
+                      type="button"
+                      (click)="selectCategory(opt)"
+                      class="px-2.5 py-2 text-left text-xs font-bold rounded-xl transition-all flex items-center justify-between"
+                      [class.bg-primary/5]="isSelected"
+                      [class.text-primary]="isSelected"
+                      [class.bg-white]="!isSelected"
+                      [class.text-slate-600]="!isSelected"
+                      [class.hover:bg-slate-50]="!isSelected"
+                    >
+                      <span>{{ opt }}</span>
+                      @if (isSelected) {
+                        <span class="text-[10px] font-black">✓</span>
+                      }
+                    </button>
+                  }
+                </div>
+              </div>
+            } @empty {
+              <p class="text-xs text-slate-400 text-center py-4">No se encontraron categorías</p>
             }
-          </optgroup>
+          </div>
         }
-      </select>
-      <div class="flex flex-wrap gap-2">
+      </div>
+      <div class="flex flex-wrap gap-2.5 pt-1">
         @for (cat of categoryArray.controls; track $index) {
           <span
-            class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary rounded-full text-sm font-medium"
+            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 bg-primary/10 text-primary border border-primary/20 rounded-xl text-xs font-bold shadow-sm animate-fade-in"
           >
             {{ cat.value }}
             <button
               type="button"
               (click)="removeCategory($index)"
-              class="text-primary/60 hover:text-primary transition-colors leading-none"
+              class="text-primary/60 hover:text-primary transition-colors text-sm font-black leading-none hover:scale-110 active:scale-90"
             >
               &times;
             </button>
           </span>
         }
         @if (categoryArray.length === 0) {
-          <p class="text-sm text-gray-400">Selecciona al menos una categoría</p>
+          <p class="text-sm text-gray-400 italic">Selecciona al menos una categoría para el producto</p>
         }
       </div>
     </section>
 
     <!-- Tags -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-      <h2 class="font-bold text-gray-900 text-base">Tags</h2>
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-5">
+      <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+        <span><span>✨</span> Tags / Etiquetas</span>
+      </h2>
       <div class="flex gap-2">
         <input
           [formControl]="tagCtrl"
           type="text"
-          placeholder="tag personalizado..."
+          placeholder="Escribe un tag personalizado..."
           (keydown)="onTagKeydown($event)"
-          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          class="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm placeholder-slate-300"
         />
         <button
           type="button"
           (click)="addTag()"
-          class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+          class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all active:scale-[0.97] shadow-sm"
         >
           Agregar
         </button>
       </div>
       @if (tagsArray.length > 0) {
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2 pb-2 border-b border-slate-50">
           @for (tag of tagsArray.controls; track $index) {
             <span
-              class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 text-primary rounded-full text-xs font-semibold"
+              class="inline-flex items-center gap-1.5 px-3 py-1 bg-gradient-to-r from-primary/10 to-rose-50/10 text-primary border border-primary/20 rounded-xl text-xs font-bold shadow-sm"
             >
               #{{ tag.value }}
               <button
                 type="button"
                 (click)="removeTag($index)"
-                class="text-primary/60 hover:text-primary transition-colors"
+                class="text-primary/60 hover:text-primary transition-colors text-sm font-black leading-none hover:scale-110"
               >
                 &times;
               </button>
@@ -135,24 +186,31 @@
           }
         </div>
       }
-      <div class="space-y-3 pt-1">
+      <div class="space-y-4 pt-1">
         @for (group of tagGroups; track group.group) {
           <div>
-            <p class="text-xs font-semibold text-gray-400 mb-1.5 uppercase tracking-wider">
+            <p class="text-[10px] font-extrabold text-slate-400 mb-2 uppercase tracking-wider">
               {{ group.icon }} {{ group.group }}
             </p>
             <div class="flex flex-wrap gap-1.5">
               @for (tag of group.tags; track tag) {
+                @let isActive = tagsArray.value.includes(tag);
                 <button
                   type="button"
                   (click)="addTag(tag)"
-                  class="px-2.5 py-1 rounded-full text-xs border transition-all"
-                  [class.bg-primary]="tagsArray.value.includes(tag)"
-                  [class.text-white]="tagsArray.value.includes(tag)"
-                  [class.border-primary]="tagsArray.value.includes(tag)"
-                  [class.bg-white]="!tagsArray.value.includes(tag)"
-                  [class.text-gray-600]="!tagsArray.value.includes(tag)"
-                  [class.border-gray-200]="!tagsArray.value.includes(tag)"
+                  class="px-3 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200 hover:scale-105"
+                  [class.bg-gradient-to-br]="isActive"
+                  [class.from-primary]="isActive"
+                  [class.to-rose-600]="isActive"
+                  [class.text-white]="isActive"
+                  [class.border-transparent]="isActive"
+                  [class.shadow-md]="isActive"
+                  [class.shadow-primary/10]="isActive"
+                  [class.bg-white]="!isActive"
+                  [class.text-slate-600]="!isActive"
+                  [class.border-slate-200]="!isActive"
+                  [class.hover:border-primary/50]="!isActive"
+                  [class.hover:text-primary]="!isActive"
                 >
                   {{ tag }}
                 </button>
@@ -164,39 +222,45 @@
     </section>
 
     <!-- Especificaciones -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-4">
       <!-- Cabecera con toggle de modo -->
       <div class="flex items-center justify-between">
-        <h2 class="font-bold text-gray-900 text-base">Especificaciones técnicas</h2>
+        <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+          <span>⚙️</span> Especificaciones técnicas
+        </h2>
         <button
           type="button"
           (click)="toggleJsonMode()"
-          class="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border transition-all"
+          class="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl text-xs font-bold border transition-all duration-200"
           [class.bg-amber-500]="specJsonMode"
           [class.text-white]="specJsonMode"
-          [class.border-amber-500]="specJsonMode"
+          [class.border-transparent]="specJsonMode"
+          [class.shadow-md]="specJsonMode"
+          [class.shadow-amber-500/10]="specJsonMode"
           [class.bg-white]="!specJsonMode"
-          [class.text-gray-600]="!specJsonMode"
-          [class.border-gray-300]="!specJsonMode"
+          [class.text-slate-600]="!specJsonMode"
+          [class.border-slate-200]="!specJsonMode"
+          [class.hover:border-amber-500]="!specJsonMode"
+          [class.hover:text-amber-600]="!specJsonMode"
         >
-          <span>&#123; &#125;</span>
+          <span class="text-sm font-mono">&#123; &#125;</span>
           {{ specJsonMode ? 'Cancelar JSON' : 'Importar JSON' }}
         </button>
       </div>
 
       <!-- ── Modo JSON ─────────────────────────────────────────────────────── -->
       @if (specJsonMode) {
-        <div class="space-y-2">
-          <p class="text-xs text-gray-500">Pega o escribe un objeto JSON con las especificaciones. Los valores deben ser string o número.</p>
+        <div class="space-y-3">
+          <p class="text-xs text-slate-500 leading-relaxed">Pega o escribe un objeto JSON con las especificaciones. Los valores deben ser texto o número.</p>
           <textarea
             [formControl]="specJsonCtrl"
             rows="8"
             spellcheck="false"
             [placeholder]="jsonPlaceholder"
-            class="w-full px-3 py-2.5 border border-amber-300 rounded-xl text-xs font-mono bg-gray-50 resize-none focus:ring-2 focus:ring-amber-400 focus:border-transparent leading-relaxed"
+            class="w-full px-3.5 py-3 border border-amber-200 rounded-xl text-xs font-mono bg-amber-50/20 resize-none focus:ring-4 focus:ring-amber-400/10 focus:border-amber-400 focus:outline-none leading-relaxed"
           ></textarea>
           @if (jsonSpecError) {
-            <p class="text-red-500 text-xs flex items-center gap-1">
+            <p class="text-red-500 text-xs flex items-center gap-1 font-medium">
               <span>⚠️</span> {{ jsonSpecError }}
             </p>
           }
@@ -204,14 +268,14 @@
             <button
               type="button"
               (click)="applyJsonSpecs()"
-              class="flex-1 px-4 py-2 bg-amber-500 text-white rounded-lg text-sm font-semibold hover:bg-amber-600 transition"
+              class="flex-1 px-4 py-2.5 bg-amber-500 text-white rounded-xl text-sm font-bold hover:bg-amber-600 transition-all active:scale-[0.97] shadow-md shadow-amber-500/10"
             >
               ✓ Aplicar JSON
             </button>
             <button
               type="button"
               (click)="toggleJsonMode()"
-              class="px-4 py-2 border border-gray-300 text-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 transition"
+              class="px-4 py-2.5 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all"
             >
               Cancelar
             </button>
@@ -222,50 +286,52 @@
           <input
             [formControl]="specKeyCtrl"
             type="text"
-            placeholder="material"
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Ej. material"
+            class="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all placeholder-slate-300"
           />
           <input
             [formControl]="specValueCtrl"
             type="text"
-            placeholder="Cuero sintético"
-            class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+            placeholder="Ej. Cuero sintético"
+            class="flex-1 px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all placeholder-slate-300"
           />
           <button
             type="button"
             (click)="addSpecification()"
-            class="px-4 py-2 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-700 transition"
+            class="px-4 py-2.5 bg-slate-900 text-white rounded-xl text-sm font-bold hover:bg-slate-800 transition-all active:scale-[0.97]"
           >
             +
           </button>
         </div>
       }
 
-      <!-- Tabla de especificaciones actuales (siempre visible) -->
+      <!-- Lista de especificaciones actuales (siempre visible) -->
       @if (objectKeys(specifications).length > 0) {
-        <table class="w-full text-sm">
-          <tbody class="divide-y divide-gray-100">
-            @for (key of objectKeys(specifications); track key) {
-              <tr class="flex items-center">
-                <td class="flex-1 py-2 font-medium text-gray-600 capitalize">
-                  {{ key }}
-                </td>
-                <td class="flex-1 py-2 text-gray-800">
-                  {{ specifications[key] }}
-                </td>
-                <td class="py-2">
-                  <button
-                    type="button"
-                    (click)="removeSpecification(key)"
-                    class="text-red-400 hover:text-red-600 text-xs transition-colors"
-                  >
-                    Eliminar
-                  </button>
-                </td>
-              </tr>
-            }
-          </tbody>
-        </table>
+        <div class="border border-slate-100 rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-sm divide-y divide-slate-100">
+            <tbody class="bg-white divide-y divide-slate-100">
+              @for (key of objectKeys(specifications); track key) {
+                <tr class="hover:bg-slate-50/50 transition-colors duration-150">
+                  <td class="py-3 px-4 font-bold text-slate-600 capitalize text-xs">
+                    {{ key }}
+                  </td>
+                  <td class="py-3 px-4 text-slate-800 font-medium text-xs">
+                    {{ specifications[key] }}
+                  </td>
+                  <td class="py-3 px-4 text-right">
+                    <button
+                      type="button"
+                      (click)="removeSpecification(key)"
+                      class="text-red-500 hover:text-red-700 text-xs font-bold transition-colors hover:scale-105"
+                    >
+                      Eliminar
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
       }
     </section>
   </div>
@@ -273,50 +339,62 @@
   <!-- Columna derecha (1/3) -->
   <div class="space-y-6">
     <!-- Precio y estado -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
-      <h2 class="font-bold text-gray-900 text-base">Precio y estado</h2>
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-4">
+      <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+        <span>💰</span> Precio y estado
+      </h2>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Precio base (S/) *</label>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Precio base (S/) *</label>
         <input
           formControlName="basePrice"
           type="number"
           min="0"
           step="0.01"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm font-semibold text-slate-800"
         />
       </div>
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Descuento (%)</label>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Descuento (%)</label>
         <input
           formControlName="discount"
           type="number"
           min="0"
           max="100"
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+          class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm font-semibold text-slate-800"
         />
       </div>
 
-      <!-- Precio real al cliente -->
+      <!-- Precio real al cliente (Estilo Ticket) -->
       @if ((productForm.get('basePrice')?.value ?? 0) > 0) {
-        <div class="flex items-center justify-between px-4 py-3 rounded-xl"
-             [class.bg-green-50]="(productForm.get('discount')?.value ?? 0) > 0"
-             [class.bg-gray-50]="!((productForm.get('discount')?.value ?? 0) > 0)"
-             [class.border]="true"
-             [class.border-green-200]="(productForm.get('discount')?.value ?? 0) > 0"
-             [class.border-gray-200]="!((productForm.get('discount')?.value ?? 0) > 0)">
-          <div>
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">💰 Precio al cliente</p>
-            @if ((productForm.get('discount')?.value ?? 0) > 0) {
-              <p class="text-xs text-gray-400 line-through mt-0.5">
-                S/ {{ (+productForm.get('basePrice')!.value).toFixed(2) }}
+        <div class="relative overflow-hidden rounded-2xl border-2 p-4.5 bg-gradient-to-br transition-all duration-300"
+             [class.from-emerald-50/40]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.to-emerald-50/80]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.border-emerald-100]="(productForm.get('discount')?.value ?? 0) > 0"
+             [class.from-slate-50/40]="!((productForm.get('discount')?.value ?? 0) > 0)"
+             [class.to-slate-50/80]="!((productForm.get('discount')?.value ?? 0) > 0)"
+             [class.border-slate-100]="!((productForm.get('discount')?.value ?? 0) > 0)">
+          <div class="flex justify-between items-start">
+            <div>
+              <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Precio de venta</p>
+              @if ((productForm.get('discount')?.value ?? 0) > 0) {
+                <span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 mt-1">
+                  Descuento {{ productForm.get('discount')?.value }}%
+                </span>
+              }
+            </div>
+            <div class="text-right">
+              @if ((productForm.get('discount')?.value ?? 0) > 0) {
+                <p class="text-xs text-slate-400 line-through font-medium">
+                  S/ {{ (+productForm.get('basePrice')!.value).toFixed(2) }}
+                </p>
+              }
+              <p class="text-2xl font-black tracking-tight mt-0.5"
+                 [class.text-emerald-600]="(productForm.get('discount')?.value ?? 0) > 0"
+                 [class.text-slate-800]="!((productForm.get('discount')?.value ?? 0) > 0)">
+                S/ {{ clientPrice.toFixed(2) }}
               </p>
-            }
+            </div>
           </div>
-          <p class="text-xl font-bold"
-             [class.text-green-600]="(productForm.get('discount')?.value ?? 0) > 0"
-             [class.text-gray-800]="!((productForm.get('discount')?.value ?? 0) > 0)">
-            S/ {{ clientPrice.toFixed(2) }}
-          </p>
         </div>
       }
 
@@ -330,69 +408,78 @@
             class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"
           ></div>
         </label>
-        <span class="text-sm font-medium text-gray-700">Producto activo</span>
+        <span class="text-sm font-bold text-slate-700">Producto activo</span>
       </div>
     </section>
 
     <!-- Galería -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-3">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-4">
       <div class="flex items-center justify-between">
-        <h2 class="font-bold text-gray-900 text-base">Galería</h2>
-        <span class="text-xs text-gray-400">{{ galleryArray.length }} imagen(es)</span>
+        <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+          <span>🖼️</span> Galería
+        </h2>
+        <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold bg-slate-100 text-slate-600">{{ galleryArray.length }} imagen(es)</span>
       </div>
       @if (galleryArray.length > 0) {
-        <div class="grid grid-cols-2 gap-2">
+        <div class="grid grid-cols-2 gap-3">
           @for (img of galleryArray.controls; track $index) {
-            <div class="relative group rounded-xl overflow-hidden aspect-square bg-gray-100">
-              <img [src]="img.value" alt="Imagen" class="w-full h-full object-cover" />
+            <div class="relative group rounded-xl overflow-hidden aspect-square bg-slate-50 border border-slate-100 shadow-inner">
+              <img [src]="img.value" alt="Imagen del producto" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" />
+              <div class="absolute inset-0 bg-slate-900/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none"></div>
               <button
                 type="button"
                 (click)="removeGalleryImage($index)"
-                class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white text-lg"
+                class="absolute inset-0 m-auto w-10 h-10 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-110 active:scale-95 shadow-lg"
               >
-                🗑️
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
               </button>
             </div>
           }
         </div>
       }
       <label
-        class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-xl p-4 cursor-pointer hover:border-primary hover:bg-primary/5 transition-colors"
+        class="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-slate-200 rounded-xl p-6.5 cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-200"
       >
         @if (isUploadingImage) {
           <svg class="animate-spin h-6 w-6 text-primary" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
-          <span class="text-xs text-gray-500">Subiendo...</span>
+          <span class="text-xs font-bold text-slate-400">Subiendo imágenes...</span>
         } @else {
-          <svg class="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
             <path
               stroke-linecap="round"
               stroke-linejoin="round"
-              stroke-width="1.5"
               d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
             />
           </svg>
-          <span class="text-xs text-gray-500">Subir imágenes</span>
+          <span class="text-xs font-bold text-slate-500">Subir imágenes</span>
+          <span class="text-[10px] text-slate-400 -mt-1">Soporta selección múltiple</span>
         }
         <input type="file" accept="image/*" multiple class="hidden" (change)="onGalleryFileSelected($event)" />
       </label>
     </section>
 
     @if (!isNew) {
-      <div class="bg-blue-50 border border-blue-200 rounded-2xl p-4">
-        <p class="text-xs text-blue-700 font-medium">💡 Para asignar stock a tiendas específicas, ve a</p>
-        <a routerLink="/business/stores" class="text-xs text-blue-600 underline font-semibold mt-1 block">
+      <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4.5">
+        <p class="text-xs text-blue-700 font-semibold flex items-center gap-1.5">
+          <span>💡</span> Para asignar stock a tiendas específicas, ve a:
+        </p>
+        <a routerLink="/business/stores" class="text-xs text-blue-600 hover:text-blue-700 font-bold mt-1.5 block underline">
           Gestión de Tiendas → Inventario
         </a>
       </div>
     }
 
     <!-- Garantía -->
-    <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-4">
+    <section class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6.5 space-y-4">
       <div class="flex items-center justify-between">
-        <h2 class="font-bold text-gray-900 text-base">🛡️ Garantía</h2>
+        <h2 class="font-black text-slate-800 text-base tracking-tight flex items-center gap-2">
+          <span>🛡️</span> Garantía
+        </h2>
         <label class="relative inline-flex items-center cursor-pointer">
           <input formControlName="hasWarranty" type="checkbox" class="sr-only peer" />
           <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"></div>
@@ -401,24 +488,24 @@
       </div>
 
       <ng-container *ngIf="hasWarranty">
-        <div [formGroup]="warrantyGroup" class="space-y-3">
+        <div [formGroup]="warrantyGroup" class="space-y-4">
           <!-- Duración + Unidad -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Duración *</label>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Duración *</label>
               <input
                 formControlName="duration"
                 type="number"
                 min="1"
                 placeholder="12"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm font-semibold"
               />
             </div>
             <div>
-              <label class="block text-xs font-medium text-gray-600 mb-1">Unidad</label>
+              <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Unidad</label>
               <select
                 formControlName="unit"
-                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+                class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white shadow-sm font-semibold"
               >
                 <option value="months">Meses</option>
                 <option value="days">Días</option>
@@ -429,26 +516,32 @@
 
           <!-- Tipo de garantía -->
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Tipo de garantía</label>
-            <div class="grid grid-cols-2 gap-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Tipo de garantía</label>
+            <div class="grid grid-cols-2 gap-3">
               <label
-                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                class="flex items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer text-xs font-bold transition-all duration-200 shadow-sm"
                 [class.border-primary]="warrantyType === 'manufacturer'"
                 [class.bg-primary]="warrantyType === 'manufacturer'"
                 [class.text-white]="warrantyType === 'manufacturer'"
-                [class.border-gray-200]="warrantyType !== 'manufacturer'"
-                [class.text-gray-700]="warrantyType !== 'manufacturer'"
+                [class.shadow-primary/20]="warrantyType === 'manufacturer'"
+                [class.border-slate-200]="warrantyType !== 'manufacturer'"
+                [class.text-slate-600]="warrantyType !== 'manufacturer'"
+                [class.bg-white]="warrantyType !== 'manufacturer'"
+                [class.hover:border-primary/50]="warrantyType !== 'manufacturer'"
               >
                 <input type="radio" formControlName="type" value="manufacturer" class="sr-only" />
                 🏭 Fabricante
               </label>
               <label
-                class="flex items-center gap-2 p-2.5 border rounded-lg cursor-pointer text-sm transition-all"
+                class="flex items-center justify-center gap-2 p-3 border rounded-xl cursor-pointer text-xs font-bold transition-all duration-200 shadow-sm"
                 [class.border-primary]="warrantyType === 'store'"
                 [class.bg-primary]="warrantyType === 'store'"
                 [class.text-white]="warrantyType === 'store'"
-                [class.border-gray-200]="warrantyType !== 'store'"
-                [class.text-gray-700]="warrantyType !== 'store'"
+                [class.shadow-primary/20]="warrantyType === 'store'"
+                [class.border-slate-200]="warrantyType !== 'store'"
+                [class.text-slate-600]="warrantyType !== 'store'"
+                [class.bg-white]="warrantyType !== 'store'"
+                [class.hover:border-primary/50]="warrantyType !== 'store'"
               >
                 <input type="radio" formControlName="type" value="store" class="sr-only" />
                 🏪 Tienda
@@ -458,28 +551,28 @@
 
           <!-- Descripción de cobertura -->
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">Descripción de cobertura</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cobertura</label>
             <textarea
               formControlName="description"
               rows="2"
               placeholder="Ej. Cubre defectos de fábrica"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-primary focus:border-transparent"
+              class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm resize-none focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm placeholder-slate-300"
             ></textarea>
           </div>
 
           <!-- URL de política -->
           <div>
-            <label class="block text-xs font-medium text-gray-600 mb-1">URL de política (opcional)</label>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">URL de política (opcional)</label>
             <input
               formControlName="policyUrl"
               type="url"
               placeholder="https://marca.com/garantia"
-              class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent"
+              class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm placeholder-slate-300"
             />
           </div>
         </div>
       </ng-container>
-      <p *ngIf="!hasWarranty" class="text-xs text-gray-400 text-center py-2">
+      <p *ngIf="!hasWarranty" class="text-xs text-gray-400 text-center py-2 italic">
         Activa el interruptor para agregar garantía al producto
       </p>
     </section>

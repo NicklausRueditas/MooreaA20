@@ -21,9 +21,50 @@ export class StoresService {
         return this.http.post<Store>(this.apiUrl, dto);
     }
 
+    /** [Seller] Crear mi tienda propia → POST /stores/my-store */
+    createMyStore(dto: CreateStoreDto): Observable<Store> {
+        return this.http.post<Store>(`${this.apiUrl}/my-store`, dto);
+    }
+
+    /** [Seller] Actualizar mi tienda propia → PATCH /stores/my-store/:id */
+    updateMyStore(id: string, updates: UpdateStoreDto): Observable<Store> {
+        return this.http.patch<Store>(`${this.apiUrl}/my-store/${id}`, updates);
+    }
+
+    /** [Seller] Obtener mis tiendas registradas → GET /stores/my-store */
+    getMyStore(): Observable<Store[]> {
+        return this.http.get<Store[]>(`${this.apiUrl}/my-store`);
+    }
+
+    /** [Seller] Eliminar mi tienda propia → DELETE /stores/my-store/:id */
+    deleteMyStore(id: string): Observable<void> {
+        return this.http.delete<void>(`${this.apiUrl}/my-store/${id}`);
+    }
+
     /** Obtener todas las tiendas */
     getAllStores(): Observable<Store[]> {
         return this.http.get<Store[]>(this.apiUrl);
+    }
+
+    /**
+     * Obtener tiendas filtradas por el ownerId (userId) del seller.
+     * Filtra en cliente sobre el resultado de getAllStores()
+     * ya que el endpoint GET /stores no soporta filtro por owner en el backend.
+     *
+     * @param sellerId - ID del usuario seller
+     * @returns Observable con las tiendas cuyo ownerId coincide
+     */
+    getStoresBySeller(sellerId: string): Observable<Store[]> {
+        return new Observable(observer => {
+            this.getAllStores().subscribe({
+                next: (stores) => {
+                    const filtered = stores.filter(s => s.ownerId === sellerId);
+                    observer.next(filtered);
+                    observer.complete();
+                },
+                error: (err) => observer.error(err)
+            });
+        });
     }
 
     /** Obtener solo tiendas activas */

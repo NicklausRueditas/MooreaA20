@@ -7,6 +7,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Subject, takeUntil, finalize } from 'rxjs';
 
 import { StoresService }  from '../../../../core/services/catalog/stores.service';
+import { AuthService }    from '../../../../core/services/auth/auth.service';
 import { ToastService }   from '../../../../core/services/ui/toast.service';
 import { ConfigService }  from '../../../../core/services/utils/config.service';
 import {
@@ -74,6 +75,7 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
   constructor(
     private readonly fb:            FormBuilder,
     private readonly storesService: StoresService,
+    private readonly authService:   AuthService,
     private readonly toastService:  ToastService,
     private readonly configService: ConfigService,
   ) {
@@ -347,9 +349,17 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
       },
     };
 
-    const obs$ = this.isEditMode && this.selectedStore?._id
-      ? this.storesService.updateStore(this.selectedStore._id, { ...payload, isActive: raw.isActive } as UpdateStoreDto)
-      : this.storesService.createStore(payload);
+    const isSeller = this.authService.hasRole('seller') && !this.authService.hasRole('admin');
+    let obs$;
+    if (this.isEditMode && this.selectedStore?._id) {
+      obs$ = isSeller
+        ? this.storesService.updateMyStore(this.selectedStore._id, { ...payload, isActive: raw.isActive } as UpdateStoreDto)
+        : this.storesService.updateStore(this.selectedStore._id, { ...payload, isActive: raw.isActive } as UpdateStoreDto);
+    } else {
+      obs$ = isSeller
+        ? this.storesService.createMyStore(payload)
+        : this.storesService.createStore(payload);
+    }
 
     obs$.pipe(takeUntil(this.destroy$), finalize(() => { this.isSaving = false; }))
       .subscribe({

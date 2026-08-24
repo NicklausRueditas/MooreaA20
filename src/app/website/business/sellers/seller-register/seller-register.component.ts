@@ -41,7 +41,7 @@ export class SellerRegisterComponent implements OnInit, OnDestroy {
 
   private buildForm(): void {
     this.profileForm = this.fb.group({
-      storeName: ['', [Validators.required, Validators.minLength(3)]],
+      shopName: ['', [Validators.required, Validators.minLength(3)]],
       description: [''],
       // Datos bancarios (opcionales en el DTO)
       bank: [''],
@@ -62,7 +62,7 @@ export class SellerRegisterComponent implements OnInit, OnDestroy {
 
     const v = this.profileForm.value;
     const dto: CreateSellerProfileDto = {
-      storeName: v.storeName.trim(),
+      shopName: v.shopName.trim(),
       description: v.description?.trim() || undefined,
     };
 

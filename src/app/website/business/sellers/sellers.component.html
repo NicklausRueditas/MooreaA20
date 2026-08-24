@@ -1,181 +1,321 @@
-<!-- ═══ Panel Admin — Sellers ════════════════════════════════════════════════ -->
+<!-- ═══ Panel Admin — Gestión de Sellers ═══════════════════════════════════════ -->
 <div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-    <!-- ── Header ──────────────────────────────────────────────────────────── -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <div class="h-12 w-12 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-          <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+    <!-- ── Header ─────────────────────────────────────────────────────────── -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="h-12 w-12 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg text-white shadow-violet-500/20">
+            <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Gestión de Sellers</h1>
+            <p class="mt-0.5 text-sm text-gray-600">Administra, aprueba, rechaza y supervisa a los vendedores independientes</p>
+          </div>
+        </div>
+        <button id="btn-nuevo-seller" (click)="openModal()"
+          class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow-md shadow-violet-500/20 hover:opacity-90 transition-all active:scale-95 cursor-pointer">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
           </svg>
-        </div>
-        <div>
-          <h1 class="text-3xl font-bold text-gray-900">Sellers</h1>
-          <p class="text-sm text-gray-500 mt-0.5">Gestión de vendedores independientes</p>
-        </div>
-      </div>
-      <button (click)="openModal()"
-        class="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl font-semibold text-sm shadow hover:shadow-md transition-all">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-        </svg>
-        Nuevo Seller
-      </button>
-    </div>
-
-    <!-- ── Stats rápidas ────────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div class="bg-white rounded-xl border border-amber-200 p-5 flex items-center gap-4">
-        <div class="h-11 w-11 bg-amber-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">⏳</div>
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Pendientes</p>
-          <p class="text-2xl font-bold text-amber-600">{{ totalPending }}</p>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl border border-green-200 p-5 flex items-center gap-4">
-        <div class="h-11 w-11 bg-green-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">✅</div>
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Aprobados</p>
-          <p class="text-2xl font-bold text-green-600">{{ totalApproved }}</p>
-        </div>
-      </div>
-      <div class="bg-white rounded-xl border border-red-200 p-5 flex items-center gap-4">
-        <div class="h-11 w-11 bg-red-50 rounded-lg flex items-center justify-center text-2xl flex-shrink-0">⭕</div>
-        <div>
-          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Rechazados</p>
-          <p class="text-2xl font-bold text-red-500">{{ totalRejected }}</p>
-        </div>
+          Nuevo Seller
+        </button>
       </div>
     </div>
 
-    <!-- ── Barra de búsqueda + filtros ─────────────────────────────────────── -->
-    <div class="bg-white rounded-xl border border-gray-200 p-4 flex flex-col sm:flex-row gap-3">
-      <!-- Search -->
-      <div class="flex-1 relative">
-        <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
-          placeholder="Buscar por nombre, email o tienda…"
-          class="w-full pl-9 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+    <!-- ── Stats Cards ───────────────────────────────────────────────────── -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 sm:gap-5 mb-8">
+      
+      <!-- Total -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-200 cursor-pointer hover:border-violet-300 transition-all" (click)="setFilter('all')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Total Sellers</p>
+            <p class="text-2xl font-bold text-gray-900 mt-1.5">{{ sellers.length }}</p>
+          </div>
+          <div class="h-10 w-10 bg-violet-50 text-violet-600 rounded-lg flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+          </div>
+        </div>
       </div>
-      <!-- Filtros de estado -->
-      <div class="flex gap-2">
-        @for (f of [['all','Todos'],['pending','Pendientes'],['approved','Aprobados'],['rejected','Rechazados']]; track f[0]) {
-          <button (click)="setFilter($any(f[0]))"
-            class="px-3 py-2 rounded-lg text-xs font-semibold border transition-all"
-            [class.bg-violet-600]="statusFilter === f[0]"
-            [class.text-white]="statusFilter === f[0]"
-            [class.border-violet-600]="statusFilter === f[0]"
-            [class.bg-white]="statusFilter !== f[0]"
-            [class.text-gray-600]="statusFilter !== f[0]"
-            [class.border-gray-200]="statusFilter !== f[0]">
-            {{ f[1] }}
-          </button>
-        }
+
+      <!-- Pendientes -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-amber-200 cursor-pointer hover:border-amber-400 transition-all" (click)="setFilter('pending')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-amber-600 uppercase tracking-wider">Pendientes</p>
+            <p class="text-2xl font-bold text-amber-600 mt-1.5">{{ totalPending }}</p>
+          </div>
+          <div class="h-10 w-10 bg-amber-50 text-amber-600 rounded-lg flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Aprobados / Activos -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-emerald-200 cursor-pointer hover:border-emerald-400 transition-all" (click)="setFilter('approved')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-emerald-600 uppercase tracking-wider">Aprobados</p>
+            <p class="text-2xl font-bold text-emerald-600 mt-1.5">{{ totalApproved }}</p>
+          </div>
+          <div class="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-lg flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Denegados / Rechazados -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-red-200 cursor-pointer hover:border-red-400 transition-all" (click)="setFilter('rejected')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-red-600 uppercase tracking-wider">Denegados</p>
+            <p class="text-2xl font-bold text-red-600 mt-1.5">{{ totalRejected }}</p>
+          </div>
+          <div class="h-10 w-10 bg-red-50 text-red-600 rounded-lg flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inactivos -->
+      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-200 cursor-pointer hover:border-slate-400 transition-all col-span-2 sm:col-span-1" (click)="setFilter('inactive')">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Inactivos</p>
+            <p class="text-2xl font-bold text-slate-600 mt-1.5">{{ totalInactive }}</p>
+          </div>
+          <div class="h-10 w-10 bg-slate-100 text-slate-500 rounded-lg flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+            </svg>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Toolbar ────────────────────────────────────────────────────────── -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+      <div class="p-5 border-b border-gray-200">
+        <div class="flex flex-col lg:flex-row gap-4">
+          <div class="flex-1">
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </div>
+              <input id="search-seller" type="text" [(ngModel)]="searchTerm" (ngModelChange)="applyFilters()"
+                placeholder="Buscar por nombre de contacto, email o nombre de negocio..."
+                class="w-full pl-11 pr-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-violet-500 focus:border-transparent text-sm bg-white placeholder-gray-400 transition outline-none" />
+            </div>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            @for (opt of filterOptions; track opt.value) {
+              <button [id]="'filter-' + opt.value" (click)="setFilter(opt.value)"
+                class="px-3.5 py-2 rounded-lg text-xs font-bold border transition-all cursor-pointer"
+                [class.bg-violet-600]="statusFilter === opt.value"
+                [class.text-white]="statusFilter === opt.value"
+                [class.border-violet-600]="statusFilter === opt.value"
+                [class.bg-white]="statusFilter !== opt.value"
+                [class.text-gray-600]="statusFilter !== opt.value"
+                [class.border-gray-300]="statusFilter !== opt.value"
+                [class.hover:bg-gray-50]="statusFilter !== opt.value">
+                {{ opt.label }}
+              </button>
+            }
+            @if (statusFilter !== 'all' || searchTerm) {
+              <button (click)="setFilter('all'); searchTerm = ''; applyFilters()"
+                class="px-3 py-2 rounded-lg text-xs font-bold border border-dashed border-gray-300 text-gray-500 hover:border-gray-400 transition-all cursor-pointer">
+                ✕ Limpiar
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="px-6 py-3 bg-slate-50/60 flex items-center justify-between">
+        <p class="text-xs text-slate-500 font-medium">
+          Mostrando <span class="font-bold text-slate-700">{{ filteredSellers.length }}</span> de <span class="font-bold text-slate-700">{{ sellers.length }}</span> sellers
+        </p>
+        <button (click)="loadSellers(true)" class="text-xs text-violet-600 hover:text-violet-800 font-semibold transition-colors flex items-center gap-1.5 cursor-pointer">
+          <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          Actualizar
+        </button>
       </div>
     </div>
 
-    <!-- ── Loading ──────────────────────────────────────────────────────────── -->
+    <!-- Loading -->
     @if (isLoading) {
-      <div class="flex justify-center py-16">
-        <div class="animate-spin h-10 w-10 border-4 border-violet-600 border-t-transparent rounded-full"></div>
+      <div class="flex justify-center items-center py-20">
+        <div class="flex flex-col items-center gap-4">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600"></div>
+          <p class="text-sm text-slate-500 font-medium">Cargando sellers...</p>
+        </div>
       </div>
     }
 
-    <!-- ── Lista de sellers ─────────────────────────────────────────────────── -->
-    @if (!isLoading) {
-      @if (filteredSellers.length === 0) {
-        <div class="bg-white rounded-2xl border border-dashed border-gray-300 py-16 text-center">
-          <div class="text-5xl mb-4">🏪</div>
-          <h3 class="text-base font-semibold text-gray-700">Sin sellers</h3>
-          <p class="text-sm text-gray-400 mt-1 mb-5">No hay sellers que coincidan con el filtro actual</p>
-          <button (click)="openModal()" class="px-5 py-2 bg-violet-600 text-white rounded-xl text-sm font-semibold hover:bg-violet-700 transition">
-            Crear primer seller
-          </button>
+    <!-- Tabla -->
+    @if (!isLoading && filteredSellers.length > 0) {
+      <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 bg-slate-50/70 border-b border-slate-200/60">
+          <div class="flex items-center gap-3">
+            <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border bg-violet-50 text-violet-700 border-violet-200">
+              Vendedores
+            </span>
+            <h3 class="text-sm font-bold text-slate-800 tracking-tight">
+              @if (statusFilter === 'all') { Todos los sellers }
+              @else if (statusFilter === 'pending') { Pendientes de aprobación }
+              @else if (statusFilter === 'approved') { Sellers aprobados }
+              @else if (statusFilter === 'rejected') { Sellers denegados / suspendidos }
+              @else { Sellers inactivos }
+            </h3>
+          </div>
+          <span class="text-xs text-slate-500 font-semibold bg-white px-2.5 py-1 border border-slate-200/60 rounded-lg">
+            {{ filteredSellers.length }} {{ filteredSellers.length === 1 ? 'seller' : 'sellers' }}
+          </span>
         </div>
-      } @else {
-        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-          <table class="min-w-full divide-y divide-gray-100">
-            <thead class="bg-gray-50">
+        <div class="overflow-x-auto">
+          <table class="min-w-full divide-y divide-slate-200">
+            <thead class="bg-gradient-to-r from-slate-50 to-slate-100/80">
               <tr>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Seller</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tienda</th>
-                <th class="px-6 py-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Contacto</th>
-                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Estado</th>
-                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Acciones</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Seller</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Negocio / Marca</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Contacto</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Estado</th>
+                <th class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Registrado</th>
+                <th class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100">
+            <tbody class="bg-white divide-y divide-slate-100">
               @for (seller of filteredSellers; track seller._id) {
-                <tr class="hover:bg-gray-50 transition-colors">
-                  <!-- Seller info -->
-                  <td class="px-6 py-4">
+                <tr class="hover:bg-violet-50/40 transition-colors duration-150 cursor-pointer group"
+                    [routerLink]="['/business/sellers', seller._id]">
+                  <!-- Avatar + nombre -->
+                  <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center gap-3">
-                      <div class="h-9 w-9 rounded-full bg-gradient-to-br from-violet-400 to-indigo-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-                        {{ seller.displayName.charAt(0).toUpperCase() }}
+                      <div class="h-10 w-10 rounded-xl flex items-center justify-center flex-shrink-0 font-bold text-sm text-white shadow-sm overflow-hidden bg-gradient-to-br"
+                           [class.from-violet-500]="getSellerStatus(seller) !== 'rejected'"
+                           [class.to-indigo-600]="getSellerStatus(seller) !== 'rejected'"
+                           [class.from-slate-400]="getSellerStatus(seller) === 'rejected'"
+                           [class.to-slate-500]="getSellerStatus(seller) === 'rejected'">
+                        @if (seller.sellerProfiles[0]?.logoUrl) {
+                          <img [src]="seller.sellerProfiles[0].logoUrl" class="h-full w-full object-cover" [alt]="seller.displayName" />
+                        } @else {
+                          {{ (seller.displayName || seller.email || '?').charAt(0).toUpperCase() }}
+                        }
                       </div>
-                      <div>
-                        <p class="text-sm font-semibold text-gray-900">{{ seller.displayName }}</p>
-                        <p class="text-xs text-gray-400">{{ seller.email }}</p>
+                      <div class="min-w-0">
+                        <div class="text-sm font-semibold text-gray-900 truncate max-w-[180px]">{{ seller.displayName || 'Sin nombre' }}</div>
+                        <div class="text-xs text-gray-500 font-mono mt-0.5 truncate max-w-[180px]">{{ seller.email }}</div>
                       </div>
                     </div>
                   </td>
-                  <!-- Tienda -->
-                  <td class="px-6 py-4">
-                    @if (seller.sellerProfile) {
-                      <p class="text-sm font-medium text-gray-800">{{ seller.sellerProfile.storeName }}</p>
-                      <p class="text-xs text-gray-400 mt-0.5 line-clamp-1">{{ seller.sellerProfile.description || '—' }}</p>
+                  <!-- Negocio / Tienda -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    @if (seller.sellerProfiles[0]?.shopName) {
+                      <div class="text-sm font-medium text-slate-800">{{ seller.sellerProfiles[0].shopName }}</div>
+                      @if (seller.sellerProfiles[0]?.description) {
+                        <div class="text-xs text-slate-400 mt-0.5 max-w-[180px] truncate">{{ seller.sellerProfiles[0].description }}</div>
+                      }
                     } @else {
-                      <span class="text-xs text-gray-400 italic">Sin perfil creado</span>
+                      <span class="text-xs text-slate-400 italic">Sin datos de negocio</span>
                     }
                   </td>
                   <!-- Contacto -->
-                  <td class="px-6 py-4 text-sm text-gray-600">
-                    <p>{{ seller.phone || '—' }}</p>
-                    <p class="text-xs text-gray-400">DNI: {{ seller.dni || '—' }}</p>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="space-y-1">
+                      @if (seller.phone) {
+                        <div class="text-xs text-slate-700 font-medium">{{ seller.phone }}</div>
+                      }
+                      @if (seller.dni) {
+                        <div class="text-xs text-slate-500 font-mono">DNI: {{ seller.dni }}</div>
+                      }
+                      @if (!seller.phone && !seller.dni) {
+                        <span class="text-xs text-slate-400 italic">Sin datos</span>
+                      }
+                    </div>
                   </td>
                   <!-- Estado -->
-                  <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold"
-                      [ngClass]="statusClasses(seller.sellerProfile?.status)">
-                      {{ statusLabel(seller.sellerProfile?.status) }}
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold shadow-sm border"
+                      [class.bg-emerald-50]="getSellerStatus(seller) === 'approved'"
+                      [class.text-emerald-700]="getSellerStatus(seller) === 'approved'"
+                      [class.border-emerald-200]="getSellerStatus(seller) === 'approved'"
+                      [class.bg-amber-50]="getSellerStatus(seller) === 'pending'"
+                      [class.text-amber-700]="getSellerStatus(seller) === 'pending'"
+                      [class.border-amber-200]="getSellerStatus(seller) === 'pending'"
+                      [class.bg-red-50]="getSellerStatus(seller) === 'rejected'"
+                      [class.text-red-600]="getSellerStatus(seller) === 'rejected'"
+                      [class.border-red-200]="getSellerStatus(seller) === 'rejected'"
+                      [class.bg-slate-50]="!getSellerStatus(seller)"
+                      [class.text-slate-500]="!getSellerStatus(seller)"
+                      [class.border-slate-200]="!getSellerStatus(seller)">
+                      <span class="w-1.5 h-1.5 rounded-full"
+                        [class.bg-emerald-500]="getSellerStatus(seller) === 'approved'"
+                        [class.bg-amber-500]="getSellerStatus(seller) === 'pending'"
+                        [class.bg-red-500]="getSellerStatus(seller) === 'rejected'"
+                        [class.bg-slate-400]="!getSellerStatus(seller)"></span>
+                      {{ statusLabel(getSellerStatus(seller)) }}
                     </span>
                   </td>
+                  <!-- Fecha -->
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-xs text-slate-600 font-medium">
+                      @if (seller.createdAt) {
+                        {{ seller.createdAt | date:'dd/MM/yyyy' }}
+                        <div class="text-[10px] text-slate-400 mt-0.5">{{ seller.createdAt | date:'HH:mm' }}</div>
+                      } @else {
+                        <span class="italic text-slate-400">Sin fecha</span>
+                      }
+                    </div>
+                  </td>
                   <!-- Acciones -->
-                  <td class="px-6 py-4 text-center">
-                    <div class="flex justify-center gap-2">
-                      <!-- Ver catálogo (ruta compartida por rol) -->
-                      <a routerLink="/business/products"
-                        class="p-1.5 text-violet-600 hover:bg-violet-50 rounded-lg transition-colors"
-                        title="Ver catálogo del seller">
-                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <td class="px-6 py-4 whitespace-nowrap text-center">
+                    <div class="flex justify-center gap-1.5" (click)="$event.stopPropagation()">
+                      @if (getSellerStatus(seller) !== 'approved') {
+                        <button (click)="approve(seller)" title="Aprobar seller"
+                          class="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                      }
+                      @if (getSellerStatus(seller) !== 'rejected') {
+                        <button (click)="reject(seller)" title="Rechazar / Suspender"
+                          class="p-2 text-red-500 hover:bg-red-50 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer">
+                          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                      }
+                      <!-- Ver detalle -->
+                      <a [routerLink]="['/business/sellers', seller._id]"
+                         title="Ver perfil completo"
+                         class="p-2 text-violet-600 hover:bg-violet-50 rounded-xl transition-all duration-200 hover:scale-105 cursor-pointer">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
                       </a>
-                      <!-- Aprobar -->
-                      @if (seller.sellerProfile?.status !== 'approved') {
-                        <button (click)="approve(seller)"
-                          class="p-1.5 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                          title="Aprobar seller">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-                          </svg>
-                        </button>
-                      }
-                      <!-- Rechazar/Suspender -->
-                      @if (seller.sellerProfile?.status !== 'rejected') {
-                        <button (click)="reject(seller)"
-                          class="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                          title="Rechazar / Suspender seller">
-                          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                      }
                     </div>
                   </td>
                 </tr>
@@ -183,88 +323,123 @@
             </tbody>
           </table>
         </div>
-      }
+      </div>
+    }
+
+    <!-- Empty state -->
+    @if (!isLoading && filteredSellers.length === 0) {
+      <div class="bg-white rounded-2xl border-2 border-dashed border-slate-200 py-16 text-center shadow-sm">
+        <div class="h-12 w-12 rounded-2xl bg-violet-50 text-violet-600 flex items-center justify-center mx-auto mb-3">
+          <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
+        </div>
+        <h3 class="text-base font-bold text-slate-800">
+          @if (searchTerm || statusFilter !== 'all') { Sin resultados } @else { Sin sellers registrados }
+        </h3>
+        <p class="text-xs text-slate-500 mt-1 mb-6 max-w-xs mx-auto leading-relaxed">
+          @if (searchTerm || statusFilter !== 'all') {
+            Prueba con otros términos o limpia los filtros aplicados.
+          } @else {
+            Crea el primer seller de la plataforma con el botón superior.
+          }
+        </p>
+        @if (statusFilter !== 'all' || searchTerm) {
+          <button (click)="setFilter('all'); searchTerm = ''; applyFilters()"
+            class="px-5 py-2.5 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 transition shadow-sm active:scale-95 cursor-pointer">
+            Limpiar filtros
+          </button>
+        } @else {
+          <button (click)="openModal()"
+            class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-xs font-bold hover:opacity-90 transition shadow-sm active:scale-95 cursor-pointer">
+            Crear primer Seller
+          </button>
+        }
+      </div>
     }
 
   </div>
 </div>
 
-<!-- ═══ Modal: Crear Seller ════════════════════════════════════════════════════ -->
+<!-- Modal crear seller -->
 @if (isModalOpen) {
-  <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md">
-      <!-- Header modal -->
-      <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="text-lg font-bold text-gray-900">Nuevo Seller</h2>
-        <button type="button" (click)="closeModal()" class="text-gray-400 hover:text-gray-700 text-2xl leading-none">&times;</button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" (click)="closeModal()"></div>
+    <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden z-10">
+      <div class="flex items-center justify-between px-6 py-5 bg-gradient-to-r from-violet-600 to-indigo-600">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 bg-white/20 rounded-xl flex items-center justify-center">
+            <svg class="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-white font-bold text-base">Crear Nuevo Seller</h2>
+            <p class="text-violet-200 text-xs mt-0.5">El usuario tendrá rol de vendedor independiente</p>
+          </div>
+        </div>
+        <button (click)="closeModal()" class="text-white/70 hover:text-white transition rounded-lg p-1 hover:bg-white/10 cursor-pointer">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
       </div>
-      <!-- Form -->
       <form [formGroup]="createForm" (ngSubmit)="submitCreate()" class="p-6 space-y-4">
-        <!-- Email -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Email *</label>
-          <input formControlName="email" type="email" placeholder="seller@tienda.com"
-            class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-            [class.border-red-400]="isInvalid('email')"
-            [class.border-gray-300]="!isInvalid('email')" />
-          @if (isInvalid('email')) {
-            <p class="text-xs text-red-500 mt-1">Email requerido y válido</p>
-          }
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Nombre completo <span class="text-red-500">*</span></label>
+          <input id="seller-displayName" type="text" formControlName="displayName" placeholder="Ej: Juan Pérez"
+            class="w-full px-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition"
+            [class.border-red-300]="isInvalid('displayName')" [class.border-slate-200]="!isInvalid('displayName')" />
+          @if (isInvalid('displayName')) { <p class="text-xs text-red-500 mt-1">El nombre es requerido</p> }
         </div>
-        <!-- Password -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña *</label>
-          <input formControlName="password" type="password" placeholder="Mínimo 8 caracteres"
-            class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-            [class.border-red-400]="isInvalid('password')"
-            [class.border-gray-300]="!isInvalid('password')" />
-          @if (isInvalid('password')) {
-            <p class="text-xs text-red-500 mt-1">Mínimo 8 caracteres</p>
-          }
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Email <span class="text-red-500">*</span></label>
+          <input id="seller-email" type="email" formControlName="email" placeholder="vendedor@ejemplo.com"
+            class="w-full px-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition"
+            [class.border-red-300]="isInvalid('email')" [class.border-slate-200]="!isInvalid('email')" />
+          @if (isInvalid('email')) { <p class="text-xs text-red-500 mt-1">Ingresa un email válido</p> }
         </div>
-        <!-- Nombre -->
         <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre / Razón Social *</label>
-          <input formControlName="displayName" type="text" placeholder="Tienda Deportes Lima"
-            class="w-full px-3 py-2 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent"
-            [class.border-red-400]="isInvalid('displayName')"
-            [class.border-gray-300]="!isInvalid('displayName')" />
-          @if (isInvalid('displayName')) {
-            <p class="text-xs text-red-500 mt-1">Nombre requerido</p>
-          }
+          <label class="block text-xs font-bold text-slate-700 mb-1.5">Contraseña inicial <span class="text-red-500">*</span></label>
+          <input id="seller-password" type="password" formControlName="password" placeholder="Mínimo 8 caracteres"
+            class="w-full px-4 py-2.5 border rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition"
+            [class.border-red-300]="isInvalid('password')" [class.border-slate-200]="!isInvalid('password')" />
+          @if (isInvalid('password')) { <p class="text-xs text-red-500 mt-1">La contraseña debe tener al menos 8 caracteres</p> }
         </div>
-        <!-- Phone + DNI -->
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-            <input formControlName="phone" type="tel" placeholder="+51987654321"
-              class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">Teléfono</label>
+            <input id="seller-phone" type="tel" formControlName="phone" placeholder="999 888 777"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition" />
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">DNI / RUC</label>
-            <input formControlName="dni" type="text" placeholder="12345678"
-              class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent" />
+            <label class="block text-xs font-bold text-slate-700 mb-1.5">DNI</label>
+            <input id="seller-dni" type="text" formControlName="dni" placeholder="12345678"
+              class="w-full px-4 py-2.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-violet-500 focus:border-transparent outline-none transition" />
           </div>
         </div>
-        <!-- Info -->
-        <p class="text-xs text-gray-400 bg-gray-50 rounded-lg px-3 py-2">
-          💡 El seller recibirá el rol <strong>seller</strong> automáticamente y podrá crear su perfil de tienda al iniciar sesión.
-        </p>
-        <!-- Acciones -->
+        <div class="flex items-start gap-2.5 px-4 py-3 bg-violet-50 rounded-xl border border-violet-100">
+          <svg class="w-4 h-4 text-violet-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p class="text-xs text-violet-700 leading-relaxed">El seller deberá completar sus datos de negocio desde su cuenta antes de publicar productos.</p>
+        </div>
         <div class="flex gap-3 pt-2">
           <button type="button" (click)="closeModal()"
-            class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">
+            class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all cursor-pointer">
             Cancelar
           </button>
-          <button type="submit" [disabled]="createForm.invalid || isSaving"
-            class="flex-1 px-4 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-semibold hover:bg-violet-700 disabled:opacity-50 transition flex items-center justify-center gap-2">
+          <button type="submit" [disabled]="isSaving"
+            class="flex-1 px-4 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white rounded-xl text-sm font-bold hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.97] shadow-md shadow-violet-500/20 cursor-pointer">
             @if (isSaving) {
               <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
               </svg>
+              Creando...
+            } @else {
+              Crear Seller
             }
-            Crear Seller
           </button>
         </div>
       </form>

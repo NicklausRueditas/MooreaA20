@@ -52,6 +52,10 @@ export const publicRoutes: Routes = [
         path: 'orders',
         loadComponent: () => import('./my-account/orders/orders.component').then(m => m.OrdersComponent)
       },
+      {
+        path: 'become-seller',
+        loadComponent: () => import('./my-account/become-seller/become-seller.component').then(m => m.BecomeSellerComponent)
+      },
     ]
   },
   {

@@ -85,11 +85,12 @@ export interface ProductVariant {
     region?: string;
   };
   dimensions?: {
-    length?: number;
-    width?:  number;
-    height?: number;
-    unit?:   LengthUnit;
-    weight?: { value: number; unit: WeightUnit };
+    weight?:        { value: number; unit: WeightUnit };
+    /** Unidad de longitud para length, width y height (cm | mm | m | in | ft) */
+    dimensionUnit?: LengthUnit;
+    length?:        number;
+    width?:         number;
+    height?:        number;
   };
   gallery?:           string[];
   priceAdjustment?:   number;
@@ -116,14 +117,77 @@ export interface StoreAvailability {
   /** Distancia Haversine en km desde el cliente a la tienda */
   distanceKm: number;
   /**
-   * Costo de delivery estimado.
-   * S/ 0 si distanceKm ≤ 2 km;  S/ X.XX si aplica (S/ 2.20/km extra)
+   * Costo de delivery estimado en Soles.
+   * S/ 0 si las 3 condiciones de gratuidad se cumplen; S/ X.XX si no.
    */
   deliveryCost: number;
-  /** true si distanceKm ≤ 2 y la tienda hace delivery */
+  /**
+   * true si las 3 condiciones de delivery gratuito se cumplen simultáneamente:
+   *   1. distanceKm       ≤ 2.5 km
+   *   2. finalPrice       ≥ S/ 200
+   *   3. effectiveWeightKg ≤ 3 kg
+   */
   isFreeDelivery: boolean;
   /** true si distanceKm ≤ capabilities.deliveryRadius de la tienda */
   isWithinDeliveryRange: boolean;
+  /** Label de delivery calculado por el backend (ej. "Delivery Gratis" o "Costo S/ X.XX") */
+  deliveryLabel?: string;
+  /** Label de recojo en tienda (ej. "Recoge hoy mismo (Gratis)") */
+  pickupLabel?: string;
+  /** Días estimados de entrega */
+  deliveryDays?: number;
+  /** Si la tienda realiza delivery */
+  hasDelivery?: boolean;
+  /** Si la tienda soporta recojo en tienda */
+  hasPickup?: boolean;
+
+  // ── Nuevos campos: Precio final y Peso Volumétrico (backend v2) ────────────
+
+  /**
+   * Precio final del producto en Soles (basePrice + priceAdjustment - descuento).
+   * Uno de los 3 criterios para delivery gratuito (debe ser ≥ S/ 200).
+   */
+  finalPrice?: number;
+
+  /**
+   * Recargo adicional en Soles por exceder el límite de peso (> 3 kg).
+   * S/ 1.50 por cada kg adicional sobre los 3 kg. S/ 0 si no aplica.
+   */
+  weightSurcharge?: number;
+
+  /**
+   * Peso efectivo del envío en kg: MAX(pesoFísico, pesoVolumetrico).
+   * Es el peso que cobra el courier según la regla estándar del mercado peruano.
+   */
+  effectiveWeightKg?: number;
+
+  /**
+   * Peso volumétrico calculado en kg.
+   * Fórmula: (largo × ancho × alto) / 5000  (Factor DIM estándar — Olva / Shalom)
+   * Si la variante no tiene dimensiones, se usa un preset por SizeType.
+   */
+  volumetricWeightKg?: number;
+
+  /**
+   * Peso físico declarado en kg (convertido desde WeightUnit).
+   * null si la variante no tiene `dimensions.weight` declarado.
+   */
+  physicalWeightKg?: number | null;
+
+  /**
+   * Origen del peso efectivo usado para el cálculo de delivery:
+   * - 'physical'   → el peso físico supera al volumétrico
+   * - 'volumetric' → el peso volumétrico supera al físico
+   * - 'preset'     → sin dimensiones; se usó preset por SizeType
+   */
+  weightSource?: 'physical' | 'volumetric' | 'preset';
+
+  /**
+   * true cuando la variante usó el peso genérico de 1.0 kg por defecto.
+   * Indica que el seller no ha completado el campo `dimensions`.
+   * Útil para mostrar una advertencia en el panel de administración.
+   */
+  usedDefaultPreset?: boolean;
 }
 
 /**

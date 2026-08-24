@@ -48,6 +48,13 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
   shareGalleryByColor = false;
 
   /**
+   * Mensaje de error del backend que se muestra inline en el modal.
+   * Se limpia al iniciar un nuevo intento de guardado.
+   * Null = sin error.
+   */
+  saveError: string | null = null;
+
+  /**
    * URLs heredadas del color (del clone o de auto-detect).
    * Se muestran como solo-lectura con 🔒. No se suben de nuevo.
    */
@@ -60,6 +67,9 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
 
   readonly colorOptions         = COLOR_OPTIONS;
   readonly variantTypeOptions: VariantTypeOption[] = VARIANT_TYPE_OPTIONS;
+
+  /** Índice de la imagen que se está arrastrando en la galería (-1 = ninguna) */
+  imgDragSrcIndex = -1;
 
   private readonly destroy$ = new Subject<void>();
 
@@ -93,6 +103,21 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
   get isCloneMode(): boolean { return this.cloneSource !== null && !this.editingVariant; }
   get isEditMode():  boolean { return this.editingVariant !== null; }
   get isCreateMode(): boolean { return !this.editingVariant && !this.cloneSource; }
+
+  /**
+   * Controla si el formulario se puede enviar.
+   * Bloquea si:
+   *   - El formulario es inválido
+   *   - Hay imágenes subiendo (isUploadingVariantImage)
+   *   - No hay ninguna imagen cargada (lockedUrls + extraUrls vacías)
+   */
+  get canSave(): boolean {
+    if (this.variantForm.invalid) return false;
+    if (this.isUploadingVariantImage) return false;
+    const totalImages = this.lockedUrls.length + this.extraUrls.length;
+    if (totalImages === 0) return false;
+    return true;
+  }
 
   get modalTitle(): string {
     if (this.isEditMode)  return 'Editar Variante';
@@ -331,6 +356,7 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
 
     if (gallery.length > 0) { dto.gallery = gallery; }
 
+    this.saveError = null; // Limpiar error previo
     this.isSaving = true;
 
     // PATCH /:id solo acepta: color, size, dimensions, gallery, priceAdjustment
@@ -353,14 +379,32 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
           if (this.shareGalleryByColor && gallery.length > 0) {
             this.propagateGallery(savedVariant._id, savedVariant.color?.code, gallery);
           }
+          this.saveError = null;
           this.toastService.showSuccess('Variante guardada ✅');
           this.saved.emit(savedVariant);
         },
-        error: (err) => this.toastService.showError(err?.error?.message ?? 'Error al guardar variante'),
+        error: (err) => {
+          // Parsear el mensaje del backend (puede ser string o string[])
+          const body = err?.error;
+          let msg: string;
+          if (Array.isArray(body?.message)) {
+            // class-validator devuelve un array de strings
+            msg = body.message.join(' • ');
+          } else if (typeof body?.message === 'string') {
+            msg = body.message;
+          } else {
+            msg = 'Error al guardar la variante. Verifica los datos e inténtalo de nuevo.';
+          }
+          this.saveError = msg;
+          this.toastService.showError(msg);
+        },
       });
   }
 
-  close(): void { this.closed.emit(); }
+  close(): void {
+    this.saveError = null;
+    this.closed.emit();
+  }
 
   /* ── Galería ────────────────────────────────────────────────────────────── */
 
@@ -387,6 +431,44 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
 
   removeExtraImage(index: number): void {
     this.extraUrls = this.extraUrls.filter((_, i) => i !== index);
+  }
+
+  // ─── Drag & Drop de imágenes en la galería ────────────────────────────────────
+
+  /**
+   * Registra el índice de la imagen que comienza a arrastrarse.
+   * @param event  - DragEvent nativo
+   * @param index  - Posición de la imagen en extraUrls[]
+   */
+  onImgDragStart(event: DragEvent, index: number): void {
+    this.imgDragSrcIndex = index;
+    if (event.dataTransfer) {
+      event.dataTransfer.effectAllowed = 'move';
+      event.dataTransfer.setData('text/plain', String(index));
+    }
+  }
+
+  /**
+   * Mueve la imagen en el array mientras el cursor pasa encima de otra.
+   * Produce el reorden visual en tiempo real.
+   * @param event  - DragEvent (prevenido para habilitar el drop)
+   * @param index  - Posición de la imagen destino
+   */
+  onImgDragOver(event: DragEvent, index: number): void {
+    event.preventDefault();
+    if (this.imgDragSrcIndex === -1 || this.imgDragSrcIndex === index) return;
+    const urls = [...this.extraUrls];
+    const [moved] = urls.splice(this.imgDragSrcIndex, 1);
+    urls.splice(index, 0, moved);
+    this.extraUrls       = urls;
+    this.imgDragSrcIndex = index;
+  }
+
+  /**
+   * Limpia el estado del drag de imágenes al soltar.
+   */
+  onImgDragEnd(): void {
+    this.imgDragSrcIndex = -1;
   }
 
   private propagateGallery(savedId: string, colorCode: string | undefined, gallery: string[]): void {

@@ -256,9 +256,19 @@ export class ProductsService {
     );
   }
 
-  /** Desactiva el producto → PATCH /:id/deactivate */
-  deactivateProduct(productId: string): Observable<Product> {
-    return this.http.patch<Product>(`${this.apiUrl}/${productId}/deactivate`, {}).pipe(
+  /**
+   * Obtiene el catálogo de productos de un seller específico.
+   * Endpoint: GET /product/owner/:ownerId
+   */
+  getProductsByOwner(ownerId: string, page = 1, limit = 50, status = 'all'): Observable<PaginatedResponse> {
+    const url = `${this.apiUrl}/owner/${ownerId}?page=${page}&limit=${limit}&status=${status}`;
+    return this.http.get<PaginatedResponse>(url);
+  }
+
+  /** Desactiva o pausa el producto con motivo opcional de moderación → PATCH /:id/deactivate */
+  deactivateProduct(productId: string, reason?: string): Observable<Product> {
+    const body = reason ? { reason } : {};
+    return this.http.patch<Product>(`${this.apiUrl}/${productId}/deactivate`, body).pipe(
       tap(() => this.resetCatalog())
     );
   }

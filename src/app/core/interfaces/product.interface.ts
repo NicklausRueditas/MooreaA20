@@ -28,6 +28,7 @@ export interface Product {
   basePrice:      number;
   category:       string[];
   gallery:        string[];
+  firstVariantImage?: string | null;
 
   /**
    * Galería de thumbnails calculada por el backend.
@@ -40,6 +41,8 @@ export interface Product {
 
   discount:  number;
   isActive:  boolean;
+  /** Motivo de moderación si el producto fue pausado por el admin */
+  moderationReason?: string;
   tags:      string[];
   warranty?: ProductWarranty;
 
@@ -61,6 +64,26 @@ export interface Product {
    * null → el producto no tiene stock en ninguna tienda activa.
    */
   nearestStoreKm?: number | null;
+
+  // --- 🗺️ CAMPOS GEOLOCALIZADOS Y CALCULADOS (Exclusivos de /geo) ---
+  finalPrice?:     number;
+  hasLocalStock?:  boolean;
+  availableSizes?: string[];
+  delivery?: {
+    label:           string;
+    cost:            number;
+    estimatedDays:   number;
+    /** true si las 3 condiciones de delivery gratis se cumplen (dist ≤ 2.5 km, precio ≥ S/200, peso ≤ 3 kg) */
+    isFree?:          boolean;
+    /** Recargo en Soles por peso efectivo > 3 kg. S/ 0 si no aplica. */
+    weightSurcharge?: number;
+  };
+
+  pickup?: {
+    available:     boolean;
+    label:         string;
+    storeName:     string;
+  };
 
   createdAt: string;
   updatedAt: string;

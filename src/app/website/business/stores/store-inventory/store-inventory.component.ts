@@ -51,6 +51,7 @@ export class StoreInventoryComponent implements OnInit {
 
   // Selector en cascada: producto → variante
   selectedProductId = '';
+  modalProductSearch = '';
   /** Todas las variantes aplanadas del catálogo (FlatCatalogVariant.product.basePrice disponible) */
   allCatalogVariants: FlatCatalogVariant[] = [];
   /** Variantes filtradas por el producto seleccionado en el modal */
@@ -100,7 +101,6 @@ export class StoreInventoryComponent implements OnInit {
     if (this.storeId) {
       this.loadStore();
       this.loadInventory();
-      this.loadCatalogVariants();
     }
   }
 
@@ -108,7 +108,11 @@ export class StoreInventoryComponent implements OnInit {
 
   loadStore(): void {
     this.storesService.getStoreById(this.storeId).subscribe({
-      next: (store) => { this.store = store; },
+      next: (store) => {
+        this.store = store;
+        // Cargar variantes del catálogo correspondiente a esta tienda
+        this.loadCatalogVariants();
+      },
       error: (err) => console.error('Error loading store:', err)
     });
   }
@@ -128,14 +132,15 @@ export class StoreInventoryComponent implements OnInit {
   }
 
   /**
-   * Carga el catálogo Moorea usando el endpoint agrupado.
-   * GET /product-variants/by-catalog?ownerId=moorea
-   * Response: CatalogVariantGroup[] — cada grupo tiene { product, variants[] }.
-   * Se aplana a FlatCatalogVariant[] adjuntando el producto a cada variante
-   * para tener acceso directo a product.basePrice en onVariantSelected.
+   * Carga el catálogo de productos y variantes correspondiente a la tienda.
+   * Si la tienda pertenece a un seller (store.ownerId), consulta las variantes de ese seller.
+   * Si la tienda es oficial de Moorea (store.ownerId = null), consulta el catálogo de Moorea.
    */
   loadCatalogVariants(): void {
-    this.variantsService.getVariantsByCatalog('moorea').subscribe({
+    const owner = this.store?.ownerId ? this.store.ownerId : 'moorea';
+    this.isLoadingVariants = true;
+
+    this.variantsService.getVariantsByCatalog(owner).subscribe({
       next: (groups: CatalogVariantGroup[]) => {
         this.productMap.clear();
         this.allProducts = [];
@@ -153,8 +158,12 @@ export class StoreInventoryComponent implements OnInit {
             this.allCatalogVariants.push({ ...v, product: p } as FlatCatalogVariant);
           }
         }
+        this.isLoadingVariants = false;
       },
-      error: (err) => console.error('Error cargando variantes del catálogo:', err)
+      error: (err) => {
+        console.error('Error cargando variantes del catálogo:', err);
+        this.isLoadingVariants = false;
+      }
     });
   }
 
@@ -320,6 +329,7 @@ export class StoreInventoryComponent implements OnInit {
   openAddModal(): void {
     this.addInventoryForm.reset({ quantity: 1, reorderPoint: 5, reorderQuantity: 20 });
     this.selectedProductId = '';
+    this.modalProductSearch = '';
     this.variantsForModal = [];
     this.showAddModal = true;
   }
@@ -327,6 +337,7 @@ export class StoreInventoryComponent implements OnInit {
   closeAddModal(): void {
     this.showAddModal = false;
     this.selectedProductId = '';
+    this.modalProductSearch = '';
     this.variantsForModal = [];
     this.addInventoryForm.reset();
   }
@@ -337,6 +348,44 @@ export class StoreInventoryComponent implements OnInit {
    * Excluye las variantes que ya existen en el inventario de esta tienda.
    * FlatCatalogVariant.product._id siempre disponible — acceso directo.
    */
+  /** Productos disponibles para el modal, filtrados por el término de búsqueda */
+  get filteredModalProducts(): Product[] {
+    if (!this.modalProductSearch.trim()) {
+      return this.allProducts;
+    }
+    const term = this.modalProductSearch.toLowerCase().trim();
+    return this.allProducts.filter(p =>
+      p.name?.toLowerCase().includes(term) ||
+      p.code?.toLowerCase().includes(term) ||
+      p.brand?.toLowerCase().includes(term)
+    );
+  }
+
+  /** Producto actualmente seleccionado en el modal */
+  get selectedModalProduct(): Product | null {
+    if (!this.selectedProductId) return null;
+    return this.productMap.get(this.selectedProductId) ??
+      (this.allProducts.find(p => p._id === this.selectedProductId) ?? null);
+  }
+
+  /**
+   * Obtiene la mejor imagen disponible para previsualizar el producto.
+   * Busca en la galería del producto o en la primera variante con imagen.
+   */
+  getProductPreviewImage(product: Product | CatalogProduct | null): string | null {
+    if (!product) return null;
+    if ((product as any).gallery && (product as any).gallery.length > 0) {
+      return (product as any).gallery[0];
+    }
+    const vWithImg = this.allCatalogVariants.find(
+      v => v.product._id === product._id && v.gallery && v.gallery.length > 0
+    );
+    if (vWithImg?.gallery?.[0]) {
+      return vWithImg.gallery[0];
+    }
+    return null;
+  }
+
   onModalProductChange(productId: string): void {
     this.addInventoryForm.get('variantId')?.setValue('');
     this.variantsForModal = [];

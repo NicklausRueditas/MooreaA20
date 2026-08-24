@@ -1,5 +1,31 @@
 <div class="min-h-screen bg-gray-50">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- ── Banner: Filtrado por Seller (solo cuando admin navega desde /sellers/:id) ── -->
+        @if (sellerFilter && sellerName) {
+          <div class="mb-6 bg-violet-50 border border-violet-200 rounded-xl px-4 py-3 flex items-center justify-between gap-3">
+            <div class="flex items-center gap-3">
+              <div class="h-8 w-8 bg-violet-100 text-violet-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+              </div>
+              <div>
+                <p class="text-xs font-bold text-violet-800">Viendo tiendas de: {{ sellerName }}</p>
+                <p class="text-xs text-violet-600">Mostrando únicamente las tiendas de este seller</p>
+              </div>
+            </div>
+            @if (isAdmin) {
+              <a [routerLink]="['/business/sellers', sellerFilter]"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-lg text-xs transition shadow-sm cursor-pointer flex-shrink-0">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                Volver al Seller
+              </a>
+            }
+          </div>
+        }
+
         <!-- Header -->
         <div class="mb-8">
             <div class="flex items-center justify-between">

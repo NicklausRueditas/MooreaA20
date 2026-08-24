@@ -252,6 +252,41 @@ export class ProductVariantsService {
     );
   }
 
+  /**
+   * Elimina permanentemente todas las variantes de un grupo de color.
+   * DELETE /product-variants/product/:productId/color/:colorCode
+   *
+   * Operación irreversible — invalida el caché del producto al completar.
+   *
+   * @param productId  - ID del producto padre
+   * @param colorCode  - Código del color a eliminar (ej: 'BLK', 'RED')
+   * @returns Observable con { deleted: number, colorCode: string }
+   */
+  deleteColorGroup(productId: string, colorCode: string): Observable<{ deleted: number; colorCode: string }> {
+    return this.http
+      .delete<{ deleted: number; colorCode: string }>(
+        `${this.apiUrl}/product/${productId}/color/${colorCode}`,
+      )
+      .pipe(tap(() => this.invalidateProduct(productId)));
+  }
+
+  /**
+   * Persiste el nuevo orden de los grupos de color en el backend.
+   * PATCH /product-variants/product/:productId/reorder
+   *
+   * Envía todos los variant IDs del producto en el orden deseado.
+   * El backend asigna sortOrder = índice × 10 a cada variante.
+   *
+   * @param productId  - ID del producto padre
+   * @param orderedIds - IDs de variantes en el nuevo orden (de todas las variantes del producto)
+   * @returns Observable con { updated: number }
+   */
+  reorderVariants(productId: string, orderedIds: string[]): Observable<{ updated: number }> {
+    return this.http
+      .patch<{ updated: number }>(`${this.apiUrl}/product/${productId}/reorder`, { orderedIds })
+      .pipe(tap(() => this.invalidateProduct(productId)));
+  }
+
   // ─── CACHÉ ────────────────────────────────────────────────────────────────
 
   /** Invalida el caché de un producto específico. */

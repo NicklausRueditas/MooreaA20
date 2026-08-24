@@ -7,10 +7,10 @@ import { Subject, takeUntil } from 'rxjs';
 import { SellersService } from '../../../core/services/catalog/sellers.service';
 import { UsersService }   from '../../../core/services/auth/users.service';
 import { ToastService }   from '../../../core/services/ui/toast.service';
-import { SellerUser, CreateSellerUserDto } from '../../../core/interfaces/seller.interface';
+import { ApprovalStatus, SellerUser, CreateSellerUserDto } from '../../../core/interfaces/seller.interface';
 
 /** Filtro de estado para la lista de sellers */
-type StatusFilter = 'all' | 'pending' | 'approved' | 'rejected';
+export type StatusFilter = 'all' | ApprovalStatus | 'inactive';
 
 @Component({
   selector: 'app-sellers',
@@ -28,15 +28,44 @@ export class SellersComponent implements OnInit, OnDestroy {
   statusFilter: StatusFilter = 'all';
   searchTerm       = '';
 
+  /** Opciones del filtro de estado para renderizar los botones en el toolbar */
+  readonly filterOptions: { value: StatusFilter; label: string; iconKey: string }[] = [
+    { value: 'all',      label: 'Todos',       iconKey: 'all' },
+    { value: 'pending',  label: 'Pendientes',  iconKey: 'pending' },
+    { value: 'approved', label: 'Aprobados',   iconKey: 'approved' },
+    { value: 'rejected', label: 'Denegados',   iconKey: 'rejected' },
+    { value: 'inactive', label: 'Inactivos',   iconKey: 'inactive' },
+  ];
+
   // ── Modal de creación de seller ───────────────────────────────────────────
   isModalOpen      = false;
   isSaving         = false;
   createForm!:     FormGroup;
 
   // ── Estadísticas rápidas ──────────────────────────────────────────────────
-  get totalPending():  number { return this.sellers.filter(s => s.sellerProfile?.status === 'pending').length;  }
-  get totalApproved(): number { return this.sellers.filter(s => s.sellerProfile?.status === 'approved').length; }
-  get totalRejected(): number { return this.sellers.filter(s => s.sellerProfile?.status === 'rejected').length; }
+  get totalPending():  number {
+    return this.sellers.filter(s =>
+      s.sellerProfiles?.some(p => p.approvalStatus === 'pending')
+    ).length;
+  }
+
+  get totalApproved(): number {
+    return this.sellers.filter(s =>
+      s.isActive !== false && s.sellerProfiles?.some(p => p.approvalStatus === 'approved' && p.isActive !== false)
+    ).length;
+  }
+
+  get totalRejected(): number {
+    return this.sellers.filter(s =>
+      s.sellerProfiles?.some(p => p.approvalStatus === 'rejected')
+    ).length;
+  }
+
+  get totalInactive(): number {
+    return this.sellers.filter(s =>
+      s.isActive === false || s.sellerProfiles?.every(p => p.isActive === false)
+    ).length;
+  }
 
   constructor(
     private readonly fb:             FormBuilder,
@@ -69,9 +98,9 @@ export class SellersComponent implements OnInit, OnDestroy {
   /**
    * Carga todos los sellers desde el backend y aplica los filtros locales.
    */
-  loadSellers(): void {
+  loadSellers(forceRefresh = false): void {
     this.isLoading = true;
-    this.sellersService.getAllSellers()
+    this.sellersService.getAllSellers(undefined, forceRefresh)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
         next: (data) => {
@@ -97,14 +126,20 @@ export class SellersComponent implements OnInit, OnDestroy {
     if (this.searchTerm.trim()) {
       const t = this.searchTerm.toLowerCase();
       list = list.filter(s =>
-        s.displayName.toLowerCase().includes(t) ||
+        s.displayName?.toLowerCase().includes(t) ||
         s.email.toLowerCase().includes(t) ||
-        s.sellerProfile?.storeName?.toLowerCase().includes(t)
+        s.sellerProfiles?.some(p => p.shopName?.toLowerCase().includes(t))
       );
     }
 
-    if (this.statusFilter !== 'all') {
-      list = list.filter(s => s.sellerProfile?.status === this.statusFilter);
+    if (this.statusFilter === 'inactive') {
+      list = list.filter(s =>
+        s.isActive === false || s.sellerProfiles?.every(p => p.isActive === false)
+      );
+    } else if (this.statusFilter !== 'all') {
+      list = list.filter(s =>
+        s.sellerProfiles?.some(p => p.approvalStatus === this.statusFilter && p.isActive !== false)
+      );
     }
 
     this.filteredSellers = list;
@@ -125,9 +160,11 @@ export class SellersComponent implements OnInit, OnDestroy {
     this.sellersService.approveSeller(seller._id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (updated) => {
-          this.patchSeller(updated);
-          this.toastService.showSuccess(`✅ ${seller.displayName} aprobado`);
+        next: (updatedProfiles) => {
+          const idx = this.sellers.findIndex(s => s._id === seller._id);
+          if (idx !== -1) this.sellers[idx].sellerProfiles = updatedProfiles;
+          this.applyFilters();
+          this.toastService.showSuccess('Seller ' + seller.displayName + ' aprobado');
         },
         error: () => this.toastService.showError('Error al aprobar seller'),
       });
@@ -138,26 +175,33 @@ export class SellersComponent implements OnInit, OnDestroy {
    * @param seller El SellerUser a rechazar
    */
   reject(seller: SellerUser): void {
-    if (!confirm(`¿Rechazar/suspender a ${seller.displayName}?`)) return;
+    if (!confirm('¿Rechazar/suspender a ' + seller.displayName + '?')) return;
     this.sellersService.rejectSeller(seller._id)
       .pipe(takeUntil(this.destroy$))
       .subscribe({
-        next: (updated) => {
-          this.patchSeller(updated);
-          this.toastService.showSuccess(`⭕ ${seller.displayName} rechazado`);
+        next: (updatedProfiles) => {
+          const idx = this.sellers.findIndex(s => s._id === seller._id);
+          if (idx !== -1) this.sellers[idx].sellerProfiles = updatedProfiles;
+          this.applyFilters();
+          this.toastService.showSuccess('Seller ' + seller.displayName + ' rechazado');
         },
         error: () => this.toastService.showError('Error al rechazar seller'),
       });
   }
 
   /**
-   * Actualiza localmente el seller sin recargar la lista completa.
-   * @param updated Seller actualizado devuelto por el backend
+   * Devuelve el approvalStatus consolidado del seller:
+   * - 'approved' si tiene al menos una tienda aprobada
+   * - 'pending'  si todas las tiendas están pendientes
+   * - 'rejected' si todas están rechazadas
+   * - undefined  si no tiene tiendas
    */
-  private patchSeller(updated: SellerUser): void {
-    const idx = this.sellers.findIndex(s => s._id === updated._id);
-    if (idx !== -1) this.sellers[idx] = updated;
-    this.applyFilters();
+  getSellerStatus(seller: SellerUser): ApprovalStatus | undefined {
+    const profiles = seller.sellerProfiles;
+    if (!profiles || profiles.length === 0) return undefined;
+    if (profiles.some(p => p.approvalStatus === 'approved')) return 'approved';
+    if (profiles.some(p => p.approvalStatus === 'pending'))  return 'pending';
+    return 'rejected';
   }
 
   // ─── Modal de creación ─────────────────────────────────────────────────────
@@ -185,7 +229,7 @@ export class SellersComponent implements OnInit, OnDestroy {
           this.applyFilters();
           this.isSaving = false;
           this.closeModal();
-          this.toastService.showSuccess(`Seller ${newUser.displayName} creado ✅`);
+          this.toastService.showSuccess('Seller ' + newUser.displayName + ' creado');
         },
         error: (err) => {
           this.isSaving = false;
@@ -200,12 +244,12 @@ export class SellersComponent implements OnInit, OnDestroy {
    * Devuelve las clases CSS del badge según el status del seller.
    * @param status Estado del perfil del seller
    */
-  statusClasses(status?: string): string {
+  statusClasses(status?: ApprovalStatus): string {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-700';
-      case 'rejected': return 'bg-red-100 text-red-600';
-      case 'pending':  return 'bg-amber-100 text-amber-700';
-      default:         return 'bg-gray-100 text-gray-500';
+      case 'approved': return 'bg-emerald-50 text-emerald-700 border-emerald-200';
+      case 'rejected': return 'bg-red-50 text-red-600 border-red-200';
+      case 'pending':  return 'bg-amber-50 text-amber-700 border-amber-200';
+      default:         return 'bg-gray-100 text-gray-500 border-gray-200';
     }
   }
 
@@ -213,12 +257,12 @@ export class SellersComponent implements OnInit, OnDestroy {
    * Devuelve la etiqueta legible del status del seller.
    * @param status Estado del perfil del seller
    */
-  statusLabel(status?: string): string {
+  statusLabel(status?: ApprovalStatus): string {
     switch (status) {
-      case 'approved': return '✅ Aprobado';
-      case 'rejected': return '⭕ Rechazado';
-      case 'pending':  return '⏳ Pendiente';
-      default:         return '— Sin perfil';
+      case 'approved': return 'Aprobado';
+      case 'rejected': return 'Denegado';
+      case 'pending':  return 'Pendiente';
+      default:         return 'Sin perfil';
     }
   }
 

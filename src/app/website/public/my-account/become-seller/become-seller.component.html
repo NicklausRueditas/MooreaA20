@@ -1,0 +1,453 @@
+<!-- ═══ Become a Seller / Estado de Afiliación ═════════════════════════════════ -->
+<div class="space-y-6">
+
+  <!-- ── Loading inicial ────────────────────────────────────────────────────── -->
+  @if (isLoadingStatus) {
+    <div class="bg-white rounded-xl border border-gray-200 p-12 text-center shadow-sm">
+      <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-violet-600 border-t-transparent mb-4"></div>
+      <p class="text-sm text-gray-500 font-medium">Verificando estado de tu cuenta comercial...</p>
+    </div>
+  }
+
+  <!-- ── ESTADO 1: Solicitud Pendiente de Aprobación ────────────────────────── -->
+  @if (!isLoadingStatus && currentProfile?.approvalStatus === 'pending') {
+    <div class="bg-white rounded-xl border border-amber-200 p-6 sm:p-8 shadow-sm">
+      
+      <div class="flex flex-col items-center text-center max-w-xl mx-auto py-4">
+        <!-- Icono con halo pulsante -->
+        <div class="relative mb-6">
+          <div class="h-20 w-20 rounded-2xl bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600 shadow-lg shadow-amber-500/10">
+            <svg class="h-10 w-10 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <span class="absolute -top-1 -right-1 flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-amber-500"></span>
+          </span>
+        </div>
+
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 mb-3">
+          <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+          SOLICITUD EN REVISIÓN
+        </span>
+
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">¡Tu solicitud está en evaluación!</h2>
+        <p class="text-sm text-gray-600 leading-relaxed mb-6">
+          Hemos recibido los datos de tu negocio <strong>"{{ currentProfile?.shopName }}"</strong>. Nuestro equipo administrativo está verificando la información comercial.
+        </p>
+
+        <!-- Indicador de pasos -->
+        <div class="w-full max-w-md bg-gray-50 border border-gray-200 rounded-xl p-4 mb-6">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="h-7 w-7 rounded-full bg-emerald-500 text-white flex items-center justify-center text-xs font-bold">✓</div>
+              <span class="text-xs font-bold text-gray-800">Solicitado</span>
+            </div>
+            <div class="h-0.5 w-12 bg-amber-400"></div>
+            <div class="flex items-center gap-2">
+              <div class="h-7 w-7 rounded-full bg-amber-500 text-white flex items-center justify-center text-xs font-bold animate-pulse">2</div>
+              <span class="text-xs font-bold text-amber-700">Revisión</span>
+            </div>
+            <div class="h-0.5 w-12 bg-gray-200"></div>
+            <div class="flex items-center gap-2">
+              <div class="h-7 w-7 rounded-full bg-gray-200 text-gray-400 flex items-center justify-center text-xs font-bold">3</div>
+              <span class="text-xs font-medium text-gray-400">¡Activo!</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Resumen de datos enviados -->
+        <div class="w-full text-left bg-slate-50 border border-slate-200 rounded-xl p-5 mb-6 space-y-3">
+          <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Detalles de la solicitud</h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+            <div>
+              <span class="text-xs text-gray-500 block">Nombre del Negocio:</span>
+              <span class="font-bold text-gray-900">{{ currentProfile?.shopName }}</span>
+            </div>
+            <div>
+              <span class="text-xs text-gray-500 block">Fecha de Solicitud:</span>
+              <span class="font-medium text-gray-800">{{ currentProfile?.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            @if (currentProfile?.description) {
+              <div class="sm:col-span-2">
+                <span class="text-xs text-gray-500 block">Descripción:</span>
+                <span class="text-gray-700 text-xs">{{ currentProfile?.description }}</span>
+              </div>
+            }
+            @if (currentProfile?.bankInfo?.bank) {
+              <div>
+                <span class="text-xs text-gray-500 block">Banco para cobros:</span>
+                <span class="font-medium text-gray-800">{{ currentProfile?.bankInfo?.bank }} ({{ currentProfile?.bankInfo?.account }})</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="flex flex-wrap gap-3 justify-center">
+          <button (click)="loadApplicationStatus()"
+            class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl text-sm hover:bg-gray-50 transition shadow-sm flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            Comprobar Estado
+          </button>
+          <a routerLink="/my-account/profile"
+            class="px-5 py-2.5 bg-gray-900 text-white font-semibold rounded-xl text-sm hover:bg-gray-800 transition shadow-sm cursor-pointer">
+            Volver a Mi Perfil
+          </a>
+        </div>
+
+      </div>
+
+    </div>
+  }
+
+  <!-- ── ESTADO 2: Solicitud Aprobada (Ya es Seller) ────────────────────────── -->
+  @if (!isLoadingStatus && currentProfile?.approvalStatus === 'approved') {
+    <div class="bg-white rounded-xl border border-emerald-200 p-6 sm:p-8 shadow-sm">
+      <div class="flex flex-col items-center text-center max-w-xl mx-auto py-4">
+        
+        <div class="h-20 w-20 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shadow-lg shadow-emerald-500/10 mb-6">
+          <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-200 mb-3">
+          ✓ VENDEDOR OFICIAL ACTIVO
+        </span>
+
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">¡Tu negocio está activo en Moorea!</h2>
+        <p class="text-sm text-gray-600 leading-relaxed mb-6">
+          Tu tienda <strong>"{{ currentProfile?.shopName }}"</strong> fue aprobada exitosamente. Ya puedes administrar tu inventario, publicar productos y gestionar pedidos.
+        </p>
+
+        <div class="flex flex-wrap gap-3 justify-center">
+          <a routerLink="/business/profile"
+            class="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl text-sm shadow-md shadow-violet-500/20 hover:opacity-95 transition cursor-pointer flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            Mi Perfil de Vendedor
+          </a>
+          <a routerLink="/business/products"
+            class="px-5 py-3 bg-white border border-violet-200 text-violet-700 font-bold rounded-xl text-sm hover:bg-violet-50 transition shadow-sm cursor-pointer">
+            Mi Catálogo
+          </a>
+          <a routerLink="/my-account/profile"
+            class="px-5 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl text-sm hover:bg-gray-50 transition shadow-sm cursor-pointer">
+            Mi Cuenta Personal
+          </a>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ── ESTADO 3: Solicitud Rechazada (con opción de re-enviar) ─────────────── -->
+  @if (!isLoadingStatus && currentProfile?.approvalStatus === 'rejected' && !isEditingReapply) {
+    <div class="bg-white rounded-xl border border-red-200 p-6 sm:p-8 shadow-sm">
+      <div class="flex flex-col items-center text-center max-w-xl mx-auto py-4">
+        
+        <div class="h-20 w-20 rounded-2xl bg-red-50 border border-red-200 flex items-center justify-center text-red-500 shadow-lg shadow-red-500/10 mb-6">
+          <svg class="h-10 w-10" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+        </div>
+
+        <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-800 border border-red-200 mb-3">
+          ✕ SOLICITUD NO APROBADA
+        </span>
+
+        <h2 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Solicitud de Afiliación Denegada</h2>
+        <p class="text-sm text-gray-600 leading-relaxed mb-6">
+          Tu postulación anterior para <strong>"{{ currentProfile?.shopName }}"</strong> no fue aprobada por nuestro equipo. Puedes revisar y actualizar la información de tu negocio para volver a enviar tu solicitud.
+        </p>
+
+        <!-- Botón para abrir el formulario y re-enviar -->
+        <div class="flex flex-wrap gap-3 justify-center">
+          <button (click)="startReapplying()"
+            class="px-6 py-3 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold rounded-xl text-sm shadow-md shadow-violet-500/20 hover:opacity-95 transition flex items-center gap-2 cursor-pointer">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+            Corregir y Volver a Enviar Solicitud
+          </button>
+          <a routerLink="/my-account/profile"
+            class="px-5 py-3 bg-white border border-gray-300 text-gray-700 font-semibold rounded-xl text-sm hover:bg-gray-50 transition shadow-sm cursor-pointer">
+            Volver a Mi Perfil
+          </a>
+        </div>
+
+      </div>
+    </div>
+  }
+
+  <!-- ── FORMULARIO: Primera Solicitud O Re-envío tras Rechazo ──────────────── -->
+  @if (!isLoadingStatus && (!currentProfile || isEditingReapply)) {
+
+    <!-- ── Banner Informativo Superior ──────────────────────────────────────── -->
+    <div class="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-xl p-6 sm:p-8 text-white shadow-md">
+      <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+        <div class="space-y-2 text-center md:text-left">
+          <div class="flex items-center justify-center md:justify-start gap-3">
+            <div class="h-12 w-12 rounded-xl bg-white/20 flex items-center justify-center shadow-inner">
+              <svg class="h-7 w-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                      d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
+                @if (isEditingReapply) { Re-enviar Solicitud de Vendedor } @else { Vende en Moorea }
+              </h1>
+              <p class="text-violet-100 text-sm font-medium">
+                @if (isEditingReapply) { Actualiza los datos de tu negocio para que el equipo lo reevalúe } @else { Únete a nuestra red de vendedores y expande tu negocio }
+              </p>
+            </div>
+          </div>
+        </div>
+
+        @if (isEditingReapply) {
+          <button (click)="cancelReapplying()"
+            class="px-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-xs font-bold transition cursor-pointer">
+            ✕ Cancelar y ver estado
+          </button>
+        } @else {
+          <!-- Indicador de pasos -->
+          <div class="flex items-center gap-2 bg-white/10 rounded-xl p-3 backdrop-blur-sm">
+            @for (step of steps; track step.key; let i = $index) {
+              <div class="flex items-center gap-2">
+                <div class="flex items-center gap-1.5">
+                  <div class="h-6 w-6 rounded-full bg-white text-violet-700 flex items-center justify-center text-xs font-bold">
+                    {{ i + 1 }}
+                  </div>
+                  <span class="text-xs font-medium text-violet-100 hidden sm:inline">{{ step.title }}</span>
+                </div>
+                @if (i < steps.length - 1) {
+                  <div class="h-0.5 w-4 bg-white/30"></div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- ── Grid de Beneficios (Solo en primera postulación) ────────────────── -->
+    @if (!isEditingReapply) {
+      <div>
+        <div class="flex items-center gap-2 mb-4">
+          <div class="h-6 w-6 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+          </div>
+          <h2 class="text-lg font-bold text-gray-900">¿Por qué vender en Moorea?</h2>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          @for (benefit of benefits; track benefit.key) {
+            <div class="bg-white rounded-xl border border-gray-200 p-5 shadow-sm hover:shadow-md transition-shadow">
+              <div class="h-11 w-11 rounded-lg {{ benefit.bgClass }} flex items-center justify-center mb-3">
+                @if (benefit.key === 'shop') {
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                } @else if (benefit.key === 'products') {
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                } @else if (benefit.key === 'payments') {
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                } @else {
+                  <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                  </svg>
+                }
+              </div>
+              <h3 class="text-sm font-bold text-gray-900 mb-1">{{ benefit.title }}</h3>
+              <p class="text-xs text-gray-600 leading-relaxed">{{ benefit.desc }}</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ── Formulario de Postulación ─────────────────────────────────────────── -->
+    <div class="bg-white rounded-xl border border-gray-200 p-6 sm:p-8 shadow-sm">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+
+        <!-- Sección Datos del Negocio -->
+        <div>
+          <div class="flex items-center gap-2.5 pb-3 mb-4 border-b border-gray-100">
+            <div class="h-8 w-8 rounded-lg bg-violet-100 text-violet-600 flex items-center justify-center">
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            </div>
+            <div>
+              <h3 class="text-lg font-bold text-gray-900">Datos de Negocio</h3>
+              <p class="text-xs text-gray-500">Ingresa la información de tu marca o empresa comercial</p>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Nombre del negocio -->
+            <div>
+              <label for="shopName" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                  </svg>
+                  Nombre de tu negocio <span class="text-red-500">*</span>
+                </span>
+              </label>
+              <input
+                id="shopName"
+                type="text"
+                formControlName="shopName"
+                placeholder="Ej: Calzados Deportivos Lima"
+                class="block w-full rounded-lg border border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 text-sm px-4 py-2.5 transition-colors"
+                [class.border-red-500]="isInvalid('shopName')"
+              />
+              @if (isInvalid('shopName')) {
+                <p class="mt-1 text-xs text-red-600">
+                  El nombre del negocio es obligatorio (entre 3 y 60 caracteres).
+                </p>
+              }
+            </div>
+
+            <!-- Descripción -->
+            <div>
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" />
+                  </svg>
+                  Descripción de tu negocio
+                </span>
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="3"
+                placeholder="Cuéntanos sobre tus productos, marca o experiencia en el rubro..."
+                class="block w-full rounded-lg border border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 text-sm px-4 py-2.5 transition-colors"
+              ></textarea>
+            </div>
+
+            <!-- Logo URL -->
+            <div>
+              <label for="logoUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                <span class="flex items-center gap-2">
+                  <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  URL del Logo o Imagen (opcional)
+                </span>
+              </label>
+              <input
+                id="logoUrl"
+                type="url"
+                formControlName="logoUrl"
+                placeholder="https://ejemplo.com/logo.png"
+                class="block w-full rounded-lg border border-gray-300 shadow-sm focus:border-violet-500 focus:ring-violet-500 text-sm px-4 py-2.5 transition-colors"
+              />
+            </div>
+          </div>
+        </div>
+
+        <!-- Sección Datos Bancarios Opcionales -->
+        <div class="border-t border-gray-100 pt-6">
+          <div class="flex items-center justify-between cursor-pointer" (click)="toggleBankInfo()">
+            <div class="flex items-center gap-2.5">
+              <div class="h-8 w-8 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-base font-bold text-gray-900">Datos Bancarios para Cobros</h3>
+                <p class="text-xs text-gray-500">Opcional. Puedes configurarlo más adelante.</p>
+              </div>
+            </div>
+            <span class="text-xs font-bold text-violet-600 hover:text-violet-700">
+              {{ showBankInfo ? 'Ocultar' : 'Agregar' }}
+            </span>
+          </div>
+
+          @if (showBankInfo) {
+            <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-4 bg-slate-50 border border-slate-200 rounded-xl p-4">
+              <div>
+                <label for="bank" class="block text-xs font-bold text-gray-700 mb-1">Banco</label>
+                <input
+                  id="bank"
+                  type="text"
+                  formControlName="bank"
+                  placeholder="Ej: BCP, BBVA, Interbank"
+                  class="block w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white"
+                />
+              </div>
+              <div>
+                <label for="account" class="block text-xs font-bold text-gray-700 mb-1">Nº de Cuenta</label>
+                <input
+                  id="account"
+                  type="text"
+                  formControlName="account"
+                  placeholder="193-12345678-0-12"
+                  class="block w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white"
+                />
+              </div>
+              <div>
+                <label for="cci" class="block text-xs font-bold text-gray-700 mb-1">CCI (Interbancario)</label>
+                <input
+                  id="cci"
+                  type="text"
+                  formControlName="cci"
+                  placeholder="00219300123456780112"
+                  class="block w-full rounded-lg border border-gray-300 text-sm px-3 py-2 bg-white"
+                />
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Botón de Envío -->
+        <div class="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-2 text-xs text-gray-500">
+            <svg class="h-4 w-4 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>Tus datos son seguros y solo se usarán para fines comerciales en la plataforma.</span>
+          </div>
+
+          <button
+            id="btn-enviar-solicitud"
+            type="submit"
+            [disabled]="form.invalid || isSubmitting"
+            class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 text-white font-bold text-base rounded-xl shadow-lg shadow-violet-500/25 hover:opacity-95 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer"
+          >
+            @if (isSubmitting) {
+              <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Enviando solicitud...</span>
+            } @else {
+              <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+              </svg>
+              <span>{{ isEditingReapply ? 'Re-enviar Solicitud de Afiliación' : 'Enviar Solicitud de Afiliación' }}</span>
+            }
+          </button>
+        </div>
+
+      </form>
+    </div>
+  }
+
+</div>

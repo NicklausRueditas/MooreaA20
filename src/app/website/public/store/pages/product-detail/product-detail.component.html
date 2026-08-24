@@ -113,7 +113,7 @@
           <div class="gallery-slider flex gap-3 overflow-x-auto px-1 py-2"
                style="scrollbar-width: none; -ms-overflow-style: none;">
 
-            @for(item of combinedGallery; track i; let i = $index) {
+            @for(item of combinedGallery; track $index; let i = $index) {
             <button (click)="selectImage(item)"
               class="gallery-thumb group/thumb relative flex-none overflow-hidden focus:outline-none"
               [class.thumb-active]="sliderIndex === i"
@@ -139,7 +139,7 @@
 
           <!-- Dot indicators mobile -->
           <div class="mt-1.5 flex justify-center gap-1.5 sm:hidden">
-            @for(item of combinedGallery; track i; let i = $index) {
+            @for(item of combinedGallery; track $index; let i = $index) {
             <button (click)="selectImage(item)"
               class="h-1.5 rounded-full transition-all duration-300"
               [class.w-6]="sliderIndex === i"
@@ -460,6 +460,75 @@
               <span class="text-xs font-medium text-gray-600">Pago seguro</span>
             </div>
           </div>
+
+          <!-- ── Disponibilidad por Tienda (GEO) ── -->
+          @if (selectedVariant && $any(selectedVariant).storeAvailability?.length > 0) {
+          <div class="mt-6 rounded-2xl bg-white p-6 shadow-lg border border-gray-100/50">
+            <h3 class="text-sm font-bold text-gray-900 flex items-center gap-2 mb-4">
+              <svg class="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              Disponibilidad Física y Entrega
+            </h3>
+            <div class="space-y-4 divide-y divide-gray-50">
+              @for (store of $any(selectedVariant).storeAvailability; track store.storeCode; let first = $first) {
+              <div class="pt-4 first:pt-0 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                <div>
+                  <div class="flex items-center gap-2">
+                    <h4 class="text-sm font-bold text-gray-800">{{ store.storeName }}</h4>
+                    @if (first) {
+                    <span class="inline-flex items-center rounded-full bg-blue-50 px-2 py-0.5 text-[10px] font-bold text-blue-700">
+                      Más cercana
+                    </span>
+                    }
+                  </div>
+                  <p class="text-xs text-gray-500 mt-0.5">{{ store.address }} &middot; <span class="font-semibold">{{ store.distanceKm | number:'1.1-1' }} km de distancia</span></p>
+                </div>
+                <div class="flex flex-wrap gap-2 sm:text-right sm:flex-col sm:items-end">
+                  <!-- Stock status -->
+                  <span class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-bold"
+                        [class]="store.availableQty > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
+                    <span class="h-1.5 w-1.5 rounded-full" [class]="store.availableQty > 0 ? 'bg-emerald-500' : 'bg-red-500'"></span>
+                    {{ store.availableQty > 0 ? store.availableQty + ' unidades' : 'Sin stock' }}
+                  </span>
+                  <!-- Delivery/Pickup options -->
+                  <div class="flex flex-col gap-0.5 text-left sm:text-right">
+                    @if (store.pickupLabel && store.pickupLabel !== 'No disponible') {
+                    <!-- Verde si es gratis, ámbar si incluye costo de envío -->
+                    <span class="text-xs font-medium"
+                          [class]="store.pickupLabel.includes('costo') ? 'text-amber-600' : 'text-emerald-600'">
+                      🏪 {{ store.pickupLabel }}
+                    </span>
+                    }
+                    @if (store.deliveryLabel) {
+                    <span class="text-xs"
+                          [class]="store.isFreeDelivery ? 'text-emerald-600 font-semibold' : 'text-gray-600'">
+                      🚚 {{ store.deliveryLabel }}
+                    </span>
+                    }
+                    <!-- Recargo por peso excedente: solo visible si aplica -->
+                    @if (store.weightSurcharge && store.weightSurcharge > 0) {
+                    <span class="text-[10px] text-amber-600 font-medium">
+                      ⚖️ Recargo por peso: +S/ {{ store.weightSurcharge | number:'1.2-2' }}
+                    </span>
+                    }
+                    <!-- Peso efectivo de envío con indicador de estimación -->
+                    @if (store.effectiveWeightKg) {
+                    <span class="text-[10px] text-gray-400">
+                      Peso envío: {{ store.effectiveWeightKg | number:'1.1-2' }} kg
+                      @if (store.weightSource === 'preset') {
+                      <span class="italic">(estimado)</span>
+                      }
+                    </span>
+                    }
+                  </div>
+                </div>
+              </div>
+              }
+            </div>
+          </div>
+          }
 
         </div>
 

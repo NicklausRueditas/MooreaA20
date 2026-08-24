@@ -1,51 +1,51 @@
 <!-- ═══ Modal de Variante ════════════════════════════════════════════════════ -->
-<div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-  <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+<div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-100/80 flex flex-col">
     <!-- Header -->
-    <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white z-10">
+    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-10">
       <div>
-        <h2 class="text-lg font-bold text-gray-900">{{ modalTitle }}</h2>
+        <h2 class="text-lg font-black text-slate-800 tracking-tight">{{ modalTitle }}</h2>
         @if (isCloneMode) {
-          <p class="text-xs text-blue-600 mt-0.5">🔒 Color bloqueado · Elige talla y ajusta el precio</p>
+          <p class="text-xs text-blue-600 font-semibold mt-0.5">🔒 Color bloqueado · Elige talla y ajusta el precio</p>
         }
       </div>
-      <button type="button" (click)="close()" class="text-gray-400 hover:text-gray-700 transition-colors text-2xl leading-none">&times;</button>
+      <button type="button" (click)="close()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all text-xl leading-none">&times;</button>
     </div>
 
     <!-- Form -->
-    <form [formGroup]="variantForm" (ngSubmit)="save()" class="p-6 space-y-5">
+    <form [formGroup]="variantForm" (ngSubmit)="save()" class="p-6 space-y-6">
       <!-- SKU -->
       <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">SKU *</label>
-        <input formControlName="sku" type="text" placeholder="BASH-DALLAS-WHT-36" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm font-mono uppercase focus:ring-2 focus:ring-primary focus:border-transparent" />
-        <p class="text-xs text-gray-400 mt-1">Identificador único de la variante</p>
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">SKU *</label>
+        <input formControlName="sku" type="text" placeholder="BASH-DALLAS-WHT-36" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-mono uppercase focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm" />
+        <p class="text-[10px] text-slate-400 font-semibold mt-1">Identificador único de la variante para control de inventario</p>
       </div>
 
       <!-- ── Color ─────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-gray-200 rounded-xl p-4 space-y-3" [class.border-blue-200]="isCloneMode" [class.bg-blue-50]="isCloneMode">
-        <legend class="text-sm font-semibold text-gray-700 px-2 flex items-center gap-1.5">
-          Color
+      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm" [class.border-blue-250]="isCloneMode" [class.bg-blue-50/20]="isCloneMode">
+        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5 flex items-center gap-1.5">
+          <span>🎨</span> Color
           @if (isCloneMode) {
-            <span class="text-xs font-normal text-blue-600">🔒 bloqueado</span>
+            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-md uppercase">bloqueado</span>
           }
         </legend>
 
         @if (!isCloneMode) {
           <div>
-            <label class="block text-xs text-gray-500 mb-2">Colores predefinidos</label>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Colores predefinidos</label>
             <div class="flex flex-wrap gap-2">
               @for (c of colorOptions; track c.code) {
-                <button type="button" (click)="variantForm.get('colorPreset')!.setValue(c.code)" class="w-7 h-7 rounded-full border-2 transition-all hover:scale-110" [style.background-color]="c.hex" [ngClass]="variantForm.get('colorCode')!.value === c.code ? 'border-primary ring-2 ring-primary ring-offset-1' : 'border-transparent'" [title]="c.name"></button>
+                <button type="button" (click)="variantForm.get('colorPreset')!.setValue(c.code)" class="w-8 h-8 rounded-full border-2 transition-all hover:scale-110 active:scale-95 shadow-sm" [style.background-color]="c.hex" [ngClass]="variantForm.get('colorCode')!.value === c.code ? 'border-primary ring-4 ring-primary/20 ring-offset-0 scale-105' : 'border-white'" [title]="c.name"></button>
               }
             </div>
           </div>
         } @else {
           <!-- Vista de color bloqueado en modo clone -->
-          <div class="flex items-center gap-3 p-2 bg-white rounded-xl border border-blue-200">
-            <div class="w-8 h-8 rounded-lg border border-white shadow" [style.background-color]="variantForm.getRawValue().colorHex"></div>
+          <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100 shadow-inner">
+            <div class="w-9 h-9 rounded-xl border border-slate-200 shadow-sm" [style.background-color]="variantForm.getRawValue().colorHex"></div>
             <div>
-              <p class="text-sm font-semibold text-gray-900">{{ variantForm.getRawValue().colorName }}</p>
-              <p class="text-xs text-gray-400 font-mono">{{ variantForm.getRawValue().colorCode }}</p>
+              <p class="text-sm font-bold text-slate-800">{{ variantForm.getRawValue().colorName }}</p>
+              <p class="text-xs text-slate-400 font-mono mt-0.5">{{ variantForm.getRawValue().colorCode }}</p>
             </div>
           </div>
         }
@@ -53,46 +53,67 @@
         @if (!isCloneMode) {
           <div class="grid grid-cols-3 gap-3">
             <div class="col-span-2">
-              <label class="block text-xs text-gray-500 mb-1">Nombre del color</label>
-              <input formControlName="colorName" type="text" placeholder="Blanco" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre del color</label>
+              <input formControlName="colorName" type="text" placeholder="Blanco" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
             </div>
             <div>
-              <label class="block text-xs text-gray-500 mb-1">Color</label>
-              <input formControlName="colorHex" type="color" class="w-full h-10 border border-gray-300 rounded-lg cursor-pointer p-0.5" />
+              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Color</label>
+              <input formControlName="colorHex" type="color" class="w-full h-10 border border-gray-200 rounded-xl cursor-pointer p-0.5 bg-white" />
             </div>
           </div>
           <div>
-            <label class="block text-xs text-gray-500 mb-1">Código (auto)</label>
-            <input formControlName="colorCode" type="text" placeholder="WHT" maxlength="6" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono uppercase focus:ring-2 focus:ring-primary focus:border-transparent" />
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Código (corto)</label>
+            <input formControlName="colorCode" type="text" placeholder="WHT" maxlength="6" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm font-mono uppercase focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
           </div>
         }
       </fieldset>
 
       <!-- ── Talla ──────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-gray-200 rounded-xl p-4 space-y-3">
-        <legend class="text-sm font-semibold text-gray-700 px-2">Talla / Tamaño</legend>
+      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm">
+        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5">📏 Talla / Tamaño</legend>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs text-gray-500 mb-1">Tipo</label>
-            <select formControlName="sizeType" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
-              @for (t of variantTypeOptions; track t.value) {
-                <option [value]="t.value">{{ t.label }}</option>
-              }
-            </select>
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tipo</label>
+            <div class="relative">
+              <select formControlName="sizeType" class="appearance-none w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white font-medium text-slate-700">
+                @for (t of variantTypeOptions; track t.value) {
+                  <option [value]="t.value">{{ t.label }}</option>
+                }
+              </select>
+              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </div>
           </div>
           <div>
-            <label class="block text-xs text-gray-500 mb-1">Valor</label>
-            <input formControlName="sizeValue" type="text" [placeholder]="currentSizePlaceholder" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Valor</label>
+            <input formControlName="sizeValue" type="text" [placeholder]="currentSizePlaceholder" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
           </div>
         </div>
 
         @if (currentSizeTallas.length > 0) {
           <div>
-            <p class="text-xs text-gray-400 mb-1.5">Selección rápida</p>
+            <p class="text-[10px] font-extrabold text-slate-400 mb-2 uppercase tracking-wider">Selección rápida</p>
             <div class="flex flex-wrap gap-1.5">
               @for (t of currentSizeTallas; track t) {
-                <button type="button" (click)="variantForm.get('sizePreset')!.setValue(t)" class="px-2 h-8 rounded-lg text-xs font-semibold border transition-all" [ngClass]="variantForm.get('sizeValue')!.value === t ? 'bg-primary text-white border-primary' : 'bg-white text-gray-700 border-gray-200'">
+                @let isSelected = variantForm.get('sizeValue')!.value === t;
+                <button type="button" (click)="variantForm.get('sizePreset')!.setValue(t)"
+                        class="px-3 h-8.5 rounded-xl text-xs font-bold border transition-all duration-200 hover:scale-105 active:scale-95"
+                        [class.bg-gradient-to-br]="isSelected"
+                        [class.from-primary]="isSelected"
+                        [class.to-rose-600]="isSelected"
+                        [class.text-white]="isSelected"
+                        [class.border-transparent]="isSelected"
+                        [class.shadow-md]="isSelected"
+                        [class.shadow-primary/15]="isSelected"
+                        [class.bg-white]="!isSelected"
+                        [class.text-slate-600]="!isSelected"
+                        [class.border-slate-200]="!isSelected"
+                        [class.hover:border-primary/50]="!isSelected"
+                        [class.hover:text-primary]="!isSelected">
                   {{ t }}
                 </button>
               }
@@ -101,35 +122,42 @@
         }
 
         @if (currentTypeRequiresDimensions) {
-          <div class="border-t border-gray-100 pt-3 space-y-3">
-            <p class="text-xs font-semibold text-gray-500 uppercase tracking-wider">📦 Dimensiones físicas</p>
-            <div class="grid grid-cols-3 gap-2">
+          <div class="border-t border-slate-100 pt-4 space-y-4 animate-fade-in">
+            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">📦 Dimensiones físicas (Empaque)</p>
+            <div class="grid grid-cols-3 gap-2.5">
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Largo (cm)</label>
-                <input formControlName="dimLength" type="number" min="0" placeholder="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Largo (cm)</label>
+                <input formControlName="dimLength" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
               </div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Ancho (cm)</label>
-                <input formControlName="dimWidth" type="number" min="0" placeholder="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ancho (cm)</label>
+                <input formControlName="dimWidth" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
               </div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Alto (cm)</label>
-                <input formControlName="dimHeight" type="number" min="0" placeholder="0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alto (cm)</label>
+                <input formControlName="dimHeight" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
               </div>
             </div>
-            <div class="grid grid-cols-2 gap-2">
+            <div class="grid grid-cols-2 gap-2.5">
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Peso</label>
-                <input formControlName="dimWeight" type="number" min="0" step="0.01" placeholder="0.0" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Peso</label>
+                <input formControlName="dimWeight" type="number" min="0" step="0.01" placeholder="0.0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
               </div>
               <div>
-                <label class="block text-xs text-gray-500 mb-1">Unidad</label>
-                <select formControlName="dimWeightUnit" class="w-full px-2 py-1.5 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-primary focus:border-transparent">
-                  <option value="kg">kg</option>
-                  <option value="g">g</option>
-                  <option value="lb">lb</option>
-                  <option value="oz">oz</option>
-                </select>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unidad</label>
+                <div class="relative">
+                  <select formControlName="dimWeightUnit" class="appearance-none w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white font-semibold">
+                    <option value="kg">kg</option>
+                    <option value="g">g</option>
+                    <option value="lb">lb</option>
+                    <option value="oz">oz</option>
+                  </select>
+                  <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
+                    <svg class="h-4.5 w-4.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -137,91 +165,125 @@
       </fieldset>
 
       <!-- ── Precio ─────────────────────────────────────────────────────────── -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-1">Ajuste de precio (S/)</label>
-        <input formControlName="priceAdjustment" type="number" step="0.01" placeholder="0" class="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-primary focus:border-transparent" />
+      <div class="space-y-3.5">
+        <div>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ajuste de precio (S/)</label>
+          <input formControlName="priceAdjustment" type="number" step="0.01" placeholder="0" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+          <p class="text-[10px] text-slate-400 mt-1">Suma o resta de dinero con respecto al precio base del producto</p>
+        </div>
 
         @if ((product?.basePrice ?? 0) > 0) {
-          <div class="mt-2 flex items-center justify-between px-3 py-2 rounded-lg"
-               [class.bg-green-50]="(product?.discount ?? 0) > 0"
-               [class.bg-gray-50]="!((product?.discount ?? 0) > 0)"
-               [class.border-green-200]="(product?.discount ?? 0) > 0"
-               [class.border-gray-200]="!((product?.discount ?? 0) > 0)"
-               [class.border]="true">
-            <div class="text-xs text-gray-500 leading-tight">
-              <span>Precio al cliente</span>
-              @if ((product?.discount ?? 0) > 0) {
-                <span class="ml-1 text-green-600 font-semibold">(−{{ product!.discount }}%)</span>
-                <p class="line-through text-gray-400">
-                  S/ {{ ((product?.basePrice ?? 0) + (+variantForm.get('priceAdjustment')!.value || 0)).toFixed(2) }}
-                </p>
-              }
+          <div class="relative overflow-hidden rounded-2xl border-2 p-4 bg-gradient-to-br transition-all duration-300"
+               [class.from-emerald-50/40]="(product?.discount ?? 0) > 0"
+               [class.to-emerald-50/80]="(product?.discount ?? 0) > 0"
+               [class.border-emerald-100]="(product?.discount ?? 0) > 0"
+               [class.from-slate-50/40]="!((product?.discount ?? 0) > 0)"
+               [class.to-slate-50/80]="!((product?.discount ?? 0) > 0)"
+               [class.border-slate-100]="!((product?.discount ?? 0) > 0)">
+            <div class="flex justify-between items-center">
+              <div>
+                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider leading-tight">Precio final cliente</p>
+                @if ((product?.discount ?? 0) > 0) {
+                  <span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 mt-1.5">
+                    Descuento {{ product!.discount }}%
+                  </span>
+                }
+              </div>
+              <div class="text-right">
+                @if ((product?.discount ?? 0) > 0) {
+                  <p class="text-xs text-slate-400 line-through font-medium">
+                    S/ {{ ((product?.basePrice ?? 0) + (+variantForm.get('priceAdjustment')!.value || 0)).toFixed(2) }}
+                  </p>
+                }
+                <strong class="text-2xl font-black tracking-tight mt-0.5 block"
+                        [class.text-emerald-600]="(product?.discount ?? 0) > 0"
+                        [class.text-slate-800]="!((product?.discount ?? 0) > 0)">
+                  S/ {{ pricePreview.toFixed(2) }}
+                </strong>
+              </div>
             </div>
-            <strong class="text-base"
-                    [class.text-green-600]="(product?.discount ?? 0) > 0"
-                    [class.text-primary]="!((product?.discount ?? 0) > 0)">
-              S/ {{ pricePreview.toFixed(2) }}
-            </strong>
           </div>
         }
       </div>
 
       <!-- ── Galería ────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-gray-200 rounded-xl p-4 space-y-4">
-        <legend class="text-sm font-semibold text-gray-700 px-2">🖼️ Galería de imágenes</legend>
+      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm">
+        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5">🖼️ Galería de imágenes</legend>
 
         <!-- Sección: Imágenes del color (heredadas / locked) -->
         @if (lockedUrls.length > 0) {
-          <div class="space-y-2">
-            <div class="flex items-center gap-2">
-              <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Del color</span>
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full text-xs font-semibold">🔒 Solo lectura</span>
+          <div class="space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Heredadas de este color</span>
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[10px] font-bold uppercase tracking-wider">🔒 Solo lectura</span>
             </div>
-            <div class="flex flex-wrap gap-2">
+            <div class="flex flex-wrap gap-2.5">
               @for (img of lockedUrls; track img) {
-                <div class="relative w-20 h-20">
-                  <img [src]="img" alt="Imagen del color" class="w-20 h-20 object-cover rounded-xl border-2 border-blue-200" />
-                  <div class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs shadow">🔒</div>
+                <div class="relative w-18 h-18 rounded-xl overflow-hidden border-2 border-blue-100 shadow-sm">
+                  <img [src]="img" alt="Imagen del color" class="w-full h-full object-cover" />
+                  <div class="absolute inset-0 bg-slate-900/10 flex items-center justify-center text-xs shadow-inner"></div>
                 </div>
               }
             </div>
-            <p class="text-xs text-blue-600">💡 Estas imágenes ya están subidas en Cloudinary y se comparten con el color. No se volverán a subir.</p>
+            <p class="text-[10px] text-blue-500 font-medium">💡 Estas fotos se cargaron para este color y son compartidas por todas sus tallas.</p>
           </div>
         }
 
         <!-- Sección: Imágenes adicionales (editables) -->
-        <div class="space-y-2">
+        <div class="space-y-3.5">
           @if (lockedUrls.length > 0) {
-            <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider">Adicionales para esta talla</span>
+            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Adicionales para esta talla</span>
           }
           @if (extraUrls.length > 0) {
-            <div class="flex flex-wrap gap-2">
+            <!-- Grid de imágenes con drag & drop -->
+            <div class="flex flex-wrap gap-2.5">
               @for (img of extraUrls; track img; let i = $index) {
-                <div class="relative group w-20 h-20">
-                  <img [src]="img" alt="Imagen adicional" class="w-20 h-20 object-cover rounded-xl border border-gray-200" />
-                  <button type="button" (click)="removeExtraImage(i)" class="absolute -top-1.5 -right-1.5 w-5 h-5 bg-red-500 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity shadow">×</button>
+                <div class="relative group w-18 h-18 rounded-xl overflow-hidden border transition-all duration-150 shadow-sm"
+                     [class.border-primary]="imgDragSrcIndex === i"
+                     [class.opacity-50]="imgDragSrcIndex === i"
+                     [class.border-slate-100]="imgDragSrcIndex !== i"
+                     draggable="true"
+                     (dragstart)="onImgDragStart($event, i)"
+                     (dragover)="onImgDragOver($event, i)"
+                     (dragend)="onImgDragEnd()">
+                  <img [src]="img" alt="Imagen adicional" class="w-full h-full object-cover" />
+                  <!-- Handle de arrastre (esquina superior izquierda) -->
+                  <div class="absolute top-1 left-1 w-5 h-5 rounded-md bg-slate-900/60 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity select-none"
+                       title="Arrastrar para reordenar">
+                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
+                      <circle cx="9"  cy="5"  r="2"/><circle cx="15" cy="5"  r="2"/>
+                      <circle cx="9"  cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
+                      <circle cx="9"  cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
+                    </svg>
+                  </div>
+                  <!-- Overlay de eliminar -->
+                  <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <button type="button" (click)="removeExtraImage(i)" class="absolute bottom-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-150 hover:scale-110 shadow">×</button>
                 </div>
               }
             </div>
           } @else if (lockedUrls.length === 0) {
-            <p class="text-xs text-gray-400 text-center py-2">Sin imágenes — sube las fotos de este color</p>
+            <!-- Aviso de imagen requerida -->
+            <div class="text-center py-5 bg-rose-50/60 rounded-xl border border-dashed border-rose-200">
+              <p class="text-xs font-bold text-rose-500">📸 Se requiere al menos una imagen</p>
+              <p class="text-[10px] text-rose-400 mt-0.5">Sube las fotos del producto para poder guardar</p>
+            </div>
           }
 
           <!-- Subir imágenes -->
-          <label class="flex items-center gap-2 px-4 py-2 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-all">
+          <label class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-200">
             @if (isUploadingVariantImage) {
               <svg class="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <span class="text-xs text-gray-500">Subiendo...</span>
+              <span class="text-xs font-bold text-slate-400">Subiendo imágenes...</span>
             } @else {
-              <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg class="h-4.5 w-4.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <span class="text-xs text-gray-500">
+              <span class="text-xs font-bold text-slate-500">
                 + Agregar imágenes
-                <span class="text-gray-400">(múltiple)</span>
               </span>
             }
             <input type="file" accept="image/*" multiple class="hidden" (change)="onGallerySelected($event)" [disabled]="isUploadingVariantImage" />
@@ -230,14 +292,14 @@
 
         <!-- Toggle compartir (solo si hay extraUrls y hay hermanos) -->
         @if (extraUrls.length > 0 && siblingVariantCount > 0 && !isCloneMode) {
-          <div class="flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all" [ngClass]="shareGalleryByColor ? 'border-primary bg-primary/5' : 'border-gray-200'" (click)="shareGalleryByColor = !shareGalleryByColor">
+          <div class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50/50 transition-all duration-200" [ngClass]="shareGalleryByColor ? 'border-primary/30 bg-primary/5' : 'border-slate-200'" (click)="shareGalleryByColor = !shareGalleryByColor">
             <input type="checkbox" [checked]="shareGalleryByColor" (click)="$event.stopPropagation()" (change)="shareGalleryByColor = !shareGalleryByColor" class="w-4 h-4 accent-primary rounded cursor-pointer" />
             <div class="flex-1">
-              <p class="text-sm font-semibold text-gray-800 select-none">📋 Propagar imágenes adicionales al mismo color</p>
+              <p class="text-xs font-bold text-slate-800 select-none">📋 Propagar imágenes adicionales al mismo color</p>
               @if (shareGalleryByColor) {
-                <p class="text-xs text-primary mt-0.5">Se copiará a {{ siblingVariantCount }} variante(s) del mismo color</p>
+                <p class="text-[10px] text-primary font-bold mt-0.5">Se copiará a {{ siblingVariantCount }} variante(s) del mismo color</p>
               } @else {
-                <p class="text-xs text-gray-400 mt-0.5">Compartir las imágenes nuevas con todas las tallas de este color</p>
+                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Compartir las imágenes nuevas con todas las tallas de este color</p>
               }
             </div>
           </div>
@@ -245,26 +307,49 @@
       </fieldset>
 
       <!-- ── Activo ─────────────────────────────────────────────────────────── -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-3 pt-1">
         <label class="relative inline-flex items-center cursor-pointer">
           <input formControlName="isActive" type="checkbox" class="sr-only peer" />
           <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"></div>
           <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
         </label>
-        <span class="text-sm font-medium text-gray-700">Variante activa</span>
+        <span class="text-sm font-bold text-slate-700">Variante activa</span>
       </div>
 
+      <!-- ── Error de guardado (respuesta del backend) ─────────────────── -->
+      @if (saveError) {
+        <div class="flex items-start gap-3 px-4 py-3.5 bg-red-50 border border-red-200 rounded-2xl animate-fade-in">
+          <div class="flex-shrink-0 w-5 h-5 mt-0.5 text-red-500">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path fill-rule="evenodd" d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-.75 5.25a.75.75 0 011.5 0v5a.75.75 0 01-1.5 0v-5zm.75 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
+            </svg>
+          </div>
+          <p class="text-xs font-semibold text-red-700 leading-relaxed">{{ saveError }}</p>
+        </div>
+      }
+
       <!-- ── Acciones ───────────────────────────────────────────────────────── -->
-      <div class="flex gap-3 pt-2">
-        <button type="button" (click)="close()" class="flex-1 px-4 py-2.5 border border-gray-300 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition">Cancelar</button>
-        <button type="submit" [disabled]="variantForm.invalid || isSaving" class="flex-1 px-4 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 disabled:opacity-50 transition flex items-center justify-center gap-2">
+      <div class="flex gap-3 pt-3">
+        <button type="button" (click)="close()" class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all">Cancelar</button>
+        <button type="submit" [disabled]="!canSave || isSaving" class="flex-1 px-4 py-3 bg-gradient-to-r from-primary to-rose-600 text-white rounded-xl text-sm font-bold hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg shadow-primary/15">
           @if (isSaving) {
             <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
+          } @else if (isUploadingVariantImage) {
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
           }
-          {{ isEditMode ? 'Guardar cambios' : isCloneMode ? 'Crear talla clonada' : 'Crear variante' }}
+          @if (isUploadingVariantImage) {
+            Subiendo imágenes...
+          } @else if (lockedUrls.length + extraUrls.length === 0) {
+            📸 Agrega al menos una imagen
+          } @else {
+            {{ isEditMode ? 'Guardar cambios' : isCloneMode ? 'Crear talla clonada' : 'Crear variante' }}
+          }
         </button>
       </div>
     </form>

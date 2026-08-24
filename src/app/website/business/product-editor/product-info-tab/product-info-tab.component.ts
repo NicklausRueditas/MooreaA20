@@ -35,7 +35,9 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
   readonly specKeyCtrl   = new FormControl('');
   readonly specValueCtrl = new FormControl('');
   readonly tagCtrl       = new FormControl('');
+  readonly categorySearchCtrl = new FormControl('');
 
+  isCategoryDropdownOpen = false;
   isUploadingImage = false;
 
   constructor(
@@ -68,13 +70,23 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
   }
 
   /* ── Categorías ─────────────────────────────────────────────────────────── */
-  addCategory(event: Event): void {
-    const value = (event.target as HTMLSelectElement).value;
+  get filteredCategoryGroups(): CategoryGroup[] {
+    const search = this.categorySearchCtrl.value?.trim().toLowerCase() ?? '';
+    if (!search) return this.categoryGroups;
+    return this.categoryGroups.map(g => {
+      const options = g.options.filter(opt => opt.toLowerCase().includes(search));
+      return { ...g, options };
+    }).filter(g => g.options.length > 0);
+  }
+
+  selectCategory(value: string): void {
     if (value && !this.categoryArray.value.includes(value)) {
       this.categoryArray.push(this.fb.control(value, Validators.required));
-      (event.target as HTMLSelectElement).value = '';
     }
+    this.categorySearchCtrl.setValue('');
+    this.isCategoryDropdownOpen = false;
   }
+
   removeCategory(i: number): void { this.categoryArray.removeAt(i); }
 
   /* ── Tags ───────────────────────────────────────────────────────────────── */
