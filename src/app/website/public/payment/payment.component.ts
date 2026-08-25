@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -90,10 +90,12 @@ export class PaymentComponent implements OnInit, OnDestroy {
     private readonly configService: ConfigService,
     private readonly orderService: OrderService,
     private readonly router: Router,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.loadBasket();
+    this.basketService.refreshBasket().pipe(takeUntil(this.destroy$)).subscribe();
     this.loadAddresses();
     this.loadCards();
     this.loadStores();
@@ -112,8 +114,16 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
   // ─── Helpers para identificar item ───────────────────────────────────────
 
-  getItemKey(item: BasketItem): string {
-    return item.variantId ?? item.variant?._id ?? '';
+  getItemKey(item: any): string {
+    if (!item) return '';
+    if (typeof item.variantId === 'string' && item.variantId) return item.variantId;
+    if (item.variantId?._id) return String(item.variantId._id);
+    if (item.variant?._id) return String(item.variant._id);
+    if (item.variant?.id) return String(item.variant.id);
+    if (item.productId?._id) return String(item.productId._id);
+    if (item.product?._id) return String(item.product._id);
+    if (item._id) return String(item._id);
+    return '';
   }
 
   // ─── Navegación ───────────────────────────────────────────────────────────
@@ -121,6 +131,24 @@ export class PaymentComponent implements OnInit, OnDestroy {
   goToStep(step: CheckoutStep): void {
     this.currentStep.set(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  /** Información de cuotas sin interés para el checkout */
+  get installmentInfo(): { count: number; amount: number } | null {
+    const total = this.totalOrder;
+    if (total < 500) return null;
+    let count = 3;
+    if (total >= 2000) count = 24;
+    else if (total >= 1000) count = 12;
+    return {
+      count,
+      amount: parseFloat((total / count).toFixed(2))
+    };
+  }
+
+  getItemColorHex(item: any): string | null {
+    const v = (item as any)?.variant;
+    return v?.color?.hex ?? null;
   }
 
   get stepIndex(): number { return this.steps.indexOf(this.currentStep()); }
@@ -182,23 +210,118 @@ export class PaymentComponent implements OnInit, OnDestroy {
       });
   }
 
-  get basketItems(): BasketItem[] { return this.basket?.items ?? []; }
+  get basketItems(): BasketItem[] {
+    return this.basket?.items ?? [];
+  }
+
+  /** Cantidad total de unidades de productos en el carrito */
+  get totalItemCount(): number {
+    const items = this.basketItems;
+    if (!items || items.length === 0) return 0;
+    return items.reduce((sum, item) => sum + (Number(item.quantity) || 1), 0);
+  }
+
+  /** Precio unitario seguro por ítem */
+  getItemUnitPrice(item: any): number {
+    if (!item) return 0;
+    const price = item.finalPrice ?? item.price ?? item.variant?.finalPrice ?? item.variant?.price ?? item.product?.basePrice ?? 0;
+    return Number(price) || 0;
+  }
+
+  /** Subtotal seguro por ítem (precio unitario * cantidad) */
+  getItemSubtotal(item: any): number {
+    if (!item) return 0;
+    if (item.subtotal != null && Number(item.subtotal) > 0) {
+      return Number(item.subtotal);
+    }
+    const unitPrice = this.getItemUnitPrice(item);
+    const qty = Number(item.quantity) || 1;
+    return unitPrice * qty;
+  }
 
   getVariant(item: BasketItem): any  { return item.variant ?? null; }
   getProduct(item: BasketItem): any  { return item.product ?? null; }
-  getThumbnail(item: BasketItem): string { return item.variant?.gallery?.[0] ?? ''; }
-  getProductName(item: BasketItem): string { return item.product?.name ?? item.variant?.sku ?? '—'; }
+  getThumbnail(item: BasketItem): string { return item.variant?.gallery?.[0] ?? (item as any)?.product?.gallery?.[0] ?? ''; }
+  getProductName(item: BasketItem): string { return item.product?.name ?? item.variant?.sku ?? 'Producto'; }
   getColorLabel(item: BasketItem): string  { return item.variant?.color?.name ?? ''; }
   getSizeLabel(item: BasketItem): string   { return item.variant?.size?.value ?? ''; }
 
-  get subtotalAmount(): number { return this.basket?.totalAmount ?? 0; }
-  get savingsAmount(): number  { return this.basket?.totalSavings ?? 0; }
-
-  get deliveryCost(): number {
-    return this.hasDeliveryItems() ? 15 : 0;
+  /** Subtotal general calculado de forma directa sumando cada línea del carrito */
+  get subtotalAmount(): number {
+    const items = this.basketItems;
+    if (!items || items.length === 0) {
+      return Number(this.basket?.totalAmount) || 0;
+    }
+    const total = items.reduce((sum, item) => sum + this.getItemSubtotal(item), 0);
+    return total > 0 ? total : (Number(this.basket?.totalAmount) || 0);
   }
 
-  get totalOrder(): number { return this.subtotalAmount + this.deliveryCost; }
+  /** Descuentos totales calculados */
+  get savingsAmount(): number {
+    if (this.basket?.totalSavings != null && Number(this.basket.totalSavings) > 0) {
+      return Number(this.basket.totalSavings);
+    }
+    const items = this.basketItems;
+    if (!items || items.length === 0) return 0;
+    return items.reduce((sum, item) => {
+      const base = Number(item?.product?.basePrice ?? 0);
+      const final = this.getItemUnitPrice(item);
+      if (base > final) {
+        return sum + ((base - final) * (Number(item.quantity) || 1));
+      }
+      return sum;
+    }, 0);
+  }
+
+  /**
+   * Cálculo dinámico del costo de envío basado en reglas de negocio de Moorea:
+   * 1. Si no hay items con delivery (todos en recojo en tienda) -> S/ 0.00
+   * 2. Si el subtotal es >= S/ 200 -> Envío GRATIS (S/ 0.00)
+   * 3. Si es < S/ 200 -> Tarifa según la distancia estimada a la tienda más cercana
+   */
+  get deliveryCost(): number {
+    // Si todos los productos están configurados en 'pickup' (recojo en tienda), costo = 0
+    if (!this.hasDeliveryItems()) {
+      return 0;
+    }
+
+    // Si el subtotal califica para envío gratis (>= S/ 200)
+    if (this.subtotalAmount >= 200) {
+      return 0;
+    }
+
+    // Tarifa calculada según la distancia física a la tienda
+    const minDistance = this.getMinDeliveryDistance();
+    if (minDistance !== null) {
+      if (minDistance <= 5) return 5.00;
+      if (minDistance <= 15) return 7.50;
+      if (minDistance <= 30) return 10.00;
+      return 15.00;
+    }
+
+    return 7.50; // Tarifa estándar por defecto para delivery local
+  }
+
+  /** Obtiene la distancia mínima en km hacia las tiendas que despachan */
+  private getMinDeliveryDistance(): number | null {
+    if (this.userLat == null || this.userLng == null || !this.stores?.length) return null;
+    let min = Infinity;
+    for (const store of this.stores) {
+      const coords = store.location?.coordinates?.coordinates;
+      if (coords && coords.length >= 2) {
+        const d = this.calcDistance(this.userLat, this.userLng, coords[1], coords[0]);
+        if (d < min) min = d;
+      }
+    }
+    return min === Infinity ? null : min;
+  }
+
+  /** Total final de la orden (Subtotal + Costo de Envío) */
+  get totalOrder(): number {
+    const subtotal = Number(this.subtotalAmount) || 0;
+    const shipping = Number(this.deliveryCost) || 0;
+    return parseFloat((subtotal + shipping).toFixed(2));
+  }
 
   // ─── Entrega por producto ─────────────────────────────────────────────────
 
@@ -212,7 +335,37 @@ export class PaymentComponent implements OnInit, OnDestroy {
     if (mode === 'delivery') {
       this.itemPickupStores.delete(key);
       this.itemStorePickerOpen.delete(key);
+    } else if (mode === 'pickup') {
+      // 🎯 Auto-seleccionar automáticamente la tienda más cercana disponible
+      if (!this.itemPickupStores.has(key) && this.stores.length > 0) {
+        const closestStore = this.findClosestStore();
+        if (closestStore) {
+          this.itemPickupStores.set(key, closestStore);
+        }
+      }
     }
+    this.cdr.markForCheck();
+  }
+
+  /** Encuentra la tienda física más cercana a las coordenadas del usuario */
+  private findClosestStore(): Store | null {
+    if (!this.stores.length) return null;
+    if (this.userLat == null || this.userLng == null) return this.stores[0];
+
+    let closest: Store = this.stores[0];
+    let minDistance = Infinity;
+
+    for (const store of this.stores) {
+      const coords = store.location?.coordinates?.coordinates;
+      if (coords && coords.length >= 2) {
+        const dist = this.calcDistance(this.userLat, this.userLng, coords[1], coords[0]);
+        if (dist < minDistance) {
+          minDistance = dist;
+          closest = store;
+        }
+      }
+    }
+    return closest;
   }
 
   hasDeliveryItems(): boolean {
@@ -233,7 +386,17 @@ export class PaymentComponent implements OnInit, OnDestroy {
         catchError(() => of([] as Store[])),
         finalize(() => { this.isLoadingStores = false; })
       )
-      .subscribe(stores => { this.stores = stores; });
+      .subscribe(stores => {
+        this.stores = stores;
+        // Auto-asignar tienda más cercana a items que ya estén en pickup
+        this.basketItems.forEach(item => {
+          const key = this.getItemKey(item);
+          if (this.getItemDeliveryMode(item) === 'pickup' && !this.itemPickupStores.has(key)) {
+            const closest = this.findClosestStore();
+            if (closest) this.itemPickupStores.set(key, closest);
+          }
+        });
+      });
   }
 
   getItemPickupStore(item: BasketItem): Store | null {
@@ -244,6 +407,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
     const key = this.getItemKey(item);
     this.itemPickupStores.set(key, store);
     this.itemStorePickerOpen.set(key, false);
+    this.cdr.markForCheck();
   }
 
   isStorePickerOpen(item: BasketItem): boolean {

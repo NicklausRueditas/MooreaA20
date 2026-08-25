@@ -51,9 +51,9 @@
 
         <!-- Precio -->
         <div class="mt-2 flex items-baseline gap-1.5 flex-wrap">
-          <span class="text-base font-bold text-gray-900">${{ finalPrice(item) | number:'1.0-0' }}</span>
+          <span class="text-base font-bold text-gray-900">S/ {{ finalPrice(item) | number:'1.0-0' }}</span>
           @if(item.discount > 0) {
-          <span class="text-xs text-gray-400 line-through">${{ item.basePrice | number:'1.0-0' }}</span>
+          <span class="text-xs text-gray-400 line-through">S/ {{ item.basePrice | number:'1.0-0' }}</span>
           }
         </div>
 

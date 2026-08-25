@@ -33,6 +33,8 @@ export class ProductsComponent {
   modalVariants: ProductVariant[] = [];
   modalLoading = false;
   modalAddingToCart = false;
+  cardActionLoadingId: string | null = null;
+  modalQuantity: number = 1;
   /** URL de la imagen principal seleccionada en la galería del modal */
   modalMainImage = '';
 
@@ -128,90 +130,61 @@ export class ProductsComponent {
   // ─── TRIGGER MODAL ───────────────────────────────────────────────────────────
 
   openQuickAdd(product: Product): void {
-    this.modalProduct = product;
-    this.modalVariants = [];
-    this.modalLoading = true;
-    this.selectedColorCode = '';
-    this.selectedSizeValue = '';
-    this.selectedVariant = null;
+    this.cardActionLoadingId = product._id;
+    this.modalQuantity = 1;
 
     // Obtener la geolocalización y luego cargar variantes GEO
     this.geoService.resolve().pipe(take(1)).subscribe({
       next: (location) => {
         this.variantsService.getGeoVariantsByProduct(product._id, location.lat, location.lng).pipe(take(1)).subscribe({
           next: (active) => {
+            this.cardActionLoadingId = null;
+
+            if (!active || active.length === 0) {
+              this.toastService.showError('Este producto no tiene variantes con stock disponible');
+              return;
+            }
+
+            // 🎯 SI SOLO HAY 1 VARIANTE DISPONIBLE:
+            // Agregar DIRECTO al carrito sin abrir el modal para evitar parpadeos
+            if (active.length === 1) {
+              this.addVariantToCart(active[0], product, 1);
+              return;
+            }
+
+            // 🎯 SI HAY 2 O MÁS VARIANTES:
+            // Abrir el Quick Add Modal para que el cliente elija color y talla
+            this.modalProduct = product;
             this.modalVariants = active;
             this.modalLoading = false;
+            this.selectedColorCode = '';
+            this.selectedSizeValue = '';
+            this.selectedVariant = null;
+            this.modalMainImage = product.gallery?.[0] ?? (product.thumbnailGallery?.[0] as any)?.image ?? '';
 
-            // Si solo hay 1 variante → agregar directamente sin mostrar modal
-            if (active.length === 1) {
-              this.modalProduct = null;
-              this.addVariantToCart(active[0], product);
-              return;
-            }
-
-            if (active.length === 0) {
-              this.modalProduct = null;
-              this.toastService.showError('Este producto no tiene variantes disponibles');
-              return;
-            }
-
-            // Auto-seleccionar si solo hay 1 color
+            // Auto-seleccionar primer color disponible
             const uniqueColors = this.getUniqueColors(active);
-            if (uniqueColors.length === 1) {
+            if (uniqueColors.length > 0) {
               this.selectedColorCode = uniqueColors[0].code;
-              this.resolveVariant();
-            }
+              this.selectColor(uniqueColors[0].code);
 
-            // Auto-seleccionar si solo hay 1 talla
-            const sizes = this.getAvailableSizes(active, this.selectedColorCode);
-            if (sizes.length === 1) {
-              this.selectedSizeValue = sizes[0].value;
-              this.resolveVariant();
-              if (this.selectedVariant && uniqueColors.length === 1) {
-                this.modalProduct = null;
-                this.addVariantToCart(this.selectedVariant, product);
+              // Auto-seleccionar primera talla del color
+              const sizes = this.getAvailableSizes(active, this.selectedColorCode);
+              if (sizes.length > 0) {
+                this.selectedSizeValue = sizes[0].value;
+                this.resolveVariant();
               }
             }
           },
           error: () => {
-            this.modalLoading = false;
+            this.cardActionLoadingId = null;
             this.toastService.showError('Error al cargar las opciones del producto');
           }
         });
       },
       error: () => {
-        // Fallback si falla GeoService (no debería ocurrir ya que tiene su propio fallback interno)
-        this.variantsService.getActiveVariantsByProduct(product._id).pipe(take(1)).subscribe({
-          next: (active) => {
-            this.modalVariants = active;
-            this.modalLoading = false;
-            if (active.length === 1) {
-              this.modalProduct = null;
-              this.addVariantToCart(active[0], product);
-              return;
-            }
-            if (active.length === 0) {
-              this.modalProduct = null;
-              this.toastService.showError('Este producto no tiene variantes disponibles');
-              return;
-            }
-            const uniqueColors = this.getUniqueColors(active);
-            if (uniqueColors.length === 1) {
-              this.selectedColorCode = uniqueColors[0].code;
-              this.resolveVariant();
-            }
-            const sizes = this.getAvailableSizes(active, this.selectedColorCode);
-            if (sizes.length === 1) {
-              this.selectedSizeValue = sizes[0].value;
-              this.resolveVariant();
-            }
-          },
-          error: () => {
-            this.modalLoading = false;
-            this.toastService.showError('Error al cargar las opciones del producto');
-          }
-        });
+        this.cardActionLoadingId = null;
+        this.toastService.showError('No se pudo resolver tu ubicación');
       }
     });
   }
@@ -262,15 +235,38 @@ export class ProductsComponent {
 
   // ─── ADD TO CART ─────────────────────────────────────────────────────────────
 
-  confirmQuickAdd(): void {
-    if (!this.selectedVariant || !this.modalProduct) return;
-    this.addVariantToCart(this.selectedVariant, this.modalProduct);
+  // ─── MODAL QUANTITY & PRICE HELPERS ─────────────────────────────────────────
+
+  incrementModalQty(): void {
+    this.modalQuantity++;
   }
 
-  private addVariantToCart(variant: ProductVariant, product: Product): void {
+  decrementModalQty(): void {
+    if (this.modalQuantity > 1) {
+      this.modalQuantity--;
+    }
+  }
+
+  get modalUnitFinalPrice(): number {
+    if (!this.modalProduct) return 0;
+    const base = this.modalProduct.finalPrice ?? this.modalProduct.basePrice ?? 0;
+    const adj = this.selectedVariant?.priceAdjustment ?? 0;
+    return Math.max(0, base + adj);
+  }
+
+  get modalTotalPrice(): number {
+    return this.modalUnitFinalPrice * this.modalQuantity;
+  }
+
+  confirmQuickAdd(): void {
+    if (!this.selectedVariant || !this.modalProduct) return;
+    this.addVariantToCart(this.selectedVariant, this.modalProduct, this.modalQuantity);
+  }
+
+  private addVariantToCart(variant: ProductVariant, product: Product, qty: number = 1): void {
     this.modalAddingToCart = true;
 
-    this.basketService.addToBasket(variant, 1, product).pipe(take(1)).subscribe({
+    this.basketService.addToBasket(variant, qty, product).pipe(take(1)).subscribe({
       next: () => {
         const isGuest = !this.authService.currentUserSubject.value;
         const parts = [variant.color?.name, variant.size?.value].filter(Boolean).join(' · ');

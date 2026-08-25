@@ -204,6 +204,37 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.closeAllMenus();
   }
 
+  // ─── CART FLYOUT HELPERS ──────────────────────────────────────────────────
+
+  /** Umbral en Soles para acceder a delivery gratuito local */
+  readonly freeDeliveryThreshold = 200;
+
+  /** Porcentaje de progreso hacia el envío gratis (0 a 100) */
+  get freeDeliveryProgress(): number {
+    if (!this.totalPrice || this.totalPrice <= 0) return 0;
+    return Math.min(100, Math.round((this.totalPrice / this.freeDeliveryThreshold) * 100));
+  }
+
+  /** Monto restante en Soles para calificar a envío gratis */
+  get freeDeliveryRemaining(): number {
+    return Math.max(0, parseFloat((this.freeDeliveryThreshold - this.totalPrice).toFixed(2)));
+  }
+
+  /** Obtiene el color hex de la variante del ítem si existe */
+  /** Retorna el precio unitario del ítem de forma segura */
+  getItemUnitPrice(item: any): number {
+    return item?.finalPrice ?? item?.price ?? 0;
+  }
+
+  /** Retorna el subtotal de la línea de ítem de forma segura */
+  getItemSubtotal(item: any): number {
+    return this.getItemUnitPrice(item) * (item?.quantity ?? 1);
+  }
+
+  getItemColorHex(item: any): string | null {
+    return item?.variant?.color?.hex ?? null;
+  }
+
   navigateToCheckout(): void {
     if (!this.authService.isAuthenticated()) {
       this.router.navigate(['/auth/login'], { queryParams: { returnUrl: '/basket' } });

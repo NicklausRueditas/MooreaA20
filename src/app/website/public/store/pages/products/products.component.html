@@ -235,18 +235,29 @@
         }
       </div>
 
-      <!-- ── CTA BUTTON ── -->
+      <!-- ── CTA BUTTON CON FEEDBACK DE CARGA ── -->
       <button
-        class="mt-2 w-full py-2.5 rounded-xl font-bold text-xs tracking-wide text-white transition-all duration-200 active:scale-[.97] shadow-lg shadow-gray-900/20"
+        class="mt-2 w-full py-2.5 rounded-xl font-bold text-xs tracking-wide text-white transition-all duration-200 active:scale-[.97] shadow-lg shadow-gray-900/20 disabled:opacity-75"
         style="background: linear-gradient(135deg, #111827 0%, #1f2937 100%)" (click)="openQuickAdd(product)"
+        [disabled]="cardActionLoadingId === product._id"
         [attr.aria-label]="'Agregar ' + product.name + ' al carrito'">
-        <span class="flex items-center justify-center gap-1.5">
-          <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round"
-              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
-          Agregar al Carro
-        </span>
+        @if (cardActionLoadingId === product._id) {
+          <span class="flex items-center justify-center gap-2">
+            <svg class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>Verificando stock...</span>
+          </span>
+        } @else {
+          <span class="flex items-center justify-center gap-1.5">
+            <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            Agregar al Carro
+          </span>
+        }
       </button>
 
     </div>
@@ -272,215 +283,230 @@
 </div>
 
 <!-- ════════════════════════════════════════════════════
-     QUICK-ADD MODAL
+     QUICK-ADD MODAL (REDISEÑO PREMIUM INTERACTIVO)
 ════════════════════════════════════════════════════ -->
 @if (modalProduct) {
-<div class="qa-backdrop" (click)="closeModal()">
-  <div class="qa-panel" (click)="$event.stopPropagation()">
+<div class="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]"
+  (click)="closeModal()">
 
-    <!-- Header galería -->
-    <div class="qa-header">
-      @if (getModalGallery().length > 0) {
-      <div class="qa-gallery">
+  <div class="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] border border-gray-100 animate-[slideUp_0.25s_cubic-bezier(0.16,1,0.3,1)]"
+    (click)="$event.stopPropagation()">
 
-        <!-- Imagen principal -->
-        <div class="qa-gallery__main">
-          <img [src]="(modalMainImage || getModalGallery()[0]) | cloudinary:'w_500,h_400,c_fit,q_auto,f_auto'"
-            [alt]="modalProduct.name" class="qa-gallery__img" />
+    <!-- ── HEADER MODAL CON GALERÍA Y DATOS DEL PRODUCTO ── -->
+    <div class="p-5 border-b border-gray-100 bg-gradient-to-b from-gray-50/80 to-white relative">
+      <!-- Botón Cerrar -->
+      <button (click)="closeModal()" aria-label="Cerrar"
+        class="absolute top-4 right-4 z-10 w-8 h-8 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-colors">
+        <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
 
-          @if (getModalGallery().length > 1) {
-          <button class="qa-gallery__arrow qa-gallery__arrow--prev" (click)="prevImage()" aria-label="Anterior">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          <button class="qa-gallery__arrow qa-gallery__arrow--next" (click)="nextImage()" aria-label="Siguiente">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          <div class="qa-gallery__dots">
-            @for (img of getModalGallery(); track $index) {
-            <span class="qa-gallery__dot"
-              [class.qa-gallery__dot--active]="(modalMainImage || getModalGallery()[0]) === img">
+      <div class="flex gap-4 items-start pr-8">
+        <!-- Miniatura Principal -->
+        <div class="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-gray-50 border border-gray-100 overflow-hidden flex-shrink-0 flex items-center justify-center shadow-xs">
+          <img [src]="(modalMainImage || getModalGallery()[0] || 'assets/images/placeholder.svg') | cloudinary:'w_200,h_200,c_fit,q_auto,f_auto'"
+            [alt]="modalProduct.name" class="w-full h-full object-cover">
+        </div>
+
+        <!-- Info Principal -->
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-1.5 mb-1">
+            <span class="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-md text-[10px] font-bold uppercase tracking-wider font-mono">
+              {{ modalProduct.brand || 'Moorea' }}
             </span>
+            @if (modalProduct.code) {
+              <span class="text-[10px] text-gray-400 font-mono font-medium truncate">{{ modalProduct.code }}</span>
             }
           </div>
-          }
-        </div>
 
-        <!-- Thumbnails strip -->
-        @if (getModalGallery().length > 1) {
-        <div class="qa-gallery__strip">
-          @for (img of getModalGallery(); track $index; let idx = $index) {
-          <button class="qa-gallery__thumb"
-            [class.qa-gallery__thumb--active]="(modalMainImage || getModalGallery()[0]) === img"
-            (click)="modalMainImage = img" [attr.aria-label]="'Ver imagen ' + (idx + 1)">
-            <img [src]="img | cloudinary:'w_88,h_88,c_fill,q_auto'" [alt]="'Imagen ' + (idx + 1)" />
-          </button>
-          }
-        </div>
-        }
+          <h3 class="text-base font-extrabold text-gray-900 leading-snug line-clamp-2">
+            {{ modalProduct.name }}
+          </h3>
 
-      </div>
-      }
-
-      <!-- Info producto en modal -->
-      <div class="qa-info">
-        <div>
-          <p class="qa-info__brand">{{ modalProduct.brand }}</p>
-          <h3 class="qa-info__name">{{ modalProduct.name }}</h3>
-          <p class="qa-info__price">S/ {{ modalProduct.basePrice | number:'1.2-2' }}</p>
+          <!-- Precios -->
+          <div class="mt-1.5 flex items-baseline gap-2">
+            <span class="text-lg font-black text-gray-900 leading-none">
+              S/ {{ modalUnitFinalPrice | number:'1.2-2' }}
+            </span>
+            @if (getDiscountPercentage(modalProduct) > 0) {
+              <span class="text-xs text-gray-400 line-through">
+                S/ {{ getOriginalPrice(modalProduct) | number:'1.2-2' }}
+              </span>
+              <span class="px-1.5 py-0.5 rounded-md text-[10px] font-bold bg-rose-50 text-rose-600">
+                -{{ getDiscountPercentage(modalProduct) }}%
+              </span>
+            }
+          </div>
         </div>
-        <button class="qa-close" (click)="closeModal()" aria-label="Cerrar">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
 
-    <!-- Body: colores + tallas -->
-    <div class="qa-body">
-      @if (modalLoading) {
-      <div class="qa-skeleton">
-        <div class="qa-skeleton__line qa-skeleton__line--short"></div>
-        <div class="qa-skeleton__dots">
-          @for (i of [1,2,3]; track i) { <div class="qa-skeleton__dot"></div> }
-        </div>
-        <div class="qa-skeleton__line qa-skeleton__line--xshort"></div>
-        <div class="qa-skeleton__sizes">
-          @for (i of [1,2,3,4]; track i) { <div class="qa-skeleton__size"></div> }
-        </div>
-      </div>
-      } @else {
+    <!-- ── CUERPO DEL MODAL (OPCIONES DE COLOR, TALLA Y DISPONIBILIDAD) ── -->
+    <div class="p-5 overflow-y-auto space-y-4 flex-1">
 
-      <!-- Colores -->
+      <!-- 🎨 SELECTOR DE COLOR -->
       @let colors = getUniqueColors(modalVariants);
       @if (colors.length > 0) {
-      <div class="qa-section">
-        <p class="qa-section__label">
-          Color
-          @if (selectedColorCode) {
-          @for (c of colors; track c.code) {
-          @if (c.code === selectedColorCode) {
-          <span class="qa-section__value">&middot; {{ c.name }}</span>
-          }
-          }
-          }
-        </p>
-        <div class="qa-colors">
-          @for (color of colors; track color.code) {
-          <button class="qa-color" [class.qa-color--active]="selectedColorCode === color.code"
-            (click)="selectColor(color.code)" [title]="color.name" [style.background]="color.hex">
-            @if (selectedColorCode === color.code) {
-            <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Color</span>
+            @if (selectedColorCode) {
+              @for (c of colors; track c.code) {
+                @if (c.code === selectedColorCode) {
+                  <span class="text-xs font-extrabold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-md">
+                    {{ c.name }}
+                  </span>
+                }
+              }
             }
-          </button>
-          }
+          </div>
+
+          <div class="flex flex-wrap gap-2.5">
+            @for (color of colors; track color.code) {
+              @let isColorActive = selectedColorCode === color.code;
+              <button (click)="selectColor(color.code)" [title]="color.name"
+                class="group relative w-10 h-10 rounded-2xl border-2 transition-all duration-150 flex items-center justify-center shadow-xs"
+                [style.background]="color.hex"
+                [class.ring-2]="isColorActive"
+                [class.ring-violet-600]="isColorActive"
+                [class.ring-offset-2]="isColorActive"
+                [class.scale-110]="isColorActive"
+                [class.border-white]="isColorActive"
+                [class.border-gray-200]="!isColorActive">
+                @if (isColorActive) {
+                  <svg class="w-4 h-4 drop-shadow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                    [class.text-white]="color.hex !== '#ffffff' && color.hex !== '#fff'"
+                    [class.text-gray-900]="color.hex === '#ffffff' || color.hex === '#fff'">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                }
+              </button>
+            }
+          </div>
         </div>
-      </div>
       }
 
-      <!-- Tallas -->
+      <!-- 📏 SELECTOR DE TALLAS -->
       @let sizes = getAvailableSizes(modalVariants, selectedColorCode);
       @if (sizes.length > 0) {
-      <div class="qa-section">
-        <p class="qa-section__label">Talla</p>
-        <div class="qa-sizes">
-          @for (size of sizes; track size.value) {
-          @let isAvail = isSizeAvailable(size.value);
-          <button class="qa-size" [class.qa-size--active]="selectedSizeValue === size.value"
-            [class.qa-size--disabled]="!isAvail" [disabled]="!isAvail" (click)="selectSize(size.value)">
-            {{ size.value }}
-          </button>
-          }
-        </div>
-      </div>
-      }
-
-      <!-- Variante seleccionada -->
-      @if (selectedVariant) {
-      <div class="qa-sku">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-        </svg>
-        SKU: <strong>{{ selectedVariant.sku }}</strong>
-      </div>
-
-      <!-- Disponibilidad física y delivery por tienda -->
-      @if ($any(selectedVariant).storeAvailability?.length > 0) {
-      <div class="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100 space-y-2 text-left">
-        <h4 class="text-[11px] font-extrabold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          Disponibilidad en Tiendas
-        </h4>
-        <div class="divide-y divide-slate-100 max-h-32 overflow-y-auto pr-1">
-          @for (store of $any(selectedVariant).storeAvailability; track store.storeCode) {
-          <div class="py-1.5 flex items-center justify-between text-[11px] gap-3 first:pt-0 last:pb-0">
-            <div class="min-w-0">
-              <p class="font-bold text-slate-900 truncate">{{ store.storeName }}</p>
-              <p class="text-slate-500 text-[10px] truncate">{{ store.address }} &middot; {{ store.distanceKm | number:'1.1-1' }} km</p>
-            </div>
-            <div class="text-right shrink-0">
-              <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[9px] font-bold"
-                    [class]="store.availableQty > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'">
-                {{ store.availableQty > 0 ? store.availableQty + ' uds' : 'Sin stock' }}
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Talla</span>
+            @if (selectedSizeValue) {
+              <span class="text-xs font-extrabold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-md">
+                Talla {{ selectedSizeValue }}
               </span>
-              @if (store.pickupLabel && store.pickupLabel !== 'No disponible') {
-              <p class="text-[9px] font-semibold mt-0.5"
-                 [class]="store.pickupLabel.includes('costo') ? 'text-amber-500' : 'text-emerald-600'">
-                🏪 {{ store.pickupLabel }}
-              </p>
-              }
-              @if (store.deliveryLabel) {
-              <p class="text-[9px] mt-0.5"
-                 [class]="store.isFreeDelivery ? 'text-emerald-600 font-bold' : 'text-gray-500'">
-                🚚 {{ store.deliveryLabel }}
-              </p>
-              }
-              @if (store.weightSurcharge && store.weightSurcharge > 0) {
-              <p class="text-[9px] text-amber-500 mt-0.5">
-                ⚖️ +S/ {{ store.weightSurcharge | number:'1.2-2' }} por peso
-              </p>
-              }
-            </div>
+            }
           </div>
-          }
+
+          <div class="flex flex-wrap gap-2">
+            @for (size of sizes; track size.value) {
+              @let isAvail = isSizeAvailable(size.value);
+              @let isSizeActive = selectedSizeValue === size.value;
+              <button (click)="selectSize(size.value)" [disabled]="!isAvail"
+                class="px-3.5 py-2 rounded-xl text-xs font-bold border-2 transition-all duration-150"
+                [class.border-violet-600]="isSizeActive"
+                [class.bg-violet-600]="isSizeActive"
+                [class.text-white]="isSizeActive"
+                [class.shadow-sm]="isSizeActive"
+                [class.border-gray-200]="!isSizeActive && isAvail"
+                [class.bg-white]="!isSizeActive && isAvail"
+                [class.text-gray-800]="!isSizeActive && isAvail"
+                [class.hover:border-gray-400]="!isSizeActive && isAvail"
+                [class.opacity-35]="!isAvail"
+                [class.line-through]="!isAvail"
+                [class.cursor-not-allowed]="!isAvail">
+                {{ size.value }}
+              </button>
+            }
+          </div>
         </div>
-      </div>
-      }
       }
 
+      <!-- 🔢 SELECTOR DE CANTIDAD -->
+      <div class="pt-2 border-t border-gray-100 flex items-center justify-between">
+        <span class="text-xs font-bold uppercase tracking-wider text-gray-500">Cantidad</span>
+        <div class="flex items-center gap-1 bg-gray-100 p-1 rounded-xl">
+          <button type="button" (click)="decrementModalQty()" [disabled]="modalQuantity <= 1"
+            class="w-7 h-7 rounded-lg bg-white text-gray-700 font-bold flex items-center justify-center text-sm shadow-xs hover:bg-gray-50 active:scale-95 disabled:opacity-40 transition">
+            -
+          </button>
+          <span class="w-8 text-center text-xs font-extrabold text-gray-900">{{ modalQuantity }}</span>
+          <button type="button" (click)="incrementModalQty()"
+            class="w-7 h-7 rounded-lg bg-white text-gray-700 font-bold flex items-center justify-center text-sm shadow-xs hover:bg-gray-50 active:scale-95 transition">
+            +
+          </button>
+        </div>
+      </div>
+
+      <!-- 🏪 DISPONIBILIDAD EN TIENDAS Y DESPACHO -->
+      @if (selectedVariant && $any(selectedVariant).storeAvailability?.length > 0) {
+        <div class="p-3.5 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>Disponibilidad en Tiendas</span>
+            </span>
+            <span class="text-[10px] font-bold text-slate-500 font-mono">
+              SKU: {{ selectedVariant.sku }}
+            </span>
+          </div>
+
+          <div class="divide-y divide-slate-200/60 max-h-32 overflow-y-auto pr-1">
+            @for (store of $any(selectedVariant).storeAvailability; track store.storeCode) {
+              <div class="py-2 flex items-center justify-between text-xs gap-3 first:pt-0 last:pb-0">
+                <div class="min-w-0">
+                  <p class="font-bold text-slate-900 truncate">{{ store.storeName }}</p>
+                  <p class="text-slate-500 text-[10.5px] truncate">{{ store.address }} &middot; <strong class="text-blue-700">a {{ store.distanceKm | number:'1.1-1' }} km</strong></p>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold"
+                    [class]="store.availableQty > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-200/60' : 'bg-rose-50 text-rose-700'">
+                    {{ store.availableQty > 0 ? store.availableQty + ' en stock' : 'Agotado' }}
+                  </span>
+                  @if (store.pickupLabel && store.pickupLabel !== 'No disponible') {
+                    <p class="text-[10px] font-semibold mt-0.5 text-emerald-600">
+                      🏪 {{ store.pickupLabel }}
+                    </p>
+                  }
+                  @if (store.deliveryLabel) {
+                    <p class="text-[10px] mt-0.5 text-slate-600 font-medium">
+                      🚚 {{ store.deliveryLabel }}
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+          </div>
+        </div>
       }
+
     </div>
 
-    <!-- Footer confirm -->
-    <div class="qa-footer">
-      <button class="qa-confirm" [class.qa-confirm--ready]="canConfirmAdd && !modalAddingToCart"
-        [class.qa-confirm--disabled]="!canConfirmAdd || modalAddingToCart"
-        [disabled]="!canConfirmAdd || modalLoading || modalAddingToCart" (click)="confirmQuickAdd()">
-
+    <!-- ── MODAL FOOTER CON BOTÓN DE ACCIÓN PRINCIPAL ── -->
+    <div class="p-4 border-t border-gray-100 bg-gray-50/80">
+      <button (click)="confirmQuickAdd()"
+        [disabled]="!canConfirmAdd || modalAddingToCart"
+        class="w-full py-3.5 px-6 rounded-2xl font-bold text-sm text-white transition-all duration-200 active:scale-[0.98] shadow-lg shadow-gray-900/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        [style.background]="canConfirmAdd && !modalAddingToCart ? 'linear-gradient(135deg, #111827 0%, #1f2937 100%)' : '#9ca3af'">
         @if (modalAddingToCart) {
-        <svg class="qa-confirm__spin" viewBox="0 0 24 24" fill="none">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor"
-            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-        </svg>
-        Agregando...
-        } @else if (!canConfirmAdd) {
-        Selecciona las opciones
+          <svg class="w-4 h-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          <span>Agregando al Carro...</span>
+        } @else if (!selectedVariant) {
+          <span>Elige color y talla para continuar</span>
         } @else {
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round"
-            d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        Agregar al carrito
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
+          <span>Agregar al Carrito · S/ {{ modalTotalPrice | number:'1.2-2' }}</span>
         }
       </button>
     </div>

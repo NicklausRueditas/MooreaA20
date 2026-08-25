@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { BasketService } from '../../../core/services/commerce/basket.service';
@@ -10,7 +11,7 @@ import { CloudinaryPipe } from '../../../shared/pipes/cloudinary.pipe';
 @Component({
   selector: 'app-basket',
   standalone: true,
-  imports: [CommonModule, RouterLink, SolCurrencyPipe, CloudinaryPipe],
+  imports: [CommonModule, FormsModule, RouterLink, CloudinaryPipe],
   templateUrl: './basket.component.html',
   styleUrls: ['./basket.component.css'],
 })
@@ -177,6 +178,91 @@ export class BasketComponent implements OnInit, OnDestroy {
 
   isItemLoading(item: BasketItem): boolean {
     return this.loadingItems.has(this.getVariantId(item));
+  }
+
+  // ─── CUPONES Y BENEFICIOS ──────────────────────────────────────────────
+  couponCode = '';
+  couponApplied = false;
+  couponDiscount = 0;
+  couponError: string | null = null;
+
+  /** Umbral para delivery gratuito */
+  readonly freeDeliveryThreshold = 200;
+
+  /** Progreso hacia el envío gratis (0 - 100%) */
+  get freeDeliveryProgress(): number {
+    if (!this.totalAmount || this.totalAmount <= 0) return 0;
+    return Math.min(100, Math.round((this.totalAmount / this.freeDeliveryThreshold) * 100));
+  }
+
+  /** Monto restante para envío gratis */
+  get freeDeliveryRemaining(): number {
+    return Math.max(0, parseFloat((this.freeDeliveryThreshold - this.totalAmount).toFixed(2)));
+  }
+
+  /** Ahorro total acumulado en descuentos de productos */
+  get totalSavings(): number {
+    if (!this.basket?.items) return 0;
+    return this.basket.items.reduce((sum, item) => {
+      const base = this.getBasePrice(item);
+      const final = item.finalPrice ?? base;
+      if (base > final) {
+        return sum + ((base - final) * item.quantity);
+      }
+      return sum;
+    }, 0);
+  }
+
+  /** Información de cuotas sin interés si el monto califica (>= S/ 500) */
+  get installmentInfo(): { count: number; amount: number } | null {
+    const total = this.finalPayableAmount;
+    if (total < 500) return null;
+    let count = 3;
+    if (total >= 2000) count = 24;
+    else if (total >= 1000) count = 12;
+    return {
+      count,
+      amount: parseFloat((total / count).toFixed(2))
+    };
+  }
+
+  /** Monto final a pagar considerando cupones */
+  get finalPayableAmount(): number {
+    return Math.max(0, this.totalAmount - this.couponDiscount);
+  }
+
+  applyCoupon(): void {
+    const code = this.couponCode.trim().toUpperCase();
+    this.couponError = null;
+    if (!code) {
+      this.couponError = 'Ingresa un código de cupón válido';
+      return;
+    }
+    // Códigos promocionales de ejemplo integrados
+    if (code === 'MOOREA10' || code === 'DESC10') {
+      this.couponDiscount = parseFloat((this.totalAmount * 0.10).toFixed(2));
+      this.couponApplied = true;
+    } else if (code === 'BIENVENIDO' || code === 'FREE20') {
+      this.couponDiscount = 20.00;
+      this.couponApplied = true;
+    } else {
+      this.couponError = 'Cupón inválido o expirado';
+    }
+  }
+
+  removeCoupon(): void {
+    this.couponApplied = false;
+    this.couponDiscount = 0;
+    this.couponCode = '';
+    this.couponError = null;
+  }
+
+  clearBasket(): void {
+    if (!this.basket?.items?.length) return;
+    if (confirm('¿Estás seguro de que deseas vaciar tu carrito?')) {
+      const items = [...this.basket.items];
+      items.forEach(item => this.removeItem(this.getVariantId(item)));
+    }
   }
 
   clearError(): void {

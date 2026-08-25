@@ -47,6 +47,9 @@ export class StoreInventoryComponent implements OnInit {
 
   // UI State
   showAddModal = false;
+  modalStep: 1 | 2 | 3 = 1;
+  selectedModalVariant: FlatCatalogVariant | null = null;
+  isAddingToInventory = false;
   addInventoryForm: FormGroup;
   showEditModal = false;
   editInventoryForm: FormGroup;
@@ -370,11 +373,50 @@ export class StoreInventoryComponent implements OnInit {
 
   // ─── INVENTORY ACTIONS ───────────────────────────────────────────────────────
 
+  /** Calcula cuántas variantes de un producto aún no están en esta tienda */
+  getAvailableVariantsCount(product: Product): number {
+    const existingIds = new Set(
+      this.inventory.map(item =>
+        typeof item.variantId === 'string'
+          ? item.variantId
+          : (item.variantId as ProductVariant)._id
+      )
+    );
+    return this.allCatalogVariants.filter(
+      v => v.product._id === product._id && !existingIds.has(v._id)
+    ).length;
+  }
+
+  /** Selecciona un producto en el wizard y avanza automáticamente al paso 2 */
+  selectProductInWizard(product: Product): void {
+    this.selectedProductId = product._id;
+    this.onModalProductChange(product._id);
+    this.selectedModalVariant = null;
+    this.modalStep = 2;
+  }
+
+  /** Selecciona una variante en el wizard y avanza automáticamente al paso 3 */
+  selectVariantInWizard(variant: FlatCatalogVariant): void {
+    this.selectedModalVariant = variant;
+    this.addInventoryForm.get('variantId')?.setValue(variant._id);
+    this.onVariantSelected(variant);
+    this.modalStep = 3;
+  }
+
+  /** Cambia de paso manualmente desde el stepper superior */
+  goToModalStep(step: 1 | 2 | 3): void {
+    if (step === 2 && !this.selectedProductId) return;
+    if (step === 3 && (!this.selectedProductId || !this.addInventoryForm.get('variantId')?.value)) return;
+    this.modalStep = step;
+  }
+
   openAddModal(): void {
     this.addInventoryForm.reset({ quantity: 10, reorderPoint: 5, reorderQuantity: 20 });
     this.selectedProductId = '';
     this.modalProductSearch = '';
     this.variantsForModal = [];
+    this.modalStep = 1;
+    this.selectedModalVariant = null;
     this.showAddModal = true;
   }
 
@@ -383,6 +425,8 @@ export class StoreInventoryComponent implements OnInit {
     this.selectedProductId = '';
     this.modalProductSearch = '';
     this.variantsForModal = [];
+    this.modalStep = 1;
+    this.selectedModalVariant = null;
     this.addInventoryForm.reset();
   }
 
@@ -584,6 +628,7 @@ export class StoreInventoryComponent implements OnInit {
         }
       : undefined;
 
+    this.isAddingToInventory = true;
     this.storesService.createInventoryItem({
       variantId:        fv.variantId,
       storeId:          this.storeId,
@@ -596,9 +641,13 @@ export class StoreInventoryComponent implements OnInit {
     }).subscribe({
       next: (created) => {
         this.inventory = [...this.inventory, created];
+        this.isAddingToInventory = false;
         this.closeAddModal();
       },
-      error: (err) => console.error('❌ Error creating inventory item:', err)
+      error: (err) => {
+        console.error('❌ Error creating inventory item:', err);
+        this.isAddingToInventory = false;
+      }
     });
   }
 
