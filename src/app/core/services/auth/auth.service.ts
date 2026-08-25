@@ -52,8 +52,14 @@ export class AuthService {
   /**
    * Inicia el flujo de autenticación con Google
    */
-  initiateGoogleLogin(): void {
-
+  /**
+   * Inicia el flujo de autenticación con Google guardando la URL previa de retorno
+   * @param returnUrl URL a la que se debe regresar tras la autenticación
+   */
+  initiateGoogleLogin(returnUrl?: string): void {
+    if (returnUrl) {
+      this.setRedirectUrl(returnUrl);
+    }
     window.location.href = `${this.apiUrl}/auth/google`;
   }
 
@@ -240,21 +246,46 @@ export class AuthService {
 
   //#region Helpers
   /**
-   * Guarda la URL de redirección en localStorage
-   * @param url URL a guardar (solo se guarda el path)
+   * Guarda la URL de redirección en localStorage tras validar que no sea una ruta de autenticación
+   * @param url URL a la cual redirigir luego del inicio de sesión
    */
-  private setRedirectUrl(url: string): void {
+  public setRedirectUrl(url: string): void {
+    if (!url) return;
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+    // Evitar guardar rutas de autenticación para no crear bucles
+    if (cleanUrl.startsWith('/auth') || cleanUrl === '/login') {
+      return;
+    }
     localStorage.setItem('auth_redirect_url', cleanUrl);
   }
 
   /**
-   * Redirige al usuario después de un login exitoso
+   * Obtiene la URL de redirección guardada en localStorage
+   * @returns URL guardada o null
    */
-  private redirectAfterLogin(): void {
-    const redirectPath =
-      localStorage.getItem('auth_redirect_url') || '/home';
+  public getRedirectUrl(): string | null {
+    return localStorage.getItem('auth_redirect_url');
+  }
+
+  /**
+   * Limpia la URL de redirección almacenada en localStorage
+   */
+  public clearRedirectUrl(): void {
     localStorage.removeItem('auth_redirect_url');
+  }
+
+  /**
+   * Redirige al usuario a la página previa después de un login exitoso
+   */
+  public redirectAfterLogin(): void {
+    let redirectPath = localStorage.getItem('auth_redirect_url');
+    localStorage.removeItem('auth_redirect_url');
+
+    // Si no hay ruta previa o apunta a login/auth, enviar al home
+    if (!redirectPath || redirectPath.startsWith('/auth') || redirectPath === '/login') {
+      redirectPath = '/home';
+    }
+
     this.router.navigateByUrl(redirectPath);
   }
   //#endregion

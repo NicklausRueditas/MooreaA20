@@ -1,7 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { Router, RouterLink, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../../core/services/auth/auth.service';
 import { ToastService } from '../../core/services/ui/toast.service';
 import { CreateUserDto } from '../../core/dtos/auth.interfaces';
@@ -13,7 +13,8 @@ import { CreateUserDto } from '../../core/dtos/auth.interfaces';
   templateUrl: './register.component.html',
   styleUrl: './register.component.css'
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnInit {
+  returnUrl: string = '';
   registerForm: FormGroup;
   loading = false;
   showPassword = false;
@@ -22,7 +23,8 @@ export class RegisterComponent {
     private fb: FormBuilder,
     private authService: AuthService,
     private toastService: ToastService,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute
   ) {
     this.registerForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -35,6 +37,16 @@ export class RegisterComponent {
       phone: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{9,15}$/)]],
       dni: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]]
     });
+  }
+
+  ngOnInit(): void {
+    const paramUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+    if (paramUrl) {
+      this.returnUrl = paramUrl;
+      this.authService.setRedirectUrl(paramUrl);
+    } else {
+      this.returnUrl = this.authService.getRedirectUrl() || '';
+    }
   }
 
   togglePasswordVisibility(): void {

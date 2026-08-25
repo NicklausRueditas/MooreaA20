@@ -21,14 +21,19 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         switch (error.status) {
           case 401:
             // En lugar de llamar a AuthService.logout() (que podría usar HttpClient),
-            // limpiamos el token localmente y redirigimos al login para evitar dependencias circulares.
+            // limpiamos el token localmente y preservamos la URL actual para que regrese tras autenticarse.
             try {
               localStorage.removeItem('access_token');
-              localStorage.removeItem('auth_redirect_url');
+              const currentUrl = router.url;
+              if (currentUrl && !currentUrl.startsWith('/auth') && currentUrl !== '/login') {
+                localStorage.setItem('auth_redirect_url', currentUrl);
+                router.navigate(['/auth/login'], { queryParams: { returnUrl: currentUrl } });
+              } else {
+                router.navigate(['/auth/login']);
+              }
             } catch (e) {
-              // Ignorar errores de lectura/escritura en localStorage
+              router.navigate(['/auth/login']);
             }
-            router.navigate(['/login']);
             errorMessage = 'Su sesión ha expirado. Por favor inicia sesión de nuevo.';
             break;
           case 403:

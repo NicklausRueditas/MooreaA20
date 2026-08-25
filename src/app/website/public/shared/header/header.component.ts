@@ -221,4 +221,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
   get isAdmin(): boolean {
     return this.userData?.roles?.includes('admin') ?? false;
   }
+
+  /** Retorna la URL actual del navegador para usar como returnUrl en login */
+  get currentUrl(): string {
+    return this.router.url;
+  }
 }

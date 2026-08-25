@@ -140,7 +140,7 @@
       <!-- Register Link -->
       <p class="mt-6 text-center text-sm text-gray-600">
         ¿No tienes cuenta?
-        <a routerLink="/auth/register" class="font-medium text-primary hover:text-primary/80 transition-colors">
+        <a routerLink="/auth/register" [queryParams]="returnUrl ? { returnUrl: returnUrl } : null" class="font-medium text-primary hover:text-primary/80 transition-colors">
           Regístrate gratis
         </a>
       </p>

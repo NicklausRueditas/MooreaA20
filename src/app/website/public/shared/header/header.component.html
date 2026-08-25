@@ -203,7 +203,7 @@
           </div>
           }
           } @else {
-          <a routerLink="/auth/login"
+          <a routerLink="/auth/login" [queryParams]="{ returnUrl: currentUrl }"
             class="px-4 py-2 text-sm font-medium text-gray-700 hover:text-primary transition-colors">
             Iniciar Sesión
           </a>
@@ -246,11 +246,11 @@
         Ayuda
       </a>
       @if (!userData) {
-      <a routerLink="/auth/login" (click)="closeAllMenus()"
+      <a routerLink="/auth/login" [queryParams]="{ returnUrl: currentUrl }" (click)="closeAllMenus()"
         class="block px-4 py-3 rounded-lg text-sm font-medium text-primary hover:bg-primary/10">
         Iniciar Sesión
       </a>
-      <a routerLink="/auth/register" (click)="closeAllMenus()"
+      <a routerLink="/auth/register" [queryParams]="{ returnUrl: currentUrl }" (click)="closeAllMenus()"
         class="block px-4 py-3 rounded-lg text-sm font-medium bg-primary text-white hover:bg-primary/90">
         Registrarse
       </a>
