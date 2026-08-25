@@ -174,10 +174,13 @@
           }
         </div>
 
-        <!-- Cuotas sin interés -->
-        @if (product.basePrice >= 300) {
-        <p class="text-[10px] text-emerald-600 font-semibold">
-          {{ getInstallments(product) }} cuotas sin interés
+        <!-- Cuotas sin interés (a partir de S/ 500) -->
+        @if ((product.finalPrice || product.basePrice) >= 500) {
+        <p class="text-[10.5px] text-emerald-600 font-bold flex items-center gap-1">
+          <svg class="w-3 h-3 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+          </svg>
+          <span>Hasta {{ getInstallments(product) }} cuotas sin interés</span>
         </p>
         }
 
@@ -197,11 +200,27 @@
         </div>
         }
 
-        <!-- Delivery & Pickup -->
-        @if (product.delivery || product.pickup) {
+        <!-- Distancia GEO, Delivery & Pickup -->
+        @if (product.delivery || product.pickup || (product.nearestStoreKm !== null && product.nearestStoreKm !== undefined)) {
         <div class="pt-1.5 space-y-1 border-t border-gray-50 mt-1">
+          <!-- Distancia a la tienda más cercana con stock -->
+          @if (product.nearestStoreKm !== null && product.nearestStoreKm !== undefined) {
+          <div class="flex items-center gap-1.5 text-[10.5px] font-medium text-blue-700">
+            <span class="inline-flex items-center gap-1 bg-blue-50/90 border border-blue-100 px-1.5 py-0.5 rounded-md text-[10px] font-bold">
+              <svg class="w-2.5 h-2.5 text-blue-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>a {{ product.nearestStoreKm | number:'1.1-1' }} km de ti</span>
+            </span>
+          </div>
+          }
+
           @if (product.delivery) {
-          <div class="flex items-center gap-1 text-[10px] text-gray-500 font-medium">
+          <div class="flex items-center gap-1 text-[10px] font-medium"
+               [class.text-emerald-700]="product.delivery.isFree"
+               [class.font-bold]="product.delivery.isFree"
+               [class.text-gray-600]="!product.delivery.isFree">
             <span>🚚</span>
             <span class="truncate">{{ product.delivery.label }}</span>
           </div>

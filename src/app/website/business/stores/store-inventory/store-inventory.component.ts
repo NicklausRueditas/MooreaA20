@@ -48,6 +48,10 @@ export class StoreInventoryComponent implements OnInit {
   // UI State
   showAddModal = false;
   addInventoryForm: FormGroup;
+  showEditModal = false;
+  editInventoryForm: FormGroup;
+  editingItem: InventoryItem | null = null;
+  isSavingEdit = false;
 
   // Selector en cascada: producto → variante
   selectedProductId = '';
@@ -82,6 +86,18 @@ export class StoreInventoryComponent implements OnInit {
       locationAisle: [null],
       locationShelf: [null],
       locationBin:   [null],
+    });
+
+    this.editInventoryForm = this.fb.group({
+      quantity:         [1, [Validators.required, Validators.min(0)]],
+      reservedQuantity: [0, [Validators.required, Validators.min(0)]],
+      cost:             [null],
+      wholesalePrice:   [null],
+      reorderPoint:     [5],
+      reorderQuantity:  [20],
+      locationAisle:    [null],
+      locationShelf:    [null],
+      locationBin:      [null],
     });
   }
 
@@ -208,7 +224,7 @@ export class StoreInventoryComponent implements OnInit {
   }
 
   /** Extrae el productId como string (puede estar populado) */
-  private getProductId(item: InventoryItem): string {
+  getProductId(item: InventoryItem): string {
     const v = this.getVariant(item);
     if (!v) return 'sin-producto';
     const pid = v.productId;
@@ -217,7 +233,7 @@ export class StoreInventoryComponent implements OnInit {
   }
 
   /** Extrae el nombre del producto maestro */
-  private getProductName(item: InventoryItem): string {
+  getProductName(item: InventoryItem): string {
     const v = this.getVariant(item);
     if (!v) return 'Producto desconocido';
     const pid = v.productId;
@@ -229,7 +245,7 @@ export class StoreInventoryComponent implements OnInit {
   }
 
   /** Extrae el código del producto maestro */
-  private getProductCode(item: InventoryItem): string {
+  getProductCode(item: InventoryItem): string {
     const v = this.getVariant(item);
     if (!v) return '';
     const pid = v.productId;
@@ -238,7 +254,7 @@ export class StoreInventoryComponent implements OnInit {
   }
 
   /** Extrae la marca del producto maestro */
-  private getProductBrand(item: InventoryItem): string {
+  getProductBrand(item: InventoryItem): string {
     const v = this.getVariant(item);
     if (!v) return '';
     const pid = v.productId;
@@ -246,11 +262,36 @@ export class StoreInventoryComponent implements OnInit {
     return this.productMap.get(pid as string)?.brand ?? '';
   }
 
-  /** Extrae la imagen del producto */
-  private getProductImage(item: InventoryItem): string {
+  /** Extrae la mejor imagen disponible para el producto o variante */
+  getProductImage(item: InventoryItem): string {
     const v = this.getVariant(item);
-    // Primero intenta la galería de la variante, luego la del producto maestro
-    return v?.gallery?.[0] ?? this.productMap.get(this.getProductId(item))?.gallery?.[0] ?? '';
+    // 1. Galería directa de la variante
+    if (v?.gallery && v.gallery.length > 0 && v.gallery[0]) {
+      return v.gallery[0];
+    }
+    // 2. Galería del productId populado como objeto
+    if (v && typeof v.productId === 'object' && v.productId !== null && (v.productId as any).gallery?.length > 0) {
+      return (v.productId as any).gallery[0];
+    }
+    // 3. Galería del producto maestro en el mapa en memoria
+    const pid = this.getProductId(item);
+    const prod = this.productMap.get(pid);
+    if (prod?.gallery && prod.gallery.length > 0 && prod.gallery[0]) {
+      return prod.gallery[0];
+    }
+    // 4. Buscar en las variantes del catálogo de este producto
+    const catVar = this.allCatalogVariants.find(
+      cv => cv.product?._id === pid && cv.gallery && cv.gallery.length > 0 && cv.gallery[0]
+    );
+    if (catVar?.gallery?.[0]) {
+      return catVar.gallery[0];
+    }
+    // 5. Buscar en la lista general de productos
+    const allProd = this.allProducts.find(p => p._id === pid);
+    if (allProd?.gallery && allProd.gallery.length > 0 && allProd.gallery[0]) {
+      return allProd.gallery[0];
+    }
+    return '';
   }
 
   // ─── GROUPED VIEW ────────────────────────────────────────────────────────────
@@ -299,6 +340,9 @@ export class StoreInventoryComponent implements OnInit {
       const group = groupMap.get(productId)!;
       group.rows.push({ item, variant });
       group.totalStock += item.quantity;
+      if (!group.productImage) {
+        group.productImage = this.getProductImage(item);
+      }
     }
 
     return Array.from(groupMap.values());
@@ -327,7 +371,7 @@ export class StoreInventoryComponent implements OnInit {
   // ─── INVENTORY ACTIONS ───────────────────────────────────────────────────────
 
   openAddModal(): void {
-    this.addInventoryForm.reset({ quantity: 1, reorderPoint: 5, reorderQuantity: 20 });
+    this.addInventoryForm.reset({ quantity: 10, reorderPoint: 5, reorderQuantity: 20 });
     this.selectedProductId = '';
     this.modalProductSearch = '';
     this.variantsForModal = [];
@@ -431,6 +475,102 @@ export class StoreInventoryComponent implements OnInit {
     return [v.sku, color, size + region].filter(Boolean).join(' · ');
   }
 
+  // ─── QUANTITY QUICK HELPERS ──────────────────────────────────────────────────
+
+  /** Ajusta la cantidad del formulario de adición */
+  adjustAddQuantity(delta: number): void {
+    const current = this.addInventoryForm.get('quantity')?.value || 0;
+    const next = Math.max(1, current + delta);
+    this.addInventoryForm.patchValue({ quantity: next });
+  }
+
+  /** Asigna una cantidad directa en el formulario de adición */
+  setAddQuantity(val: number): void {
+    this.addInventoryForm.patchValue({ quantity: val });
+  }
+
+  /** Ajusta la cantidad del formulario de edición */
+  adjustEditQuantity(field: 'quantity' | 'reservedQuantity', delta: number): void {
+    const current = this.editInventoryForm.get(field)?.value || 0;
+    const next = Math.max(0, current + delta);
+    this.editInventoryForm.patchValue({ [field]: next });
+  }
+
+  // ─── EDIT MODAL ─────────────────────────────────────────────────────────────
+
+  /** Abre el modal de edición para un registro de inventario */
+  openEditModal(item: InventoryItem): void {
+    this.editingItem = item;
+    const loc = (item as any).location || {};
+    this.editInventoryForm.patchValue({
+      quantity:         item.quantity ?? 0,
+      reservedQuantity: item.reservedQuantity ?? 0,
+      cost:             item.cost ?? null,
+      wholesalePrice:   item.wholesalePrice ?? null,
+      reorderPoint:     item.reorderPoint ?? 5,
+      reorderQuantity:  item.reorderQuantity ?? 20,
+      locationAisle:    loc.aisle || null,
+      locationShelf:    loc.shelf || null,
+      locationBin:      loc.bin || null,
+    });
+    this.showEditModal = true;
+  }
+
+  closeEditModal(): void {
+    this.showEditModal = false;
+    this.editingItem = null;
+    this.editInventoryForm.reset();
+  }
+
+  /** Guarda los cambios de edición del ítem de inventario */
+  onSaveEditInventory(): void {
+    if (!this.editInventoryForm.valid || !this.editingItem?._id) return;
+    this.isSavingEdit = true;
+    const fv = this.editInventoryForm.value;
+
+    const location = (fv.locationAisle || fv.locationShelf || fv.locationBin)
+      ? {
+          aisle: fv.locationAisle || undefined,
+          shelf: fv.locationShelf || undefined,
+          bin:   fv.locationBin   || undefined,
+        }
+      : undefined;
+
+    this.storesService.updateInventoryItem(this.editingItem._id, {
+      quantity:         fv.quantity,
+      reservedQuantity: fv.reservedQuantity,
+      cost:             fv.cost ?? undefined,
+      wholesalePrice:   fv.wholesalePrice ?? undefined,
+      reorderPoint:     fv.reorderPoint ?? undefined,
+      reorderQuantity:  fv.reorderQuantity ?? undefined,
+      location,
+    }).subscribe({
+      next: (updated) => {
+        // Actualizar el ítem en la lista local
+        const idx = this.inventory.findIndex(i => i._id === this.editingItem?._id);
+        if (idx !== -1) {
+          this.inventory[idx] = {
+            ...this.inventory[idx],
+            quantity:         updated.quantity,
+            reservedQuantity: updated.reservedQuantity,
+            cost:             updated.cost,
+            wholesalePrice:   updated.wholesalePrice,
+            reorderPoint:     updated.reorderPoint,
+            reorderQuantity:  updated.reorderQuantity,
+            location:         (updated as any).location,
+          };
+          this.inventory = [...this.inventory];
+        }
+        this.isSavingEdit = false;
+        this.closeEditModal();
+      },
+      error: (err) => {
+        console.error('❌ Error updating inventory item:', err);
+        this.isSavingEdit = false;
+      }
+    });
+  }
+
   onAddInventory(): void {
     if (!this.addInventoryForm.valid) return;
     const fv = this.addInventoryForm.value;
@@ -462,19 +602,28 @@ export class StoreInventoryComponent implements OnInit {
     });
   }
 
+  /**
+   * Actualiza la cantidad de stock directamente en el servidor al presionar [+] o [-] o editar el input
+   * @param item Ítem de inventario
+   * @param newQuantity Nueva cantidad de stock
+   */
   updateQuantity(item: InventoryItem, newQuantity: number): void {
-    if (newQuantity < 0) return;
-    const diff = newQuantity - item.quantity;
-    if (diff === 0) return;
+    if (newQuantity < 0 || !item._id) return;
+    const previous = item.quantity;
+    if (previous === newQuantity) return;
 
-    const variantId = this.getVariantId(item);
-    const obs = diff > 0
-      ? this.storesService.increaseStock(variantId, this.storeId, diff)
-      : this.storesService.reduceStock(variantId, this.storeId, Math.abs(diff));
+    // Actualización optimista en UI
+    item.quantity = newQuantity;
 
-    obs.subscribe({
-      next: (updated) => { item.quantity = updated.quantity; },
-      error: (err) => console.error('❌ Error updating stock:', err)
+    this.storesService.updateInventoryItem(item._id, { quantity: newQuantity }).subscribe({
+      next: (updated) => {
+        item.quantity = updated.quantity;
+      },
+      error: (err) => {
+        console.error('❌ Error updating stock:', err);
+        // Revertir en caso de error
+        item.quantity = previous;
+      }
     });
   }
 

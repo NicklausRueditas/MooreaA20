@@ -205,16 +205,20 @@ export class StoresService {
 
     /**
      * Actualizar registro de inventario.
-     * PATCH /inventory/:id — acepta reorderPoint, reorderQuantity, location (.http L588-601)
+     * PATCH /inventory/:id — acepta quantity, reservedQuantity, cost, wholesalePrice, reorderPoint, reorderQuantity, location
      *
      * @param id      ID del registro de inventario
      * @param updates Campos a actualizar
      */
-    updateInventoryItem(id: string, updates: {
-        reorderPoint?:    number;
-        reorderQuantity?: number;
+    updateInventoryItem(id: string, updates: Partial<{
+        quantity:         number;
+        reservedQuantity: number;
+        cost:             number;
+        wholesalePrice:   number;
+        reorderPoint:     number;
+        reorderQuantity:  number;
         location?: { aisle?: string; shelf?: string; bin?: string };
-    }): Observable<InventoryItem> {
+    }>): Observable<InventoryItem> {
         return this.http.patch<InventoryItem>(`${this.inventoryUrl}/${id}`, updates);
     }
 

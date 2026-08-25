@@ -418,10 +418,11 @@ export class ProductsComponent {
    * @returns Número de cuotas (6, 12 o 24)
    */
   getInstallments(product: Product): number {
-    const price = product.basePrice ?? 0;
+    const price = product.finalPrice ?? product.basePrice ?? 0;
     if (price >= 2000) return 24;
-    if (price >= 800) return 12;
-    return 3;
+    if (price >= 1000) return 12;
+    if (price >= 500) return 3;
+    return 0;
   }
 
   /**
