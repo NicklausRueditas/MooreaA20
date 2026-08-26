@@ -46,7 +46,7 @@ export class CardModalComponent implements OnChanges, OnDestroy {
   /** Emitido cuando la tarjeta fue guardada exitosamente */
   @Output() cardSaved = new EventEmitter<Card>();
 
-  // ─── Estado interno ───────────────────────────────────────────────────────
+  // Interno
   get editMode(): boolean { return !!this.editCard; }
   private currentCardId: string | null = null;
   private subscriptions = new Subscription();
@@ -85,7 +85,7 @@ export class CardModalComponent implements OnChanges, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // ─── Setup ────────────────────────────────────────────────────────────────
+  // Setup
 
   private setupModal(): void {
     this.resetForm();
@@ -112,7 +112,7 @@ export class CardModalComponent implements OnChanges, OnDestroy {
     this.isSaving = false;
   }
 
-  // ─── Acciones ─────────────────────────────────────────────────────────────
+  // Acciones
 
   close(): void { this.closed.emit(); }
 
@@ -175,15 +175,15 @@ export class CardModalComponent implements OnChanges, OnDestroy {
     );
   }
 
-  // ─── Helper visual ────────────────────────────────────────────────────────
+  // Helper visual
 
   getCardPreviewGradient(): string {
     const type = (this.cardForm.get('cardType')?.value ?? 'Visa') as string;
     switch (type.toLowerCase()) {
-      case 'visa':       return 'from-blue-700 via-blue-800 to-gray-900';
-      case 'mastercard': return 'from-gray-800 to-black';
-      case 'amex':       return 'from-slate-300 to-slate-500';
-      default:           return 'from-gray-700 to-gray-900';
+      case 'visa':       return 'from-indigo-900 via-blue-900 to-slate-900';
+      case 'mastercard': return 'from-amber-600 via-red-600 to-rose-950';
+      case 'amex':       return 'from-emerald-800 via-teal-900 to-slate-950';
+      default:           return 'from-slate-800 to-slate-900';
     }
   }
 }
