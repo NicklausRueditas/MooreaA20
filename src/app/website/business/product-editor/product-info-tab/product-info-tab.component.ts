@@ -62,6 +62,80 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
   get hasWarranty():   boolean   { return !!this.productForm.get('hasWarranty')?.value; }
   get warrantyType():  string    { return this.warrantyGroup?.get('type')?.value ?? ''; }
 
+  applyWarrantyPreset(preset: '1yr-factory' | '6mo-store' | '30d-swap' | 'custom' | 'none'): void {
+    if (preset === 'none') {
+      this.productForm.get('hasWarranty')?.setValue(false);
+      return;
+    }
+
+    this.productForm.get('hasWarranty')?.setValue(true);
+
+    if (preset === '1yr-factory') {
+      this.warrantyGroup.patchValue({
+        duration: 12,
+        unit: 'months',
+        type: 'manufacturer',
+        description: 'Garantía oficial por defectos de fabricación.',
+        policyUrl: '',
+      });
+    } else if (preset === '6mo-store') {
+      this.warrantyGroup.patchValue({
+        duration: 6,
+        unit: 'months',
+        type: 'store',
+        description: 'Garantía de tienda para cambio o servicio técnico.',
+        policyUrl: '',
+      });
+    } else if (preset === '30d-swap') {
+      this.warrantyGroup.patchValue({
+        duration: 30,
+        unit: 'days',
+        type: 'store',
+        description: 'Cambio o devolución directa en tienda.',
+        policyUrl: '',
+      });
+    } else if (preset === 'custom') {
+      if (!this.warrantyGroup.get('duration')?.value) {
+        this.warrantyGroup.patchValue({
+          duration: 12,
+          unit: 'months',
+          type: 'manufacturer',
+          description: '',
+          policyUrl: '',
+        });
+      }
+    }
+  }
+
+  isPresetActive(preset: '1yr-factory' | '6mo-store' | '30d-swap' | 'custom' | 'none'): boolean {
+    if (!this.hasWarranty) return preset === 'none';
+    const d = this.warrantyGroup.get('duration')?.value;
+    const u = this.warrantyGroup.get('unit')?.value;
+    const t = this.warrantyGroup.get('type')?.value;
+
+    if (preset === '1yr-factory') return d === 12 && u === 'months' && t === 'manufacturer';
+    if (preset === '6mo-store')   return d === 6  && u === 'months' && t === 'store';
+    if (preset === '30d-swap')    return d === 30 && u === 'days'   && t === 'store';
+    if (preset === 'custom')      return !( (d === 12 && u === 'months' && t === 'manufacturer') || (d === 6 && u === 'months' && t === 'store') || (d === 30 && u === 'days' && t === 'store') );
+    return false;
+  }
+
+  /* ── Descuentos Rápidos y Métricas ─────────────────────────────────────── */
+  applyQuickDiscount(pct: number): void {
+    this.productForm.get('discount')?.setValue(pct);
+  }
+
+  get completionPercentage(): number {
+    let score = 0;
+    if (this.productForm.get('name')?.value?.trim()) score += 20;
+    if (this.productForm.get('code')?.value?.trim()) score += 15;
+    if (this.productForm.get('brand')?.value?.trim()) score += 15;
+    if ((this.productForm.get('basePrice')?.value ?? 0) > 0) score += 20;
+    if (this.categoryArray.length > 0) score += 15;
+    if (this.galleryArray.length > 0) score += 15;
+    return Math.min(100, score);
+  }
+
   /** Precio real que ve el cliente = basePrice × (1 - discount/100) */
   get clientPrice(): number {
     const base     = +(this.productForm.get('basePrice')?.value ?? 0);

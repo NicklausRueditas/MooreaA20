@@ -133,12 +133,17 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
     const payload = { ...raw } as Product;
     // Incluir warranty solo si el usuario habilitó la garantía
     if (!raw.hasWarranty) {
-      delete (payload as any).warranty;
+      if (this.isNew) {
+        delete (payload as any).warranty;
+      } else {
+        (payload as any).warranty = null;
+      }
     } else {
       // Limpiar campos opcionales vacíos
-      const w = (payload as any).warranty as ProductWarranty;
+      const w = { ...(payload as any).warranty };
       if (!w.description?.trim()) delete (w as any).description;
       if (!w.policyUrl?.trim())   delete (w as any).policyUrl;
+      (payload as any).warranty = w;
     }
     delete (payload as any).hasWarranty;
     const obs = this.isNew
