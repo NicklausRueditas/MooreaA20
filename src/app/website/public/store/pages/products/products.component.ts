@@ -10,11 +10,12 @@ import { ToastService } from '../../../../../core/services/ui/toast.service';
 import { AuthService } from '../../../../../core/services/auth/auth.service';
 import { GeoService } from '../../../../../core/services/utils/geo.service';
 import { CloudinaryPipe } from '../../../../../shared/pipes/cloudinary.pipe';
+import { ProductCardComponent } from '../../../../../shared/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-products',
   standalone: true,
-  imports: [CommonModule, RouterLink, CloudinaryPipe],
+  imports: [CommonModule, CloudinaryPipe, ProductCardComponent],
   templateUrl: './products.component.html',
   styleUrls: ['./products.component.css'],
 })

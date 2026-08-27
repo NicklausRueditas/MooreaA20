@@ -1,0 +1,191 @@
+<article class="product-card group relative flex flex-col bg-white rounded-2xl border border-slate-100/80 shadow-sm hover:shadow-md hover:border-slate-200 hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+  
+  <!-- Image Slider Wrapper -->
+  <div class="relative aspect-square overflow-hidden bg-slate-50/50">
+
+    <!-- Active Image Link -->
+    <a [routerLink]="['/product', product._id]" class="block w-full h-full" [attr.aria-label]="product.name">
+      @for (img of images; track $index; let i = $index) {
+      <img class="absolute inset-0 w-full h-full object-contain p-3.5 transition-opacity duration-300 select-none"
+        [class.opacity-100]="i === activeIdx" 
+        [class.opacity-0]="i !== activeIdx"
+        [src]="img | cloudinary:'w_500,h_500,c_fit,q_auto,f_auto'" 
+        [alt]="product.name + ' imagen ' + (i + 1)"
+        loading="lazy" 
+        (error)="onImgError($event)" />
+      }
+    </a>
+
+    <!-- Slider Arrows (visible on hover if > 1 image) -->
+    @if (images.length > 1) {
+    <button
+      class="absolute left-2.5 top-1/2 -translate-y-1/2 z-10 w-7.5 h-7.5 flex items-center justify-center rounded-full bg-white/95 shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white active:scale-90 cursor-pointer"
+      (click)="cardPrev($event)" aria-label="Imagen anterior">
+      <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+    <button
+      class="absolute right-2.5 top-1/2 -translate-y-1/2 z-10 w-7.5 h-7.5 flex items-center justify-center rounded-full bg-white/95 shadow-md border border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity duration-200 hover:bg-white active:scale-90 cursor-pointer"
+      (click)="cardNext($event)" aria-label="Imagen siguiente">
+      <svg class="w-3.5 h-3.5 text-slate-700" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+
+    <!-- Dots slider indicators -->
+    <div class="absolute bottom-3 left-0 right-0 flex justify-center gap-1 z-10 select-none">
+      @for (img of images; track $index; let i = $index) {
+      <button class="rounded-full border-0 bg-none transition-all duration-200 cursor-pointer"
+        [class]="i === activeIdx ? 'w-4.5 h-1.5 bg-slate-800' : 'w-1.5 h-1.5 bg-slate-400/50'"
+        (click)="cardGoTo($event, i)" [attr.aria-label]="'Ver imagen ' + (i + 1)">
+      </button>
+      }
+    </div>
+    }
+
+    <!-- FLOATING BADGES (top-left) -->
+    <div class="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1.5">
+      <!-- Discount Badge -->
+      @if (discountPct > 0) {
+      <span class="inline-flex items-center rounded-lg bg-rose-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm uppercase tracking-wide">
+        -{{ discountPct }}%
+      </span>
+      }
+
+      <!-- Fast Store Pickup Badge -->
+      @if (canPickupFast()) {
+      <span class="inline-flex items-center gap-1 rounded-lg bg-emerald-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+        <svg class="w-2.5 h-2.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        Retira Hoy
+      </span>
+      }
+
+      <!-- New Product Badge -->
+      @if (isNewProduct() && !canPickupFast() && discountPct <= 0) {
+      <span class="inline-flex items-center rounded-lg bg-indigo-500 px-2 py-1 text-[10px] font-bold text-white shadow-sm">
+        Nuevo
+      </span>
+      }
+    </div>
+
+    <!-- Favorite/Wishlist floating button (top-right) -->
+    <button (click)="onFavoriteClick($event)"
+      class="absolute top-2.5 right-2.5 z-10 w-7.5 h-7.5 flex items-center justify-center rounded-full bg-white/90 border border-slate-100 shadow opacity-0 group-hover:opacity-100 transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+      aria-label="Guardar en favoritos">
+      <svg class="w-4 h-4 text-slate-400 hover:text-rose-500 transition-colors" fill="none" stroke="currentColor"
+        stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round"
+          d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+      </svg>
+    </button>
+  </div>
+
+  <!-- Content info card -->
+  <div class="flex flex-col flex-1 px-4 pt-3 pb-4 gap-1.5">
+
+    <!-- Brand -->
+    <span class="text-[9px] font-bold uppercase tracking-widest text-slate-400 truncate">
+      {{ product.brand || 'Moorea' }}
+    </span>
+
+    <!-- Product Name Link -->
+    <a [routerLink]="['/product', product._id]"
+      class="text-xs font-bold text-slate-800 leading-snug line-clamp-2 hover:text-indigo-600 transition-colors duration-150 no-underline h-9">
+      {{ product.name }}
+    </a>
+
+    <!-- Categories Tags (first 2) -->
+    @if (product.category && product.category.length > 0) {
+    <div class="flex flex-wrap gap-1 mt-0.5 select-none">
+      @for (cat of product.category.slice(0, 2); track cat) {
+      <span class="inline-flex items-center gap-0.5 text-[8px] font-bold uppercase tracking-wide bg-rose-50 text-rose-600 border border-rose-100 px-1.5 py-0.5 rounded-md">
+        <svg class="w-2.5 h-2.5 opacity-70" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+        {{ cat }}
+      </span>
+      }
+    </div>
+    }
+
+    <!-- Dynamic Color Swatches (thumbnails) -->
+    @if (product.thumbnailGallery && product.thumbnailGallery.length > 0) {
+    <div class="flex items-center gap-1.5 flex-wrap mt-0.5 select-none">
+      @for (thumb of product.thumbnailGallery.slice(0, 6); track thumb.colorCode) {
+      <span
+        class="w-3.5 h-3.5 rounded-full border border-white ring-1 ring-slate-200 shadow-sm flex-shrink-0 cursor-pointer hover:scale-115 transition-transform duration-150"
+        [style.background]="thumb.colorHex" 
+        [title]="thumb.colorName">
+      </span>
+      }
+      @if (product.thumbnailGallery.length > 6) {
+      <span class="text-[9px] text-slate-400 font-bold leading-none">
+        +{{ product.thumbnailGallery.length - 6 }}
+      </span>
+      }
+    </div>
+    }
+
+    <!-- Tags (first 2) -->
+    @if (product.tags && product.tags.length > 0) {
+    <div class="flex flex-wrap gap-1 mt-0.5 select-none">
+      @for (tag of product.tags.slice(0, 2); track tag) {
+      <span class="inline-flex items-center text-[9px] font-semibold text-slate-400 bg-slate-50 px-1.5 py-0.5 rounded-md border border-slate-100">
+        #{{ tag }}
+      </span>
+      }
+    </div>
+    }
+
+    <!-- Spacer -->
+    <div class="flex-grow"></div>
+
+    <!-- Pricing details -->
+    <div class="pt-1.5 space-y-0.5 border-t border-slate-50">
+      <div class="flex items-baseline gap-1.5 flex-wrap select-none">
+        <!-- Final discounted price -->
+        <span class="text-base font-extrabold text-slate-900 leading-none">
+          S/ {{ finalPrice | number:'1.2-2' }}
+        </span>
+        <!-- Original price struck-out -->
+        @if (discountPct > 0) {
+        <span class="text-[10px] text-slate-400 line-through">
+          S/ {{ originalPrice | number:'1.2-2' }}
+        </span>
+        }
+      </div>
+
+      <!-- Installments hints -->
+      @if (installmentsCount > 0) {
+      <p class="text-[10px] text-emerald-600 font-bold flex items-center gap-0.5 select-none">
+        <svg class="w-3 h-3 text-emerald-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span>{{ installmentsCount }} cuotas de S/ {{ installmentPrice | number:'1.0-0' }} sin int.</span>
+      </p>
+      }
+    </div>
+
+    <!-- Quick Add to Cart CTA Button -->
+    <button (click)="onQuickAddClick($event)" [disabled]="loading"
+      class="mt-2.5 w-full py-2.5 rounded-xl font-bold text-xs tracking-wide text-white transition-all duration-200 active:scale-[.97] shadow-sm hover:shadow-md disabled:opacity-75 cursor-pointer bg-gradient-to-r from-slate-900 to-slate-800 flex items-center justify-center gap-1.5 select-none">
+      
+      @if (loading) {
+      <svg class="w-3.5 h-3.5 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+      <span>Verificando...</span>
+      } @else {
+      <svg class="w-3.5 h-3.5 opacity-80" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+      </svg>
+      <span>Agregar</span>
+      }
+    </button>
+
+  </div>
+</article>

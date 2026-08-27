@@ -12,11 +12,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { ProductsService } from '../../../../../../core/services/catalog/products.service';
 import { CloudinaryPipe } from '../../../../../../shared/pipes/cloudinary.pipe';
 import { Product } from '../../../../../../core/interfaces/product.interface';
+import { ProductCardComponent } from '../../../../../../shared/components/product-card/product-card.component';
 
 @Component({
   selector: 'app-related-products',
   standalone: true,
-  imports: [CommonModule, CloudinaryPipe],
+  imports: [CommonModule, ProductCardComponent],
   templateUrl: './related-products.component.html',
   styleUrl: './related-products.component.css',
 })
