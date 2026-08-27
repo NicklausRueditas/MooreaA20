@@ -356,58 +356,13 @@
           </div>
           }
 
-          <!-- Segmented Tabs for Description & Shipping (no specifications here anymore) -->
+          <!-- DESCRIPTION (Direct plain display for maximum visual clarity, no tabs) -->
+          @if(product.description) {
           <div class="border-t border-slate-100 pt-6">
-            <div class="flex gap-6 border-b border-slate-100 mb-4 select-none">
-              <button type="button" 
-                      (click)="selectTab('description')"
-                      class="pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all duration-200 cursor-pointer"
-                      [class.border-indigo-600]="activeTab === 'description'"
-                      [class.text-indigo-600]="activeTab === 'description'"
-                      [class.border-transparent]="activeTab !== 'description'"
-                      [class.text-slate-400]="activeTab !== 'description'">
-                Descripción
-              </button>
-              <button type="button" 
-                      (click)="selectTab('shipping')"
-                      class="pb-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all duration-200 cursor-pointer"
-                      [class.border-indigo-600]="activeTab === 'shipping'"
-                      [class.text-indigo-600]="activeTab === 'shipping'"
-                      [class.border-transparent]="activeTab !== 'shipping'"
-                      [class.text-slate-400]="activeTab !== 'shipping'">
-                Envíos y Retiros
-              </button>
-            </div>
-
-            <!-- Tab Content -->
-            <div class="text-sm text-slate-600 leading-relaxed min-h-[80px]">
-              @if (activeTab === 'description') {
-                <p>{{ product.description || 'Sin descripción disponible para este producto.' }}</p>
-              }
-              @if (activeTab === 'shipping') {
-                <ul class="space-y-2 list-none p-0 m-0">
-                  <li class="flex items-start gap-2">
-                    <svg class="h-4.5 w-4.5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span><strong>Envío Estándar Gratis:</strong> Entrega a domicilio de 2 a 3 días útiles.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <svg class="h-4.5 w-4.5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span><strong>Retiro en Tienda Gratis:</strong> Listo para recoger hoy mismo según disponibilidad física.</span>
-                  </li>
-                  <li class="flex items-start gap-2">
-                    <svg class="h-4.5 w-4.5 text-emerald-600 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span><strong>Garantía Moorea:</strong> Devolución y cambio sin costo durante los primeros 30 días.</span>
-                  </li>
-                </ul>
-              }
-            </div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2.5">Descripción</h3>
+            <p class="text-sm text-slate-600 leading-relaxed">{{ product.description }}</p>
           </div>
+          }
 
           <!-- QUANTITY SELECTOR -->
           <div class="border-t border-slate-100 pt-6">
@@ -574,6 +529,60 @@
         </div>
         }
       </dl>
+    </div>
+    }
+
+    <!-- SECCIÓN DEDICADA DE GARANTÍA Y CONFIANZA MOOREA (NUEVA) -->
+    @if(product) {
+    <div class="mt-10 rounded-3xl bg-white p-6 sm:p-8 border border-slate-100/50 shadow-md">
+      <div class="flex items-center gap-2 mb-6 border-b border-slate-50 pb-4 select-none">
+        <svg class="h-6 w-6 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        </svg>
+        <h2 class="text-lg font-bold text-slate-900 tracking-tight">Garantía y Compromiso Moorea</h2>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        
+        <!-- Tarjeta 1: Garantía de Fábrica -->
+        <div class="flex flex-col items-center text-center p-4 rounded-2xl bg-slate-50/50 border border-slate-100">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-indigo-50 text-indigo-600 mb-3 shadow-sm">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-800 mb-1">Garantía de Calidad 100%</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Todos nuestros productos son 100% originales y cuentan con garantía de fábrica directa para asegurar su óptimo rendimiento y duración.
+          </p>
+        </div>
+
+        <!-- Tarjeta 2: Cambios y Devoluciones -->
+        <div class="flex flex-col items-center text-center p-4 rounded-2xl bg-slate-50/50 border border-slate-100">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-emerald-50 text-emerald-600 mb-3 shadow-sm">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 1121.21 8H17" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-800 mb-1">Retornos y Cambios Gratis</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            ¿No es tu talla o no cumple tus expectativas? Cámbialo o devuélvelo sin costo adicional durante los primeros 30 días posteriores a tu entrega.
+          </p>
+        </div>
+
+        <!-- Tarjeta 3: Transacción Segura -->
+        <div class="flex flex-col items-center text-center p-4 rounded-2xl bg-slate-50/50 border border-slate-100">
+          <div class="flex h-12 w-12 items-center justify-center rounded-full bg-blue-50 text-blue-600 mb-3 shadow-sm">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h3 class="text-sm font-bold text-slate-800 mb-1">Pago 100% Seguro</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Procesamos tus datos bajo los más altos estándares de seguridad (SSL de extremo a extremo y certificación PCI-DSS de la pasarela Izipay).
+          </p>
+        </div>
+
+      </div>
     </div>
     }
 
