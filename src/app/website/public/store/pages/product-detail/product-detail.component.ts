@@ -115,10 +115,14 @@ export class ProductDetailComponent implements OnInit {
           next: (variants) => {
             this.variants = variants.filter(v => v.isActive !== false);
             this.loadingVariants = false;
-            // Auto-seleccionar la variante que coincida con la imagen principal para mantener consistencia
+            // Auto-seleccionar la variante que coincida con el primer color o imagen principal
             if (this.variants.length > 0) {
-              const primaryImg = this.product?.gallery?.[0] ?? '';
-              const matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              const primaryColor = this.product?.thumbnailGallery?.[0]?.colorCode ?? '';
+              let matched = this.variants.find(v => v.color?.code === primaryColor);
+              if (!matched) {
+                const primaryImg = this.product?.gallery?.[0] ?? '';
+                matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              }
               this.autoSelectVariant(matched ?? this.variants[0]);
             }
           },
@@ -132,8 +136,12 @@ export class ProductDetailComponent implements OnInit {
             this.variants = variants.filter(v => v.isActive !== false);
             this.loadingVariants = false;
             if (this.variants.length > 0) {
-              const primaryImg = this.product?.gallery?.[0] ?? '';
-              const matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              const primaryColor = this.product?.thumbnailGallery?.[0]?.colorCode ?? '';
+              let matched = this.variants.find(v => v.color?.code === primaryColor);
+              if (!matched) {
+                const primaryImg = this.product?.gallery?.[0] ?? '';
+                matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              }
               this.autoSelectVariant(matched ?? this.variants[0]);
             }
           },
