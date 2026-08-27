@@ -169,6 +169,43 @@
       }
     </div>
 
+    <!-- Distancia GEO, Delivery & Pickup -->
+    @if (product.delivery || product.pickup || (product.nearestStoreKm !== null && product.nearestStoreKm !== undefined)) {
+    <div class="pt-2 space-y-1.5 border-t border-slate-50 mt-1.5 select-none">
+      <!-- Distancia a la tienda más cercana con stock -->
+      @if (product.nearestStoreKm !== null && product.nearestStoreKm !== undefined) {
+      <div class="flex items-center gap-1.5 text-[10px] font-bold text-indigo-600">
+        <span class="inline-flex items-center gap-1 bg-indigo-50/70 border border-indigo-100/60 px-1.5 py-0.5 rounded-md">
+          <svg class="w-3 h-3 text-indigo-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span>a {{ product.nearestStoreKm | number:'1.1-1' }} km de ti</span>
+        </span>
+      </div>
+      }
+
+      <!-- Delivery info -->
+      @if (product.delivery) {
+      <div class="flex items-center gap-1.5 text-[10.5px] font-medium"
+           [class.text-emerald-600]="product.delivery.isFree"
+           [class.font-bold]="product.delivery.isFree"
+           [class.text-slate-500]="!product.delivery.isFree">
+        <span>🚚</span>
+        <span class="truncate">{{ product.delivery.label }}</span>
+      </div>
+      }
+      
+      <!-- Pickup info -->
+      @if (product.pickup && product.pickup.available) {
+      <div class="flex items-center gap-1.5 text-[10.5px] text-emerald-600 font-bold">
+        <span>🏪</span>
+        <span class="truncate">{{ product.pickup.label }}</span>
+      </div>
+      }
+    </div>
+    }
+
     <!-- Quick Add to Cart CTA Button -->
     <button (click)="onQuickAddClick($event)" [disabled]="loading"
       class="mt-2.5 w-full py-2.5 rounded-xl font-bold text-xs tracking-wide text-white transition-all duration-200 active:scale-[.97] shadow-sm hover:shadow-md disabled:opacity-75 cursor-pointer bg-gradient-to-r from-slate-900 to-slate-800 flex items-center justify-center gap-1.5 select-none">
