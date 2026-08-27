@@ -47,6 +47,14 @@ export class ProductDetailComponent implements OnInit {
   selectedColorCode: string = '';
   selectedSizeValue: string = '';
 
+  // Premium UI states
+  activeTab: 'description' | 'specifications' | 'shipping' = 'description';
+
+  // Magnifier Zoom state
+  zoomX: number = 50;
+  zoomY: number = 50;
+  isZooming: boolean = false;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -474,5 +482,35 @@ export class ProductDetailComponent implements OnInit {
     const img = event.target as HTMLImageElement;
     img.src = 'assets/images/placeholder.svg';
     img.onerror = null; // evita loop infinito
+  }
+
+  // ─── Premium UI Methods ──────────────────────────────────────────────────────
+
+  selectTab(tab: 'description' | 'specifications' | 'shipping'): void {
+    this.activeTab = tab;
+  }
+
+  onMouseMove(e: MouseEvent): void {
+    const target = e.currentTarget as HTMLElement;
+    const rect = target.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    this.zoomX = x;
+    this.zoomY = y;
+  }
+
+  onMouseEnter(): void {
+    this.isZooming = true;
+  }
+
+  onMouseLeave(): void {
+    this.isZooming = false;
+  }
+
+  scrollToReviews(): void {
+    const el = document.getElementById('reviews-section') || document.querySelector('app-product-reviews');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   }
 }
