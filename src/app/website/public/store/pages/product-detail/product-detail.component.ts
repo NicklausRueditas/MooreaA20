@@ -115,9 +115,11 @@ export class ProductDetailComponent implements OnInit {
           next: (variants) => {
             this.variants = variants.filter(v => v.isActive !== false);
             this.loadingVariants = false;
-            // Auto-seleccionar la primera variante al cargar (muestra sus imágenes en la galería)
+            // Auto-seleccionar la variante que coincida con la imagen principal para mantener consistencia
             if (this.variants.length > 0) {
-              this.autoSelectVariant(this.variants[0]);
+              const primaryImg = this.product?.gallery?.[0] ?? '';
+              const matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              this.autoSelectVariant(matched ?? this.variants[0]);
             }
           },
           error: () => { this.loadingVariants = false; }
@@ -130,7 +132,9 @@ export class ProductDetailComponent implements OnInit {
             this.variants = variants.filter(v => v.isActive !== false);
             this.loadingVariants = false;
             if (this.variants.length > 0) {
-              this.autoSelectVariant(this.variants[0]);
+              const primaryImg = this.product?.gallery?.[0] ?? '';
+              const matched = this.variants.find(v => v.gallery?.includes(primaryImg));
+              this.autoSelectVariant(matched ?? this.variants[0]);
             }
           },
           error: () => { this.loadingVariants = false; }
