@@ -500,6 +500,26 @@ export class ProductDetailComponent implements OnInit {
     img.onerror = null; // evita loop infinito
   }
 
+  getWarrantyUnitLabel(unit: string | undefined): string {
+    if (!unit) return '';
+    const map: Record<string, string> = {
+      days: 'días',
+      months: 'meses',
+      years: 'años'
+    };
+    return map[unit] || unit;
+  }
+
+  getWarrantyTypeLabel(type: string | undefined): string {
+    if (!type) return 'Garantía';
+    const map: Record<string, string> = {
+      manufacturer: 'Garantía de Fábrica',
+      store: 'Garantía de la Tienda',
+      none: 'Sin Garantía'
+    };
+    return map[type] || 'Garantía';
+  }
+
   // ─── Premium UI Methods ──────────────────────────────────────────────────────
 
   selectTab(tab: 'description' | 'specifications' | 'shipping'): void {
