@@ -9,6 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { ImageService } from '../../../../core/services/utils/image.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
 import { Product }      from '../../../../core/interfaces/product.interface';
+import { ProductCardComponent } from '../../../../shared/components/product-card/product-card.component';
 import {
   CATEGORY_GROUPS, TAG_GROUPS,
   type CategoryGroup, type TagGroup,
@@ -17,7 +18,7 @@ import {
 @Component({
   selector: 'app-product-info-tab',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, ProductCardComponent],
   templateUrl: './product-info-tab.component.html',
 })
 export class ProductInfoTabComponent implements OnInit, OnDestroy {
@@ -30,6 +31,7 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
 
   readonly categoryGroups: CategoryGroup[] = CATEGORY_GROUPS;
   readonly tagGroups:      TagGroup[]      = TAG_GROUPS;
+  readonly popularCategories = ['Polos', 'Zapatillas', 'Casacas', 'Pantalones', 'Accesorios', 'Camisas', 'Shorts', 'Ropa Deportiva'];
   readonly objectKeys = Object.keys;
 
   readonly specKeyCtrl   = new FormControl('');
@@ -143,6 +145,47 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
     return base * (1 - discount / 100);
   }
 
+  /* ── Previsualización en Vivo (Product Card) ────────────────────────────── */
+  get previewProduct(): Product {
+    const raw = this.productForm.value;
+    const basePrice = +(raw.basePrice || 0);
+    const discount = +(raw.discount || 0);
+    const finalPrice = basePrice * (1 - discount / 100);
+
+    let gallery = (this.galleryArray?.value || []).filter((g: any) => typeof g === 'string' && g.trim());
+    if (gallery.length === 0 && this.product?.gallery && this.product.gallery.length > 0) {
+      gallery = this.product.gallery;
+    }
+    if (gallery.length === 0 && this.product?.thumbnailGallery && this.product.thumbnailGallery.length > 0) {
+      gallery = this.product.thumbnailGallery.map(t => t.image);
+    }
+    if (gallery.length === 0) {
+      gallery = ['assets/images/placeholder.svg'];
+    }
+
+    return {
+      _id: this.product?._id ?? 'preview-temp-id',
+      code: raw.code || 'BASH-DALLAS',
+      name: raw.name || 'Nombre del Producto',
+      brand: raw.brand || 'Moorea',
+      model: raw.model || '',
+      description: raw.description || '',
+      basePrice: basePrice,
+      discount: discount,
+      finalPrice: finalPrice,
+      isActive: raw.isActive ?? true,
+      category: this.categoryArray?.value || [],
+      tags: this.tagsArray?.value || [],
+      gallery: gallery,
+      thumbnailGallery: this.product?.thumbnailGallery,
+      availableColors: this.product?.availableColors,
+      warranty: raw.hasWarranty ? raw.warranty : undefined,
+      rating: this.product?.rating ?? { average: 5.0, count: 12, distribution: { 1: 0, 2: 0, 3: 0, 4: 2, 5: 10 } },
+      createdAt: this.product?.createdAt ?? new Date().toISOString(),
+      updatedAt: this.product?.updatedAt ?? new Date().toISOString(),
+    };
+  }
+
   /* ── Categorías ─────────────────────────────────────────────────────────── */
   get filteredCategoryGroups(): CategoryGroup[] {
     const search = this.categorySearchCtrl.value?.trim().toLowerCase() ?? '';
@@ -151,6 +194,19 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
       const options = g.options.filter(opt => opt.toLowerCase().includes(search));
       return { ...g, options };
     }).filter(g => g.options.length > 0);
+  }
+
+  togglePopularCategory(cat: string): void {
+    const idx = this.categoryArray.value.indexOf(cat);
+    if (idx >= 0) {
+      this.categoryArray.removeAt(idx);
+    } else {
+      this.categoryArray.push(this.fb.control(cat, Validators.required));
+    }
+  }
+
+  isCategorySelected(cat: string): boolean {
+    return this.categoryArray.value.includes(cat);
   }
 
   selectCategory(value: string): void {
