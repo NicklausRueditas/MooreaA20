@@ -4,9 +4,11 @@ import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } fr
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil, finalize } from 'rxjs';
 
-import { ProductsService } from '../../../core/services/catalog/products.service';
-import { ToastService }    from '../../../core/services/ui/toast.service';
+import { ProductsService }        from '../../../core/services/catalog/products.service';
+import { ProductVariantsService } from '../../../core/services/catalog/product-variants.service';
+import { ToastService }           from '../../../core/services/ui/toast.service';
 import { Product, ProductWarranty } from '../../../core/interfaces/product.interface';
+import { ProductVariant }         from '../../../core/interfaces/store.interface';
 
 import { ProductInfoTabComponent }     from './product-info-tab/product-info-tab.component';
 import { ProductVariantsTabComponent } from './product-variants-tab/product-variants-tab.component';
@@ -29,6 +31,7 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
   activeTab = signal<EditorTab>('info');
 
   product:      Product | null = null;
+  variants:     ProductVariant[] = [];
   productForm!: FormGroup;
 
   constructor(
@@ -36,6 +39,7 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
     private readonly route:           ActivatedRoute,
     private readonly router:          Router,
     private readonly productsService: ProductsService,
+    private readonly variantsService: ProductVariantsService,
     private readonly toastService:    ToastService,
   ) {}
 
@@ -95,8 +99,22 @@ export class ProductEditorComponent implements OnInit, OnDestroy {
     this.productsService.getProductById(id)
       .pipe(takeUntil(this.destroy$), finalize(() => { this.isLoading = false; }))
       .subscribe({
-        next: (p) => { this.product = p; this.patchForm(p); },
+        next: (p) => {
+          this.product = p;
+          this.patchForm(p);
+          this.loadVariants(id);
+        },
         error: () => this.toastService.showError('No se pudo cargar el producto'),
+      });
+  }
+
+  private loadVariants(id: string): void {
+    this.variantsService.getVariantsByProduct(id)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (v) => {
+          this.variants = v.sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
+        },
       });
   }
 

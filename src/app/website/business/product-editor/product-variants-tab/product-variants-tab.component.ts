@@ -251,6 +251,10 @@ export class ProductVariantsTabComponent implements OnInit, OnDestroy {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
+  get totalColors(): number { return this.colorGroups.length; }
+  get totalSizes(): number { return this.variants.length; }
+  get activeVariantsCount(): number { return this.variants.filter(v => v.isActive).length; }
+
   /** Precio sin descuento (base + ajuste de variante). */
   rawPrice(variant: ProductVariant): number {
     return (this.product?.basePrice ?? 0) + (variant.priceAdjustment ?? 0);

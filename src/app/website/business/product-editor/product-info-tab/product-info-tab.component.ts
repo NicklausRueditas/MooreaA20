@@ -8,7 +8,8 @@ import { Subject, takeUntil } from 'rxjs';
 
 import { ImageService } from '../../../../core/services/utils/image.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
-import { Product }      from '../../../../core/interfaces/product.interface';
+import { Product, ThumbnailEntry } from '../../../../core/interfaces/product.interface';
+import { ProductVariant } from '../../../../core/interfaces/store.interface';
 import { ProductCardComponent } from '../../../../shared/components/product-card/product-card.component';
 import {
   CATEGORY_GROUPS, TAG_GROUPS,
@@ -25,6 +26,7 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
   /** FormGroup construído por el padre y compartido via Input */
   @Input()  productForm!: FormGroup;
   @Input()  product:      Product | null = null;
+  @Input()  variants:     ProductVariant[] = [];
   @Input()  isNew         = false;
 
   private readonly destroy$ = new Subject<void>();
@@ -134,7 +136,7 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
     if (this.productForm.get('brand')?.value?.trim()) score += 15;
     if ((this.productForm.get('basePrice')?.value ?? 0) > 0) score += 20;
     if (this.categoryArray.length > 0) score += 15;
-    if (this.galleryArray.length > 0) score += 15;
+    if (this.galleryArray.length > 0 || (this.variants && this.variants.length > 0)) score += 15;
     return Math.min(100, score);
   }
 
@@ -152,15 +154,72 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
     const discount = +(raw.discount || 0);
     const finalPrice = basePrice * (1 - discount / 100);
 
-    let gallery = (this.galleryArray?.value || []).filter((g: any) => typeof g === 'string' && g.trim());
-    if (gallery.length === 0 && this.product?.gallery && this.product.gallery.length > 0) {
-      gallery = this.product.gallery;
+    // 1. Jerarquía de imágenes:
+    // - Fotos de la primera variante (color primario), luego de las demás variantes
+    // - Luego las fotos globales de la galería
+    const combinedImages: string[] = [];
+    const seen = new Set<string>();
+
+    if (this.variants && this.variants.length > 0) {
+      for (const v of this.variants) {
+        if (v.gallery && v.gallery.length > 0) {
+          for (const img of v.gallery) {
+            if (img && !seen.has(img)) {
+              seen.add(img);
+              combinedImages.push(img);
+            }
+          }
+        }
+      }
     }
-    if (gallery.length === 0 && this.product?.thumbnailGallery && this.product.thumbnailGallery.length > 0) {
-      gallery = this.product.thumbnailGallery.map(t => t.image);
+
+    const formGallery = (this.galleryArray?.value || []).filter((g: any) => typeof g === 'string' && g.trim());
+    for (const img of formGallery) {
+      if (img && !seen.has(img)) {
+        seen.add(img);
+        combinedImages.push(img);
+      }
     }
-    if (gallery.length === 0) {
-      gallery = ['assets/images/placeholder.svg'];
+
+    if (this.product?.gallery && this.product.gallery.length > 0) {
+      for (const img of this.product.gallery) {
+        if (img && !seen.has(img)) {
+          seen.add(img);
+          combinedImages.push(img);
+        }
+      }
+    }
+
+    if (combinedImages.length === 0) {
+      combinedImages.push('assets/images/placeholder.svg');
+    }
+
+    // 2. Construir thumbnailGallery para las miniaturas por color en la tarjeta
+    const thumbnailGallery: ThumbnailEntry[] = [];
+    const seenColors = new Set<string>();
+    if (this.variants && this.variants.length > 0) {
+      for (const v of this.variants) {
+        const code = v.color?.code;
+        const name = v.color?.name ?? 'Color';
+        const hex  = v.color?.hex  ?? '#000000';
+        const firstImg = v.gallery?.[0];
+        if (code && firstImg && !seenColors.has(code)) {
+          seenColors.add(code);
+          thumbnailGallery.push({ colorCode: code, colorName: name, colorHex: hex, image: firstImg });
+        }
+      }
+    }
+
+    // 3. Construir availableColors para los selectores de color
+    const availableColors: { name: string; hex: string; code: string }[] = [];
+    const seenColorCodes = new Set<string>();
+    if (this.variants && this.variants.length > 0) {
+      for (const v of this.variants) {
+        if (v.color && !seenColorCodes.has(v.color.code)) {
+          seenColorCodes.add(v.color.code);
+          availableColors.push(v.color);
+        }
+      }
     }
 
     return {
@@ -176,9 +235,9 @@ export class ProductInfoTabComponent implements OnInit, OnDestroy {
       isActive: raw.isActive ?? true,
       category: this.categoryArray?.value || [],
       tags: this.tagsArray?.value || [],
-      gallery: gallery,
-      thumbnailGallery: this.product?.thumbnailGallery,
-      availableColors: this.product?.availableColors,
+      gallery: combinedImages,
+      thumbnailGallery: thumbnailGallery.length > 0 ? thumbnailGallery : undefined,
+      availableColors: availableColors.length > 0 ? availableColors : undefined,
       warranty: raw.hasWarranty ? raw.warranty : undefined,
       rating: this.product?.rating ?? { average: 5.0, count: 12, distribution: { 1: 0, 2: 0, 3: 0, 4: 2, 5: 10 } },
       createdAt: this.product?.createdAt ?? new Date().toISOString(),

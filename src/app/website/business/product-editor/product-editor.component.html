@@ -74,7 +74,7 @@
     </div>
   } @else {
     @if (activeTab() === 'info') {
-      <app-product-info-tab [productForm]="productForm" [product]="product" [isNew]="isNew"></app-product-info-tab>
+      <app-product-info-tab [productForm]="productForm" [product]="product" [variants]="variants" [isNew]="isNew"></app-product-info-tab>
     }
 
     @if (activeTab() === 'variants' && !isNew && productId) {
