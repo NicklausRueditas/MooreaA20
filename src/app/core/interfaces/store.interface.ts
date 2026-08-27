@@ -95,6 +95,7 @@ export interface ProductVariant {
   gallery?:           string[];
   priceAdjustment?:   number;
   isActive?:          boolean;
+  sortOrder?:         number;
 }
 
 // ─── GEO: Disponibilidad por tienda con distancia (endpoint /product-variants/product/:id/geo) ───

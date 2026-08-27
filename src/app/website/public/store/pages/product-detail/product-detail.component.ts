@@ -113,7 +113,9 @@ export class ProductDetailComponent implements OnInit {
       next: (location) => {
         this.variantsService.getGeoVariantsByProduct(productId, location.lat, location.lng).subscribe({
           next: (variants) => {
-            this.variants = variants.filter(v => v.isActive !== false);
+            this.variants = variants
+              .filter(v => v.isActive !== false)
+              .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
             this.loadingVariants = false;
             // Auto-seleccionar la variante que coincida con el primer color o imagen principal
             if (this.variants.length > 0) {
@@ -133,7 +135,9 @@ export class ProductDetailComponent implements OnInit {
         // Fallback si falla la geolocalización
         this.variantsService.getVariantsByProduct(productId).subscribe({
           next: (variants) => {
-            this.variants = variants.filter(v => v.isActive !== false);
+            this.variants = variants
+              .filter(v => v.isActive !== false)
+              .sort((a, b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0));
             this.loadingVariants = false;
             if (this.variants.length > 0) {
               const primaryColor = this.product?.thumbnailGallery?.[0]?.colorCode ?? '';
