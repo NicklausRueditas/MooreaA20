@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { Title } from '@angular/platform-browser';
 import { ProductsService } from '../../../../../core/services/catalog/products.service';
 import { ProductVariantsService } from '../../../../../core/services/catalog/product-variants.service';
 import { BasketService } from '../../../../../core/services/commerce/basket.service';
@@ -58,6 +59,7 @@ export class ProductDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private titleService: Title,
     private productsService: ProductsService,
     private variantsService: ProductVariantsService,
     private basketService: BasketService,
@@ -86,6 +88,7 @@ export class ProductDetailComponent implements OnInit {
     if (cached) {
       this.product = cached;
       this.selectedImage = cached.gallery?.[0] ?? '';
+      this.titleService.setTitle(`${cached.name} | Moorea`);
       this.loading = false;
       this.loadVariants(id);
       return;
@@ -96,6 +99,7 @@ export class ProductDetailComponent implements OnInit {
       next: (product) => {
         this.product = product;
         this.selectedImage = product.gallery?.[0] ?? '';
+        this.titleService.setTitle(`${product.name} | Moorea`);
         this.loading = false;
         this.loadVariants(id);
       },
