@@ -56,7 +56,9 @@
         <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 flex flex-col justify-between hover:border-violet-300 hover:shadow-md transition">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Mi Catálogo</span>
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                @if (isGlobalCatalogView) { Catálogo General (Moorea) } @else { Mi Catálogo }
+              </span>
               <div class="h-10 w-10 rounded-xl bg-violet-50 text-violet-600 flex items-center justify-center">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
@@ -66,7 +68,11 @@
 
             <p class="text-3xl font-black text-gray-900">{{ totalProducts }}</p>
             <p class="text-xs text-gray-500 mt-1">
-              Productos registrados en tu catálogo
+              @if (isGlobalCatalogView) {
+                Productos en la plataforma Moorea
+              } @else {
+                Productos registrados en tu catálogo
+              }
             </p>
 
             <!-- Detalle Activos / Inactivos -->

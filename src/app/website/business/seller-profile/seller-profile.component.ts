@@ -13,6 +13,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { SellersService }  from '../../../core/services/catalog/sellers.service';
 import { ProductsService } from '../../../core/services/catalog/products.service';
 import { StoresService }   from '../../../core/services/catalog/stores.service';
+import { AuthService }     from '../../../core/services/auth/auth.service';
 import { ToastService }    from '../../../core/services/ui/toast.service';
 import {
   ApprovalStatus,
@@ -49,6 +50,7 @@ export class SellerProfileComponent implements OnInit, OnDestroy {
   activeProducts   = 0;
   inactiveProducts = 0;
   isLoadingStats   = false;
+  isGlobalCatalogView = false;
 
   // ── Modal de Edición de Perfil y Banco ─────────────────────────────────────
   isEditModalOpen = false;
@@ -60,9 +62,14 @@ export class SellerProfileComponent implements OnInit, OnDestroy {
     private readonly sellersService:  SellersService,
     private readonly productsService: ProductsService,
     private readonly storesService:   StoresService,
+    private readonly authService:     AuthService,
     private readonly toastService:    ToastService,
     private readonly router:          Router,
   ) {}
+
+  get isAdmin(): boolean {
+    return this.authService.hasRole('admin');
+  }
 
   ngOnInit(): void {
     this.buildForm();
@@ -109,14 +116,48 @@ export class SellerProfileComponent implements OnInit, OnDestroy {
       .subscribe({
         next: (res: any) => {
           const prods: Product[] = res.data ?? [];
-          this.totalProducts    = res.total ?? prods.length;
-          this.activeProducts   = prods.filter((p: Product) => p.isActive === true).length;
-          this.inactiveProducts = prods.filter((p: Product) => p.isActive === false).length;
-          this.isLoadingStats   = false;
+          if (prods.length > 0) {
+            this.totalProducts       = res.total ?? prods.length;
+            this.activeProducts      = prods.filter((p: Product) => p.isActive === true).length;
+            this.inactiveProducts    = prods.filter((p: Product) => p.isActive === false).length;
+            this.isGlobalCatalogView = false;
+            this.isLoadingStats      = false;
+          } else if (this.isAdmin) {
+            // Si el Admin no tiene productos asignados a su ID personal, cargamos el catálogo global del sistema
+            this.loadGlobalCatalogStats();
+          } else {
+            this.totalProducts       = 0;
+            this.activeProducts      = 0;
+            this.inactiveProducts    = 0;
+            this.isGlobalCatalogView = false;
+            this.isLoadingStats      = false;
+          }
+        },
+        error: () => {
+          if (this.isAdmin) {
+            this.loadGlobalCatalogStats();
+          } else {
+            this.isLoadingStats = false;
+          }
+        },
+      });
+  }
+
+  private loadGlobalCatalogStats(): void {
+    this.productsService.getProducts(1, 100)
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
+        next: (globalRes: any) => {
+          const globalProds: Product[] = globalRes.data ?? (Array.isArray(globalRes) ? globalRes : []);
+          this.totalProducts       = globalRes.total ?? globalProds.length;
+          this.activeProducts      = globalProds.filter((p: Product) => p.isActive === true).length;
+          this.inactiveProducts    = globalProds.filter((p: Product) => p.isActive === false).length;
+          this.isGlobalCatalogView = true;
+          this.isLoadingStats      = false;
         },
         error: () => {
           this.isLoadingStats = false;
-        },
+        }
       });
   }
 
