@@ -10,7 +10,8 @@ export interface BusinessNavItem {
   route: string;
   icon: string;
   exact?: boolean;
-  roles?: string[]; // Si incluye 'admin' únicamente, solo visible para admin
+  roles?: string[];
+  description?: string;
 }
 
 @Component({
@@ -25,15 +26,39 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
 
   currentUser: User | null = null;
   isUserMenuOpen = false;
+  isMoreMenuOpen = false;
   isMobileMenuOpen = false;
 
-  readonly allNavItems: BusinessNavItem[] = [
+  // ── Enlaces Principales Visibles ──────────────────────────────────────────
+  readonly primaryNavItems: BusinessNavItem[] = [
     { label: 'Productos', route: '/business/products', icon: '📦', roles: ['admin', 'seller'] },
     { label: 'Tiendas', route: '/business/stores', icon: '🏪', roles: ['admin', 'seller', 'worker'] },
     { label: 'Pedidos', route: '/business/orders', icon: '📋', roles: ['admin', 'seller', 'worker'] },
-    { label: 'Escanear QR', route: '/business/pickup-scanner', icon: '📷', roles: ['admin', 'seller', 'worker'] },
-    // ⚠️ SOLO ADMIN: Vendedores nunca debe aparecer para Sellers o Workers
-    { label: 'Vendedores', route: '/business/sellers', icon: '👥', roles: ['admin'] },
+  ];
+
+  // ── Enlaces Expandibles ("Más Módulos") ───────────────────────────────────
+  readonly extraNavItems: BusinessNavItem[] = [
+    {
+      label: 'Escanear QR',
+      route: '/business/pickup-scanner',
+      icon: '📷',
+      roles: ['admin', 'seller', 'worker'],
+      description: 'Lector de códigos de retiro en sucursal'
+    },
+    {
+      label: 'Vendedores',
+      route: '/business/sellers',
+      icon: '👥',
+      roles: ['admin'],
+      description: 'Directorio y auditoría de comercios (Admin)'
+    },
+    {
+      label: 'Perfil de Negocio',
+      route: '/business/profile',
+      icon: '⚙️',
+      roles: ['admin', 'seller', 'worker'],
+      description: 'Métricas, datos de la tienda y sucursal'
+    },
   ];
 
   constructor(
@@ -115,9 +140,29 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
     return item.roles.some(role => this.userRoles.includes(role));
   }
 
+  get visibleExtraNavItems(): BusinessNavItem[] {
+    return this.extraNavItems.filter(item => this.canAccess(item));
+  }
+
+  get isAnyExtraItemActive(): boolean {
+    const url = this.router.url;
+    return this.visibleExtraNavItems.some(item => url.startsWith(item.route));
+  }
+
+  toggleMoreMenu(event?: Event): void {
+    if (event) event.stopPropagation();
+    this.isMoreMenuOpen = !this.isMoreMenuOpen;
+    if (this.isMoreMenuOpen) {
+      this.isUserMenuOpen = false;
+    }
+  }
+
   toggleUserMenu(event?: Event): void {
     if (event) event.stopPropagation();
     this.isUserMenuOpen = !this.isUserMenuOpen;
+    if (this.isUserMenuOpen) {
+      this.isMoreMenuOpen = false;
+    }
   }
 
   toggleMobileMenu(): void {
@@ -133,6 +178,9 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
     const target = event.target as HTMLElement;
     if (!target.closest('.user-menu-container')) {
       this.isUserMenuOpen = false;
+    }
+    if (!target.closest('.more-menu-container')) {
+      this.isMoreMenuOpen = false;
     }
   }
 
