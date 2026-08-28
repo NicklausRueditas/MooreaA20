@@ -1,21 +1,21 @@
 <div class="min-h-screen bg-gray-50">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-  <!-- Header -->
-  <div class="bg-white border-b border-gray-200 px-4 sm:px-6 lg:px-8 py-4">
-    <div class="max-w-7xl mx-auto flex items-center justify-between flex-wrap gap-3">
-      <h1 class="text-xl font-bold text-gray-900">Gestión de Órdenes</h1>
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div>
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Gestión de Órdenes</h1>
+        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Supervisa y administra el estado de los pedidos y despachos</p>
+      </div>
       <a routerLink="/business/pickup-scanner"
-        class="inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white rounded-xl text-sm font-semibold hover:bg-purple-500 transition">
+        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl text-xs font-black shadow-md transition active:scale-95 cursor-pointer shrink-0">
         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
             d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 4h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
         </svg>
-        Scanner de retiros
+        Scanner de retiros QR
       </a>
     </div>
-  </div>
-
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
     <!-- Filtros de estado -->
     <div class="flex gap-2 flex-wrap">
