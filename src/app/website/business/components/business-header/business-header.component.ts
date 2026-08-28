@@ -5,17 +5,12 @@ import { Subject, takeUntil } from 'rxjs';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { User } from '../../../../core/interfaces/user.interface';
 
-export interface NavGroup {
-  groupName: string;
-  items: BusinessNavItem[];
-}
-
 export interface BusinessNavItem {
   label: string;
   route: string;
   icon: string;
   exact?: boolean;
-  roles?: string[]; // Si está vacío, accesible por todos los roles de business
+  roles?: string[]; // Si incluye 'admin' únicamente, solo visible para admin
 }
 
 @Component({
@@ -32,28 +27,13 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
   isUserMenuOpen = false;
   isMobileMenuOpen = false;
 
-  readonly navGroups: NavGroup[] = [
-    {
-      groupName: 'Catálogo & Tiendas',
-      items: [
-        { label: 'Productos', route: '/business/products', icon: '📦', roles: ['admin', 'seller'] },
-        { label: 'Tiendas', route: '/business/stores', icon: '🏪', roles: ['admin', 'seller', 'worker'] },
-      ]
-    },
-    {
-      groupName: 'Operaciones',
-      items: [
-        { label: 'Pedidos', route: '/business/orders', icon: '📋', roles: ['admin', 'seller', 'worker'] },
-        { label: 'Escanear QR', route: '/business/pickup-scanner', icon: '📷', roles: ['admin', 'seller', 'worker'] },
-      ]
-    },
-    {
-      groupName: 'Administración',
-      items: [
-        // ⚠️ SOLO ADMIN: Vendedores nunca debe aparecer para Sellers o Workers
-        { label: 'Vendedores', route: '/business/sellers', icon: '👥', roles: ['admin'] },
-      ]
-    }
+  readonly allNavItems: BusinessNavItem[] = [
+    { label: 'Productos', route: '/business/products', icon: '📦', roles: ['admin', 'seller'] },
+    { label: 'Tiendas', route: '/business/stores', icon: '🏪', roles: ['admin', 'seller', 'worker'] },
+    { label: 'Pedidos', route: '/business/orders', icon: '📋', roles: ['admin', 'seller', 'worker'] },
+    { label: 'Escanear QR', route: '/business/pickup-scanner', icon: '📷', roles: ['admin', 'seller', 'worker'] },
+    // ⚠️ SOLO ADMIN: Vendedores nunca debe aparecer para Sellers o Workers
+    { label: 'Vendedores', route: '/business/sellers', icon: '👥', roles: ['admin'] },
   ];
 
   constructor(
@@ -133,10 +113,6 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
     }
     if (this.isAdmin) return true;
     return item.roles.some(role => this.userRoles.includes(role));
-  }
-
-  hasVisibleItemsInGroup(group: NavGroup): boolean {
-    return group.items.some(item => this.canAccess(item));
   }
 
   toggleUserMenu(event?: Event): void {

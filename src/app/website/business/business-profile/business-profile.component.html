@@ -1,0 +1,461 @@
+<div class="min-h-screen bg-slate-50/60 pb-16">
+
+  <!-- ── Spinner de carga ───────────────────────────────────────────────────── -->
+  @if (isLoading) {
+    <div class="flex flex-col items-center justify-center py-28 gap-3">
+      <div class="h-10 w-10 border-4 border-slate-200 border-t-slate-900 rounded-full animate-spin"></div>
+      <p class="text-sm font-bold text-slate-500">Cargando perfil...</p>
+    </div>
+  }
+
+  @if (!isLoading) {
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+
+      <!-- ── Encabezado Principal del Perfil ────────────────────────────────── -->
+      <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+          <div class="flex items-center gap-4 sm:gap-5">
+            
+            <!-- Avatar / Logo -->
+            <div class="relative shrink-0">
+              @if (isSeller && primaryProfile?.logoUrl) {
+                <img [src]="primaryProfile!.logoUrl" alt="Logo de Tienda"
+                  class="h-16 w-16 sm:h-20 sm:w-20 rounded-3xl object-cover ring-2 ring-slate-100 shadow-sm" />
+              } @else if (currentUser?.profilePicture) {
+                <img [src]="currentUser!.profilePicture" alt="Avatar"
+                  class="h-16 w-16 sm:h-20 sm:w-20 rounded-3xl object-cover ring-2 ring-slate-100 shadow-sm" />
+              } @else {
+                <div class="h-16 w-16 sm:h-20 sm:w-20 rounded-3xl bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-black text-2xl flex items-center justify-center shadow-md">
+                  {{ (isSeller ? primaryProfile?.shopName : currentUser?.displayName)?.charAt(0)?.toUpperCase() || 'M' }}
+                </div>
+              }
+              
+              <span class="absolute -bottom-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-emerald-500 text-white ring-2 ring-white text-[10px]">
+                ✓
+              </span>
+            </div>
+
+            <!-- Datos Principales -->
+            <div class="space-y-1">
+              <div class="flex flex-wrap items-center gap-2.5">
+                <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  @if (isSeller) {
+                    {{ primaryProfile?.shopName || currentUser?.displayName || 'Mi Tienda' }}
+                  } @else {
+                    {{ currentUser?.displayName || 'Usuario Moorea' }}
+                  }
+                </h1>
+                
+                <!-- Badge de Rol Activo -->
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border shadow-2xs {{ roleBadgeInfo.classes }}">
+                  <span>{{ roleBadgeInfo.icon }}</span>
+                  <span>{{ roleBadgeInfo.label }}</span>
+                </span>
+              </div>
+
+              <p class="text-xs sm:text-sm text-slate-500 font-mono">
+                {{ currentUser?.email || 'Sin correo asociado' }}
+              </p>
+
+              <p class="text-xs text-slate-400">
+                @if (isAdmin) {
+                  Gestión integral de catálogo, red de sucursales y auditoría de vendedores.
+                } @else if (isSeller) {
+                  Administración comercial de productos propios, ventas y comisiones.
+                } @else if (isWorker) {
+                  Control operativo de recepción, inventario de tienda y entregas con QR.
+                } @else {
+                  Perfil de usuario Moorea.
+                }
+              </p>
+            </div>
+          </div>
+
+          <!-- Botón de Edición (Solo para Sellers con datos comerciales) -->
+          @if (isSeller) {
+            <button
+              type="button"
+              (click)="openEditModal()"
+              class="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md active:scale-95 transition-all cursor-pointer"
+            >
+              <span>✏️</span>
+              <span>Editar Datos Comerciales</span>
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- ── 3 Tarjetas de Resumen Dinámicas según Rol ───────────────────────── -->
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <!-- 📦 Tarjeta 1: Catálogo de Productos / Escáner -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-black text-slate-400 uppercase tracking-wider">
+                @if (isAdmin) { Catálogo General (Moorea) } @else if (isSeller) { Mi Catálogo } @else { Operaciones }
+              </span>
+              <div class="h-10 w-10 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg">
+                📦
+              </div>
+            </div>
+
+            @if (isAdmin || isSeller) {
+              <p class="text-3xl font-black text-slate-900">{{ totalProducts }}</p>
+              <p class="text-xs text-slate-400 mt-1">
+                @if (isAdmin) {
+                  Productos registrados en la plataforma
+                } @else {
+                  Prendas y calzados en tu catálogo activo
+                }
+              </p>
+
+              <!-- Detalle Activos / Pausados -->
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  {{ activeProducts }} Activos
+                </span>
+                <span class="inline-flex items-center gap-1.5 font-bold text-slate-400">
+                  <span class="h-2 w-2 rounded-full bg-slate-300"></span>
+                  {{ inactiveProducts }} Pausados
+                </span>
+              </div>
+            } @else {
+              <!-- Worker View -->
+              <p class="text-2xl font-black text-slate-900">Escanear QR</p>
+              <p class="text-xs text-slate-400 mt-1">
+                Validar código de entrega para retiros en tienda
+              </p>
+            }
+          </div>
+
+          <div class="mt-6 flex items-center gap-2">
+            @if (isAdmin || isSeller) {
+              <a
+                routerLink="/business/products"
+                class="flex-1 text-center py-2.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl text-xs transition-all shadow-sm cursor-pointer"
+              >
+                {{ isAdmin ? 'Ver Catálogo Completo →' : 'Ver Mi Catálogo →' }}
+              </a>
+              <a
+                routerLink="/business/products/new"
+                class="px-3.5 py-2.5 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-2xl text-xs transition-all cursor-pointer"
+                title="Crear nuevo producto"
+              >
+                + Nuevo
+              </a>
+            } @else {
+              <a
+                routerLink="/business/pickup-scanner"
+                class="w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs transition-all shadow-sm cursor-pointer"
+              >
+                Abrir Escáner de Retiro →
+              </a>
+            }
+          </div>
+        </div>
+
+        <!-- 🏪 Tarjeta 2: Red de Tiendas / Mi Sucursal -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-black text-slate-400 uppercase tracking-wider">
+                @if (isAdmin) { Tiendas en Plataforma } @else if (isSeller) { Mis Tiendas } @else { Mi Sucursal }
+              </span>
+              <div class="h-10 w-10 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-lg">
+                🏪
+              </div>
+            </div>
+
+            <p class="text-3xl font-black text-slate-900">{{ totalPhysicalStores }}</p>
+            <p class="text-xs text-slate-400 mt-1 truncate">
+              @if (isAdmin) {
+                Sucursales y almacenes registrados en Moorea
+              } @else if (hasPhysicalStore) {
+                {{ myStore?.name || 'Tienda registrada' }}
+              } @else {
+                Sin tienda física o virtual vinculada
+              }
+            </p>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs">
+              @if (isAdmin) {
+                <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  {{ totalPhysicalStores }} Locales en Red
+                </span>
+                <span class="text-slate-400 uppercase font-mono text-[10px]">Global</span>
+              } @else if (hasPhysicalStore) {
+                <span class="inline-flex items-center gap-1.5 font-bold text-emerald-600">
+                  <span class="h-2 w-2 rounded-full bg-emerald-500"></span>
+                  Tienda Activa
+                </span>
+                <span class="text-slate-400 uppercase font-mono text-[10px]">{{ myStore?.type || 'virtual' }}</span>
+              } @else {
+                <span class="text-slate-400">Sin local registrado</span>
+                <span class="text-primary font-bold">Crear ahora →</span>
+              }
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <a
+              routerLink="/business/stores"
+              class="block w-full text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-2xl text-xs transition-all shadow-sm cursor-pointer"
+            >
+              {{ isAdmin ? 'Gestionar Red de Tiendas →' : 'Ver Tiendas y Sucursales →' }}
+            </a>
+          </div>
+        </div>
+
+        <!-- 📋 Tarjeta 3: Órdenes / Vendedores -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm flex flex-col justify-between hover:border-slate-300 transition-all">
+          <div>
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-black text-slate-400 uppercase tracking-wider">
+                @if (isAdmin) { Directorio de Sellers } @else { Ventas & Pedidos }
+              </span>
+              <div class="h-10 w-10 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-lg">
+                {{ isAdmin ? '👥' : '📋' }}
+              </div>
+            </div>
+
+            @if (isAdmin) {
+              <p class="text-3xl font-black text-slate-900">{{ totalSellers }}</p>
+              <p class="text-xs text-slate-400 mt-1">
+                Vendedores y comercios en la plataforma
+              </p>
+
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                <span>Auditoría de cuentas:</span>
+                <span class="font-bold text-indigo-700">Habilitada</span>
+              </div>
+            } @else {
+              <p class="text-3xl font-black text-slate-900">Órdenes</p>
+              <p class="text-xs text-slate-400 mt-1">
+                Supervisión de compras y entregas
+              </p>
+
+              <div class="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-600">
+                <span>Comisión de ventas:</span>
+                <span class="font-bold text-indigo-700">{{ primaryProfile?.commissionRate || 10 }}%</span>
+              </div>
+            }
+          </div>
+
+          <div class="mt-6">
+            @if (isAdmin) {
+              <a
+                routerLink="/business/sellers"
+                class="block w-full text-center py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs transition-all shadow-sm cursor-pointer"
+              >
+                Gestionar Directorio de Sellers →
+              </a>
+            } @else {
+              <a
+                routerLink="/business/orders"
+                class="block w-full text-center py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-2xl text-xs transition-all shadow-sm cursor-pointer"
+              >
+                Supervisar Pedidos →
+              </a>
+            }
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ── Sección Inferior: Fichas Comerciales (Seller) o Panel Ejecutivo (Admin) ── -->
+      @if (isSeller) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Ficha 1: Información Comercial -->
+          <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                <span>🏪</span> Datos Comerciales de la Tienda
+              </h3>
+              <button (click)="openEditModal()" class="text-xs font-bold text-primary hover:underline cursor-pointer">
+                Editar
+              </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div>
+                <span class="text-slate-400 block mb-0.5 font-semibold">Nombre Comercial / Marca:</span>
+                <span class="font-black text-slate-800 text-sm">{{ primaryProfile?.shopName }}</span>
+              </div>
+              <div>
+                <span class="text-slate-400 block mb-0.5 font-semibold">Descripción del Negocio:</span>
+                <p class="text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                  {{ primaryProfile?.description || 'Sin descripción comercial registrada.' }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Ficha 2: Cuentas Bancarias para Transferencias -->
+          <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+              <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                <span>💳</span> Cuenta Bancaria para Cobros
+              </h3>
+              <button (click)="openEditModal()" class="text-xs font-bold text-emerald-600 hover:underline cursor-pointer">
+                Editar Cuenta
+              </button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+              <div class="flex items-center justify-between bg-emerald-50/60 p-3 rounded-2xl border border-emerald-100">
+                <span class="font-bold text-emerald-700">Entidad Bancaria:</span>
+                <span class="font-black text-slate-800">{{ primaryProfile?.bankInfo?.bank || 'No especificado' }}</span>
+              </div>
+              <div class="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span class="text-slate-400 font-semibold">Número de Cuenta:</span>
+                <span class="font-mono font-bold text-slate-800">{{ primaryProfile?.bankInfo?.account || 'Sin cuenta' }}</span>
+              </div>
+              <div class="flex items-center justify-between bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                <span class="text-slate-400 font-semibold">Código Interbancario (CCI):</span>
+                <span class="font-mono font-bold text-slate-800">{{ primaryProfile?.bankInfo?.cci || 'Sin CCI' }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      }
+
+      @if (isAdmin) {
+        <!-- Panel Ejecutivo de Administración Global -->
+        <div class="bg-white rounded-3xl p-6 sm:p-8 border border-slate-200/80 shadow-sm space-y-5">
+          <div class="flex items-center justify-between pb-4 border-b border-slate-100">
+            <div class="flex items-center gap-3">
+              <div class="h-10 w-10 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center font-black text-xl">
+                👑
+              </div>
+              <div>
+                <h3 class="text-base font-black text-slate-900">Panel Ejecutivo de Administración Global</h3>
+                <p class="text-xs text-slate-400">Control maestro sobre catálogo, tiendas y vendedores de la plataforma</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-black">
+              Acceso Total
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+            <a routerLink="/business/sellers" class="p-5 rounded-2xl bg-slate-50 hover:bg-purple-50/70 border border-slate-200/70 hover:border-purple-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">👥</span>
+              <p class="text-xs font-black text-slate-900">Vendedores (Sellers)</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Aprobar, editar y auditar comercios afiliados</p>
+            </a>
+
+            <a routerLink="/business/stores" class="p-5 rounded-2xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200/70 hover:border-emerald-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">🏪</span>
+              <p class="text-xs font-black text-slate-900">Red de Tiendas</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Inventarios, colaboradores y zonas de cobertura</p>
+            </a>
+
+            <a routerLink="/business/orders" class="p-5 rounded-2xl bg-slate-50 hover:bg-indigo-50/70 border border-slate-200/70 hover:border-indigo-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">📋</span>
+              <p class="text-xs font-black text-slate-900">Control de Pedidos</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Supervisión de despachos y retiros con código QR</p>
+            </a>
+          </div>
+        </div>
+      }
+
+    </div>
+  }
+
+  <!-- ── Modal de Edición de Perfil Comercial (Sellers) ───────────────────── -->
+  @if (isEditModalOpen) {
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-fade-in">
+      <div class="bg-white rounded-3xl shadow-2xl border border-slate-100 max-w-lg w-full p-6 sm:p-8 space-y-6">
+        
+        <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+          <h3 class="text-base font-black text-slate-900">Editar Perfil Comercial</h3>
+          <button (click)="closeEditModal()" class="text-slate-400 hover:text-slate-700 text-xl font-bold p-1 cursor-pointer">
+            &times;
+          </button>
+        </div>
+
+        <form [formGroup]="editForm" (ngSubmit)="saveProfile()" class="space-y-4">
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">Descripción de la Tienda</label>
+            <textarea
+              formControlName="description"
+              rows="3"
+              placeholder="Describe los productos o la historia de tu marca..."
+              class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition"
+            ></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-black text-slate-700 mb-1">URL del Logo de la Marca</label>
+            <input
+              type="text"
+              formControlName="logoUrl"
+              placeholder="https://ejemplo.com/logo.png"
+              class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition"
+            />
+          </div>
+
+          <div class="pt-2 border-t border-slate-100">
+            <h4 class="text-xs font-black text-slate-800 uppercase tracking-wider mb-3">Datos Bancarios para Cobros</h4>
+            
+            <div class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Banco</label>
+                <input
+                  type="text"
+                  formControlName="bank"
+                  placeholder="BCP, Interbank, BBVA, etc."
+                  class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Número de Cuenta</label>
+                <input
+                  type="text"
+                  formControlName="account"
+                  placeholder="191-XXXXXXXX-X-XX"
+                  class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition"
+                />
+              </div>
+
+              <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1">Código Interbancario (CCI)</label>
+                <input
+                  type="text"
+                  formControlName="cci"
+                  placeholder="002-191-XXXXXXXXXXXX-XX"
+                  class="w-full px-3.5 py-2.5 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:bg-white focus:outline-none focus:ring-4 focus:ring-primary/10 focus:border-primary transition"
+                />
+              </div>
+            </div>
+          </div>
+
+          <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
+            <button
+              type="button"
+              (click)="closeEditModal()"
+              class="px-4 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold transition cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="isSaving"
+              class="px-5 py-2.5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black shadow-md transition disabled:opacity-50 cursor-pointer"
+            >
+              {{ isSaving ? 'Guardando...' : 'Guardar Cambios' }}
+            </button>
+          </div>
+        </form>
+
+      </div>
+    </div>
+  }
+
+</div>

@@ -68,13 +68,13 @@ export const businessRoutes: Routes = [
       },
       {
         path: 'profile',
-        loadComponent: () => import('./seller-profile/seller-profile.component').then(m => m.SellerProfileComponent),
-        title: 'Mi Tienda | Moorea Business'
+        loadComponent: () => import('./business-profile/business-profile.component').then(m => m.BusinessProfileComponent),
+        title: 'Perfil de Negocio | Moorea Business'
       },
       {
         path: 'my-shop',
-        loadComponent: () => import('./seller-profile/seller-profile.component').then(m => m.SellerProfileComponent),
-        title: 'Mi Tienda | Moorea Business'
+        loadComponent: () => import('./business-profile/business-profile.component').then(m => m.BusinessProfileComponent),
+        title: 'Perfil de Negocio | Moorea Business'
       },
       {
         path: '',
