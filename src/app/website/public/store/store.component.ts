@@ -500,4 +500,28 @@ export class StoreComponent implements OnInit, OnDestroy {
     };
     return icons[iconName] ?? icons['grid'];
   }
+
+  getCategoryEmoji(category: string): string {
+    const lower = category.toLowerCase();
+    if (lower.includes('polo') || lower.includes('polera')) return '👕';
+    if (lower.includes('zapatilla') || lower.includes('calzado') || lower.includes('zapato')) return '👟';
+    if (lower.includes('casaca') || lower.includes('abrigo') || lower.includes('chaqueta')) return '🧥';
+    if (lower.includes('pantalon') || lower.includes('jean') || lower.includes('short')) return '👖';
+    if (lower.includes('camisa')) return '👔';
+    if (lower.includes('accesorio') || lower.includes('gorra') || lower.includes('reloj') || lower.includes('mochila')) return '🎒';
+    if (lower.includes('deporte') || lower.includes('fit')) return '⚽';
+    if (lower.includes('vestido') || lower.includes('falda')) return '👗';
+    return '🏷️';
+  }
+
+  getCategoryCount(category: string): number {
+    if (category === 'all') return this.cacheProducts.length;
+    return this.cacheProducts.filter(p => p.category?.some(c => c.toLowerCase() === category.toLowerCase())).length;
+  }
+
+  setQuickPrice(price: number): void {
+    this.priceValue = price;
+    this.currentPage = 1;
+    this.applyLocalFilters();
+  }
 }
