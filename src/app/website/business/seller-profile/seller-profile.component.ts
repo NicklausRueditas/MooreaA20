@@ -165,20 +165,37 @@ export class SellerProfileComponent implements OnInit, OnDestroy {
 
   private loadStoreData(): void {
     this.isLoadingStore = true;
-    this.storesService.getMyStore()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe({
-        next: (stores: Store[]) => {
-          this.myStores = Array.isArray(stores) ? stores : (stores ? [stores] : []);
-          this.myStore  = this.myStores[0] ?? null;
-          this.isLoadingStore = false;
-        },
-        error: () => {
-          this.myStores = [];
-          this.myStore  = null;
-          this.isLoadingStore = false;
-        }
-      });
+    if (this.isAdmin) {
+      this.storesService.getAllStores()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (stores: Store[]) => {
+            this.myStores = Array.isArray(stores) ? stores : [];
+            this.myStore  = this.myStores[0] ?? null;
+            this.isLoadingStore = false;
+          },
+          error: () => {
+            this.myStores = [];
+            this.myStore  = null;
+            this.isLoadingStore = false;
+          }
+        });
+    } else {
+      this.storesService.getMyStore()
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (stores: Store[]) => {
+            this.myStores = Array.isArray(stores) ? stores : (stores ? [stores] : []);
+            this.myStore  = this.myStores[0] ?? null;
+            this.isLoadingStore = false;
+          },
+          error: () => {
+            this.myStores = [];
+            this.myStore  = null;
+            this.isLoadingStore = false;
+          }
+        });
+    }
   }
 
   get hasPhysicalStore(): boolean {

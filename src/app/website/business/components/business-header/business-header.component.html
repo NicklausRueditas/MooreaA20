@@ -1,9 +1,9 @@
 <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-xs">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex items-center justify-between h-16 sm:h-18">
+    <div class="flex items-center justify-between h-16 sm:h-18 gap-4">
       
       <!-- ═══ IZQUIERDA: LOGO + PORTAL BADGE ═════════════════════════════════ -->
-      <div class="flex items-center gap-4 sm:gap-6">
+      <div class="flex items-center gap-3 shrink-0">
         <a routerLink="/business/products" class="flex items-center gap-3 group">
           <div class="h-10 w-10 rounded-2xl bg-gradient-to-tr from-slate-900 to-slate-800 text-white flex items-center justify-center font-black text-lg shadow-md ring-2 ring-slate-900/10 group-hover:scale-105 transition-transform">
             M
@@ -23,38 +23,38 @@
             </span>
           </div>
         </a>
-
-        <!-- ═══ CENTRO: NAVEGACIÓN AGRUPADA EN SECCIONES (DESKTOP) ═════════════ -->
-        <nav class="hidden lg:flex items-center gap-3 pl-6 border-l border-slate-200">
-          @for (group of navGroups; track group.groupName) {
-            @if (hasVisibleItemsInGroup(group)) {
-              <div class="flex items-center bg-slate-50/90 p-1 rounded-2xl border border-slate-200/60 shadow-2xs">
-                @for (item of group.items; track item.route) {
-                  @if (canAccess(item)) {
-                    <a
-                      [routerLink]="item.route"
-                      routerLinkActive="bg-white text-slate-900 font-extrabold shadow-sm border border-slate-200/80"
-                      [routerLinkActiveOptions]="{ exact: item.exact || false }"
-                      class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all cursor-pointer"
-                    >
-                      <span class="text-sm leading-none">{{ item.icon }}</span>
-                      <span>{{ item.label }}</span>
-                    </a>
-                  }
-                }
-              </div>
-            }
-          }
-        </nav>
       </div>
 
+      <!-- ═══ CENTRO: NAVEGACIÓN AGRUPADA EN SECCIONES (DESKTOP) ═════════════ -->
+      <nav class="hidden xl:flex items-center justify-center gap-2.5 flex-1 max-w-2xl px-4">
+        @for (group of navGroups; track group.groupName) {
+          @if (hasVisibleItemsInGroup(group)) {
+            <div class="flex items-center bg-slate-50/90 p-1 rounded-2xl border border-slate-200/60 shadow-2xs">
+              @for (item of group.items; track item.route) {
+                @if (canAccess(item)) {
+                  <a
+                    [routerLink]="item.route"
+                    routerLinkActive="bg-white text-slate-900 font-extrabold shadow-sm border border-slate-200/80"
+                    [routerLinkActiveOptions]="{ exact: item.exact || false }"
+                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all cursor-pointer whitespace-nowrap"
+                  >
+                    <span class="text-sm leading-none">{{ item.icon }}</span>
+                    <span>{{ item.label }}</span>
+                  </a>
+                }
+              }
+            </div>
+          }
+        }
+      </nav>
+
       <!-- ═══ DERECHA: ACCESO A TIENDA + ROLE BADGE + PERFIL ═════════════════ -->
-      <div class="flex items-center gap-2.5 sm:gap-3.5">
+      <div class="flex items-center gap-3 shrink-0 ml-auto xl:ml-0">
         
         <!-- Botón Volver a la Tienda Pública -->
         <a
           routerLink="/store"
-          class="hidden sm:inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 text-xs font-black transition-all hover:scale-102 active:scale-98 cursor-pointer shadow-2xs border border-slate-200/60"
+          class="hidden md:inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-black transition-all hover:scale-102 active:scale-98 cursor-pointer border border-slate-200/70 shadow-2xs whitespace-nowrap"
           title="Ir al catálogo público de compras"
         >
           <span>🛍️</span>
@@ -62,8 +62,8 @@
           <span class="text-[10px] text-slate-400">&rarr;</span>
         </a>
 
-        <!-- Badge de Rol Activo con Gradiente -->
-        <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-black tracking-wide shadow-2xs {{ roleBadge.classes }}">
+        <!-- Badge de Rol Activo -->
+        <div class="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-2xl border text-xs font-black tracking-wide shadow-2xs whitespace-nowrap {{ roleBadge.classes }}">
           <span>{{ roleBadge.icon }}</span>
           <span>{{ roleBadge.label }}</span>
         </div>
@@ -108,17 +108,19 @@
 
               <!-- Links de Navegación -->
               <div class="space-y-1 pt-1">
-                <a
-                  routerLink="/business/profile"
-                  (click)="isUserMenuOpen = false"
-                  class="flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
-                >
-                  <span class="flex items-center gap-2.5">
-                    <span>🏪</span>
-                    <span>Mi Perfil de Negocio</span>
-                  </span>
-                  <span class="text-slate-400 text-xs">&rarr;</span>
-                </a>
+                @if (isAdmin || isSeller) {
+                  <a
+                    routerLink="/business/profile"
+                    (click)="isUserMenuOpen = false"
+                    class="flex items-center justify-between px-3 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                  >
+                    <span class="flex items-center gap-2.5">
+                      <span>{{ isAdmin ? '👑' : '🏪' }}</span>
+                      <span>{{ profileMenuLabel }}</span>
+                    </span>
+                    <span class="text-slate-400 text-xs">&rarr;</span>
+                  </a>
+                }
 
                 <a
                   routerLink="/my-account/profile"
@@ -159,11 +161,11 @@
           }
         </div>
 
-        <!-- Botón Menú Móvil (Hamburger) -->
+        <!-- Botón Menú Móvil / Tablet (Hamburger) -->
         <button
           type="button"
           (click)="toggleMobileMenu()"
-          class="lg:hidden p-2 rounded-2xl text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+          class="xl:hidden p-2 rounded-2xl text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           title="Abrir menú"
         >
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -182,7 +184,7 @@
 
   <!-- ═══ MENÚ MÓVIL AGRUPADO (DRAWER) ══════════════════════════════════════ -->
   @if (isMobileMenuOpen) {
-    <div class="lg:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-2xl animate-fade-in">
+    <div class="xl:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-2xl animate-fade-in">
       
       <!-- Mobile Profile Card -->
       <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-sm">
@@ -231,14 +233,16 @@
 
       <!-- Quick Action Buttons -->
       <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
-        <a
-          routerLink="/business/profile"
-          (click)="closeMobileMenu()"
-          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-bold"
-        >
-          <span>🏪</span>
-          <span>Mi Perfil de Negocio</span>
-        </a>
+        @if (isAdmin || isSeller) {
+          <a
+            routerLink="/business/profile"
+            (click)="closeMobileMenu()"
+            class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-bold"
+          >
+            <span>{{ isAdmin ? '👑' : '🏪' }}</span>
+            <span>{{ profileMenuLabel }}</span>
+          </a>
+        }
 
         <a
           routerLink="/store"

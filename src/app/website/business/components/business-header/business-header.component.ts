@@ -90,42 +90,44 @@ export class BusinessHeaderComponent implements OnInit, OnDestroy {
     return this.userRoles.includes('worker');
   }
 
-  get roleBadge(): { label: string; icon: string; classes: string; gradient: string } {
+  get roleBadge(): { label: string; icon: string; classes: string } {
     if (this.isAdmin) {
       return {
-        label: 'Administrador',
+        label: 'Admin',
         icon: '👑',
-        classes: 'bg-purple-50 text-purple-700 border-purple-200',
-        gradient: 'from-purple-600 to-indigo-600'
+        classes: 'bg-purple-50 text-purple-700 border-purple-200'
       };
     }
     if (this.isSeller) {
       return {
-        label: 'Vendedor',
+        label: 'Seller',
         icon: '🏪',
-        classes: 'bg-rose-50 text-primary border-primary/20',
-        gradient: 'from-primary to-rose-600'
+        classes: 'bg-rose-50 text-primary border-primary/20'
       };
     }
     if (this.isWorker) {
       return {
-        label: 'Colaborador',
+        label: 'Worker',
         icon: '👷',
-        classes: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-        gradient: 'from-emerald-600 to-teal-600'
+        classes: 'bg-emerald-50 text-emerald-700 border-emerald-200'
       };
     }
     return {
       label: 'Usuario',
       icon: '👤',
-      classes: 'bg-slate-50 text-slate-700 border-slate-200',
-      gradient: 'from-slate-700 to-slate-900'
+      classes: 'bg-slate-50 text-slate-700 border-slate-200'
     };
+  }
+
+  get profileMenuLabel(): string {
+    if (this.isAdmin) return 'Panel de Administración';
+    if (this.isSeller) return 'Mi Perfil de Negocio';
+    if (this.isWorker) return 'Mi Perfil de Colaborador';
+    return 'Mi Perfil';
   }
 
   canAccess(item: BusinessNavItem): boolean {
     if (!item.roles || item.roles.length === 0) return true;
-    // Si el ítem requiere 'admin' (ej: Vendedores), SOLO el admin puede verlo
     if (item.roles.includes('admin') && item.roles.length === 1) {
       return this.isAdmin;
     }

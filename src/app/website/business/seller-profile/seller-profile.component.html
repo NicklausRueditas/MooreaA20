@@ -106,7 +106,9 @@
         <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 flex flex-col justify-between hover:border-emerald-300 hover:shadow-md transition">
           <div>
             <div class="flex items-center justify-between mb-3">
-              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">Mis Tiendas</span>
+              <span class="text-xs font-bold text-gray-500 uppercase tracking-wider">
+                @if (isAdmin) { Tiendas en la Plataforma } @else { Mis Tiendas }
+              </span>
               <div class="h-10 w-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
@@ -116,7 +118,9 @@
 
             <p class="text-3xl font-black text-gray-900">{{ totalPhysicalStores }}</p>
             <p class="text-xs text-gray-500 mt-1 truncate">
-              @if (hasPhysicalStore) {
+              @if (isAdmin) {
+                Sucursales y almacenes registrados en Moorea
+              } @else if (hasPhysicalStore) {
                 {{ myStore?.name || 'Tienda registrada' }}
               } @else {
                 Aún no has registrado tu tienda física o virtual
@@ -125,7 +129,13 @@
 
             <!-- Detalle Activas / Inactivas -->
             <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs">
-              @if (hasPhysicalStore) {
+              @if (isAdmin) {
+                <span class="inline-flex items-center gap-1 font-semibold text-emerald-600">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                  {{ totalPhysicalStores }} Locales en Red
+                </span>
+                <span class="text-gray-400 text-xs font-mono uppercase">Global</span>
+              } @else if (hasPhysicalStore) {
                 @if (isPhysicalStoreActive) {
                   <span class="inline-flex items-center gap-1 font-semibold text-emerald-600">
                     <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -149,15 +159,17 @@
           <div class="mt-6 flex items-center gap-2">
             <a routerLink="/business/stores"
               class="flex-1 text-center py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer">
-              Gestionar Mis Tiendas →
+              {{ isAdmin ? 'Gestionar Todas las Tiendas →' : 'Gestionar Mis Tiendas →' }}
             </a>
-            <button (click)="openEditModal()"
-              class="px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs transition cursor-pointer"
-              title="Editar datos comerciales / banco">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
+            @if (!isAdmin) {
+              <button (click)="openEditModal()"
+                class="px-3 py-2.5 bg-emerald-50 text-emerald-700 hover:bg-emerald-100 font-bold rounded-xl text-xs transition cursor-pointer"
+                title="Editar datos comerciales / banco">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+              </button>
+            }
           </div>
         </div>
 
@@ -179,8 +191,8 @@
             </p>
 
             <div class="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs text-slate-600">
-              <span>Comisión de ventas:</span>
-              <span class="font-bold text-indigo-700">{{ primaryProfile?.commissionRate || 10 }}%</span>
+              <span>{{ isAdmin ? 'Modo de gestión:' : 'Comisión de ventas:' }}</span>
+              <span class="font-bold text-indigo-700">{{ isAdmin ? 'Super Admin' : (primaryProfile?.commissionRate || 10) + '%' }}</span>
             </div>
           </div>
 
@@ -188,75 +200,113 @@
           <div class="mt-6">
             <a routerLink="/business/orders"
               class="block w-full text-center py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl text-xs transition shadow-sm cursor-pointer">
-              Ir al Módulo de Pedidos →
+              {{ isAdmin ? 'Supervisar Todos los Pedidos →' : 'Ir al Módulo de Pedidos →' }}
             </a>
           </div>
         </div>
 
       </div>
 
-      <!-- ── Ficha de Datos Comerciales y Cuentas Bancarias ─────────────────── -->
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <!-- ── Si es Seller: Ficha de Datos Comerciales y Cuentas Bancarias ─────── -->
+      @if (!isAdmin) {
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-        <!-- Ficha 1: Información de Negocio -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-            <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-              <svg class="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
-              Datos Comerciales de la Tienda
-            </h3>
-            <button (click)="openEditModal()" class="text-xs font-bold text-violet-600 hover:text-violet-800 cursor-pointer">
-              Editar
-            </button>
+          <!-- Ficha 1: Información de Negocio -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+              <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                </svg>
+                Datos Comerciales de la Tienda
+              </h3>
+              <button (click)="openEditModal()" class="text-xs font-bold text-violet-600 hover:text-violet-800 cursor-pointer">
+                Editar
+              </button>
+            </div>
+
+            <div class="space-y-3 text-sm">
+              <div>
+                <span class="text-xs text-gray-500 block mb-0.5">Nombre Comercial:</span>
+                <span class="font-bold text-gray-900">{{ primaryProfile?.shopName }}</span>
+              </div>
+              <div>
+                <span class="text-xs text-gray-500 block mb-0.5">Descripción de la Marca:</span>
+                <p class="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">
+                  {{ primaryProfile?.description || 'Sin descripción comercial registrada.' }}
+                </p>
+              </div>
+            </div>
           </div>
 
-          <div class="space-y-3 text-sm">
-            <div>
-              <span class="text-xs text-gray-500 block mb-0.5">Nombre Comercial:</span>
-              <span class="font-bold text-gray-900">{{ primaryProfile?.shopName }}</span>
+          <!-- Ficha 2: Cuentas Bancarias para Transferencias -->
+          <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-gray-100">
+              <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
+                Cuenta Bancaria para Cobros
+              </h3>
+              <button (click)="openEditModal()" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer">
+                Editar Cuenta
+              </button>
             </div>
-            <div>
-              <span class="text-xs text-gray-500 block mb-0.5">Descripción de la Marca:</span>
-              <p class="text-xs text-gray-600 leading-relaxed bg-gray-50 p-3 rounded-xl border border-gray-100">
-                {{ primaryProfile?.description || 'Sin descripción comercial registrada.' }}
-              </p>
+
+            <div class="space-y-3 text-sm">
+              <div class="flex items-center justify-between bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
+                <span class="text-xs font-bold text-emerald-700">Entidad Bancaria:</span>
+                <span class="font-bold text-gray-900">{{ primaryProfile?.bankInfo?.bank || 'No especificado' }}</span>
+              </div>
+              <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <span class="text-xs text-gray-500">Número de Cuenta:</span>
+                <span class="font-mono font-bold text-gray-900">{{ primaryProfile?.bankInfo?.account || 'Sin cuenta' }}</span>
+              </div>
+              <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
+                <span class="text-xs text-gray-500">Código Interbancario (CCI):</span>
+                <span class="font-mono font-bold text-gray-900">{{ primaryProfile?.bankInfo?.cci || 'Sin CCI' }}</span>
+              </div>
             </div>
+          </div>
+
+        </div>
+      } @else {
+        <!-- ── Si es Admin: Panel de Control y Accesos Rápidos del Marketplace ── -->
+        <div class="bg-white rounded-3xl p-6 border border-slate-200/80 shadow-sm space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div class="flex items-center gap-2.5">
+              <span class="text-xl">👑</span>
+              <div>
+                <h3 class="text-base font-black text-slate-900">Panel Ejecutivo de Administración Global</h3>
+                <p class="text-xs text-slate-400">Control maestro sobre catálogo, tiendas y vendedores de la plataforma</p>
+              </div>
+            </div>
+            <span class="px-3 py-1 bg-purple-50 text-purple-700 border border-purple-200 rounded-full text-xs font-black">
+              Acceso Total
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+            <a routerLink="/business/sellers" class="p-4 rounded-2xl bg-slate-50 hover:bg-purple-50 border border-slate-200/70 hover:border-purple-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">👥</span>
+              <p class="text-xs font-black text-slate-900">Vendedores (Sellers)</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Aprobar y auditar cuentas comerciales</p>
+            </a>
+
+            <a routerLink="/business/stores" class="p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50 border border-slate-200/70 hover:border-emerald-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">🏪</span>
+              <p class="text-xs font-black text-slate-900">Red de Tiendas</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Inventarios y zonas de cobertura</p>
+            </a>
+
+            <a routerLink="/business/orders" class="p-4 rounded-2xl bg-slate-50 hover:bg-indigo-50 border border-slate-200/70 hover:border-indigo-200 transition-all group">
+              <span class="text-2xl block mb-2 group-hover:scale-110 transition-transform">📋</span>
+              <p class="text-xs font-black text-slate-900">Control de Pedidos</p>
+              <p class="text-[11px] text-slate-500 mt-0.5">Despachos y retiros con código QR</p>
+            </a>
           </div>
         </div>
-
-        <!-- Ficha 2: Cuentas Bancarias para Transferencias -->
-        <div class="bg-white rounded-2xl shadow-sm p-6 border border-gray-200 space-y-4">
-          <div class="flex items-center justify-between pb-3 border-b border-gray-100">
-            <h3 class="text-base font-bold text-gray-900 flex items-center gap-2">
-              <svg class="w-5 h-5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-              Cuenta Bancaria para Cobros
-            </h3>
-            <button (click)="openEditModal()" class="text-xs font-bold text-emerald-600 hover:text-emerald-800 cursor-pointer">
-              Editar Cuenta
-            </button>
-          </div>
-
-          <div class="space-y-3 text-sm">
-            <div class="flex items-center justify-between bg-emerald-50/50 p-3 rounded-xl border border-emerald-100">
-              <span class="text-xs font-bold text-emerald-700">Entidad Bancaria:</span>
-              <span class="font-bold text-gray-900">{{ primaryProfile?.bankInfo?.bank || 'No especificado' }}</span>
-            </div>
-            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <span class="text-xs text-gray-500">Número de Cuenta:</span>
-              <span class="font-mono font-bold text-gray-900">{{ primaryProfile?.bankInfo?.account || 'Sin cuenta' }}</span>
-            </div>
-            <div class="flex items-center justify-between bg-gray-50 p-3 rounded-xl border border-gray-100">
-              <span class="text-xs text-gray-500">Código Interbancario (CCI):</span>
-              <span class="font-mono font-bold text-gray-900">{{ primaryProfile?.bankInfo?.cci || 'Sin CCI' }}</span>
-            </div>
-          </div>
-        </div>
-
-      </div>
+      }
 
     }
   </div>
