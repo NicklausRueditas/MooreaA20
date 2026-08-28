@@ -11,43 +11,34 @@ export type OrderStatus =
 
 export type FulfillmentType = 'delivery' | 'pickup';
 export type OrderPaymentMethod = 'card' | 'yape' | 'cash';
-export type PaymentStatus = 'pending' | 'paid' | 'failed';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
 
-// ─── Submodelos ───────────────────────────────────────────────────────────
+// ─── Submodelos canónicos de la Orden ──────────────────────────────────────
 
-export interface OrderItemColor {
-  name: string;
-  hex: string;
-  code: string;
+export interface OrderPricing {
+  subtotalBeforeDiscount: number;
+  discount: number;
+  shippingCost: number;
+  total: number;
 }
 
-export interface OrderItemSize {
-  type: string;
-  value: string;
-  region?: string;
-}
-
-export interface OrderPickupStore {
-  storeId: string;
-  name: string;
-  address: string;
-}
-
-export interface OrderItem {
+export interface OrderItemSnapshot {
   variantId: string;
+  productId?: string;
   productName: string;
   sku: string;
-  color?: OrderItemColor;
-  size?: OrderItemSize;
+  color: any;
+  size: any;
   quantity: number;
   unitPrice: number;
+  discount: number;
   subtotal: number;
-  deliveryType: FulfillmentType;
+  deliveryType?: FulfillmentType;
   thumbnail?: string;
-  pickupStore?: OrderPickupStore;
+  pickupStore?: OrderPickupStoreSnapshot;
 }
 
-export interface OrderShippingAddress {
+export interface OrderShippingAddressSnapshot {
   alias?: string;
   street: string;
   streetNumber?: string;
@@ -56,77 +47,80 @@ export interface OrderShippingAddress {
   province: string;
   department?: string;
   country: string;
+  postalCode?: string;
+  references?: string;
   lat?: number;
   lng?: number;
 }
 
-// ─── Orden ────────────────────────────────────────────────────────────────
+export interface OrderPickupStoreSnapshot {
+  storeId: string;
+  name: string;
+  address: string;
+  phone?: string;
+}
+
+// ─── Documento de Orden Principal ─────────────────────────────────────────
 
 export interface Order {
   _id: string;
+  userId: string;
   invoiceNumber: string;
-  status: OrderStatus;
-  fulfillmentType: FulfillmentType;
-
-  items: OrderItem[];
-
+  fulfillment: FulfillmentType;
+  fulfillmentType?: FulfillmentType;
+  items: OrderItemSnapshot[];
+  pricing: OrderPricing;
+  totalAmount?: number;
   paymentMethod: OrderPaymentMethod;
   paymentStatus: PaymentStatus;
-  totalAmount: number;
   currency: string;
   gatewayRef?: string;
-
-  shippingAddress?: OrderShippingAddress;
+  shippingAddress?: OrderShippingAddressSnapshot;
+  pickupStore?: OrderPickupStoreSnapshot;
   storeId?: string;
-
-  /** Código legible para retiro en tienda (solo pickup) */
   pickupCode?: string;
-
+  pickupUsedAt?: string;
+  status: OrderStatus;
   cancelReason?: string;
   createdAt: string;
+  updatedAt: string;
   paidAt?: string;
 }
 
-// ─── DTOs ─────────────────────────────────────────────────────────────────
+// ─── DTOs de Entrada ──────────────────────────────────────────────────────
 
-/**
- * Cuerpo del POST /orders.
- * variantIds es opcional: si se omite, el backend toma TODOS los items del carrito.
- */
 export interface CreateOrderDto {
   fulfillment: FulfillmentType;
   paymentMethod: OrderPaymentMethod;
-  /** Solo si fulfillment = 'delivery' */
   addressId?: string;
-  /** Solo si fulfillment = 'pickup' */
   storeId?: string;
-  /** Subset del carrito; omitir para tomar todo */
   variantIds?: string[];
 }
 
-// ─── Respuestas ───────────────────────────────────────────────────────────
+// ─── Respuestas del Backend ───────────────────────────────────────────────
 
 export interface OrderResponse {
-  success: boolean;
+  success?: boolean;
   message?: string;
-  order: Order;
+  order?: Order;
+  _id?: string;
+  [key: string]: any;
 }
 
 export interface OrderListResponse {
-  success: boolean;
-  orders: Order[];
+  success?: boolean;
+  orders?: Order[];
   total?: number;
+  [key: string]: any;
 }
 
-/** Respuesta de GET /orders/my/:id/qr */
 export interface OrderQrResponse {
   pickupCode: string;
   invoiceNumber: string;
-  /** Contenido que el frontend debe convertir en imagen QR */
   qrContent: string;
 }
 
-// ─── Helpers visuales ────────────────────────────────────────────────────
+// ─── Helpers visuales y etiquetas ─────────────────────────────────────────
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending_payment:  'Pendiente de pago',
@@ -139,11 +133,11 @@ export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
 };
 
 export const ORDER_STATUS_COLOR: Record<OrderStatus, string> = {
-  pending_payment:  'bg-yellow-100 text-yellow-800',
-  paid:             'bg-blue-100 text-blue-800',
-  preparing:        'bg-orange-100 text-orange-800',
-  ready_for_pickup: 'bg-purple-100 text-purple-800',
-  shipped:          'bg-indigo-100 text-indigo-800',
-  delivered:        'bg-green-100 text-green-800',
-  cancelled:        'bg-red-100 text-red-800',
+  pending_payment:  'bg-amber-100 text-amber-800 border-amber-200',
+  paid:             'bg-emerald-100 text-emerald-800 border-emerald-200',
+  preparing:        'bg-blue-100 text-blue-800 border-blue-200',
+  ready_for_pickup: 'bg-purple-100 text-purple-800 border-purple-200',
+  shipped:          'bg-indigo-100 text-indigo-800 border-indigo-200',
+  delivered:        'bg-green-100 text-green-800 border-green-200',
+  cancelled:        'bg-rose-100 text-rose-800 border-rose-200',
 };

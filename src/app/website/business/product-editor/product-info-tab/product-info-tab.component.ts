@@ -19,7 +19,7 @@ import {
 @Component({
   selector: 'app-product-info-tab',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterLink, ProductCardComponent],
+  imports: [CommonModule, ReactiveFormsModule, ProductCardComponent],
   templateUrl: './product-info-tab.component.html',
 })
 export class ProductInfoTabComponent implements OnInit, OnDestroy {

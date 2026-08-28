@@ -17,68 +17,64 @@ export class OrderService {
 
   constructor(private readonly http: HttpClient) {}
 
-  // ─── Crear ────────────────────────────────────────────────────────────────
-
   /**
-   * Crea una nueva orden a partir del carrito (o un subset).
-   * Llama a POST /orders
+   * Crea una nueva orden a partir del carrito
+   * POST /orders
    */
-  createOrder(dto: CreateOrderDto): Observable<OrderResponse> {
-    return this.http.post<OrderResponse>(this.apiUrl, dto);
-  }
-
-  // ─── Mis órdenes (usuario autenticado) ────────────────────────────────────
-
-  /** GET /orders/my — historial del usuario */
-  getMyOrders(): Observable<OrderListResponse> {
-    return this.http.get<OrderListResponse>(`${this.apiUrl}/my`);
-  }
-
-  /** GET /orders/my/:id — detalle de una orden */
-  getMyOrder(orderId: string): Observable<OrderResponse> {
-    return this.http.get<OrderResponse>(`${this.apiUrl}/my/${orderId}`);
+  createOrder(dto: CreateOrderDto): Observable<any> {
+    return this.http.post<any>(this.apiUrl, dto);
   }
 
   /**
-   * GET /orders/my/:id/qr
-   * Retorna { pickupCode, invoiceNumber, qrContent } para generar el QR en el frontend.
-   * Solo disponible para órdenes con fulfillment = 'pickup'.
+   * GET /orders/my — historial de órdenes del usuario autenticado
+   */
+  getMyOrders(): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.apiUrl}/my`);
+  }
+
+  /**
+   * GET /orders/my/:id — detalle de una orden
+   */
+  getMyOrder(orderId: string): Observable<Order> {
+    return this.http.get<Order>(`${this.apiUrl}/my/${orderId}`);
+  }
+
+  /**
+   * GET /orders/my/:id/qr — datos QR de retiro en tienda
    */
   getPickupQr(orderId: string): Observable<OrderQrResponse> {
     return this.http.get<OrderQrResponse>(`${this.apiUrl}/my/${orderId}/qr`);
   }
 
-  // ─── Admin ────────────────────────────────────────────────────────────────
-
-  /** GET /orders/all?status=...&fulfillment=...&storeId=... */
+  /**
+   * GET /orders/all — todas las órdenes (Admin)
+   */
   getAllOrders(filters?: {
     status?: OrderStatus;
     fulfillment?: 'delivery' | 'pickup';
     storeId?: string;
-  }): Observable<OrderListResponse> {
+  }): Observable<any> {
     let params = new HttpParams();
     if (filters?.status)      params = params.set('status', filters.status);
     if (filters?.fulfillment) params = params.set('fulfillment', filters.fulfillment);
     if (filters?.storeId)     params = params.set('storeId', filters.storeId);
-    return this.http.get<OrderListResponse>(`${this.apiUrl}/all`, { params });
+    return this.http.get<any>(`${this.apiUrl}/all`, { params });
   }
 
   /**
-   * PATCH /orders/:id/status
-   * Actualiza el estado de la orden (admin/worker).
+   * PATCH /orders/:id/status — actualizar estado (Admin)
    */
-  updateOrderStatus(orderId: string, status: OrderStatus, cancelReason?: string): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(`${this.apiUrl}/${orderId}/status`, {
+  updateOrderStatus(orderId: string, status: OrderStatus, cancelReason?: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/${orderId}/status`, {
       status,
       ...(cancelReason ? { cancelReason } : {}),
     });
   }
 
   /**
-   * PATCH /orders/pickup/confirm/:code
-   * El cajero confirma el retiro escaneando el QR.
+   * PATCH /orders/pickup/confirm/:code — confirmar retiro en tienda
    */
-  confirmPickup(pickupCode: string): Observable<OrderResponse> {
-    return this.http.patch<OrderResponse>(`${this.apiUrl}/pickup/confirm/${pickupCode}`, {});
+  confirmPickup(pickupCode: string): Observable<any> {
+    return this.http.patch<any>(`${this.apiUrl}/pickup/confirm/${pickupCode}`, {});
   }
 }

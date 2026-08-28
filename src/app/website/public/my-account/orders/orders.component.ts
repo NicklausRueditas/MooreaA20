@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -6,11 +6,15 @@ import { OrderService } from '../../../../core/services/commerce/order.service';
 import { SolCurrencyPipe } from '../../../../shared/pipes/sol-currency.pipe';
 import {
   Order,
+  OrderStatus,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLOR,
 } from '../../../../core/interfaces/order.interface';
 import { catchError, of } from 'rxjs';
 
+/**
+ * Componente que muestra el historial de órdenes del usuario autenticado
+ */
 @Component({
   selector: 'app-orders',
   standalone: true,
@@ -22,27 +26,53 @@ export class OrdersComponent implements OnInit {
   isLoading = true;
   loadError = false;
 
-  readonly statusLabels = ORDER_STATUS_LABELS;
-  readonly statusColors = ORDER_STATUS_COLOR;
-
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly cdr: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
+    this.fetchOrders();
+  }
+
+  /** Consulta las órdenes del usuario */
+  fetchOrders(): void {
+    this.isLoading = true;
+    this.loadError = false;
+
     this.orderService.getMyOrders()
-      .pipe(catchError(() => { this.loadError = true; return of(null); }))
-      .subscribe(res => {
+      .pipe(
+        catchError((err) => {
+          console.error('Error al obtener órdenes:', err);
+          this.loadError = true;
+          this.isLoading = false;
+          this.cdr.markForCheck();
+          return of([] as Order[]);
+        })
+      )
+      .subscribe((res: any) => {
         this.isLoading = false;
-        this.orders = res?.orders ?? [];
+        if (Array.isArray(res)) {
+          this.orders = res;
+        } else if (res && Array.isArray(res.orders)) {
+          this.orders = res.orders;
+        } else {
+          this.orders = [];
+        }
+        console.log('Órdenes cargadas exitosamente:', this.orders.length, this.orders);
+        this.cdr.markForCheck();
       });
   }
 
-  /** Cuenta los items únicos (líneas) de la orden */
-  itemCount(order: Order): number {
-    return order.items.length;
+  /** Retorna el texto legible del estado */
+  getStatusLabel(status: OrderStatus | string): string {
+    const key = status as OrderStatus;
+    return ORDER_STATUS_LABELS[key] ?? status;
   }
 
-  /** Primer thumbnail del primer item */
-  thumbnail(order: Order): string | null {
-    return order.items[0]?.thumbnail ?? null;
+  /** Retorna las clases CSS correspondientes al estado */
+  getStatusColor(status: OrderStatus | string): string {
+    const key = status as OrderStatus;
+    return ORDER_STATUS_COLOR[key] ?? 'bg-gray-100 text-gray-800 border-gray-200';
   }
 }

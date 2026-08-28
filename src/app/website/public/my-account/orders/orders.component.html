@@ -1,119 +1,135 @@
 <div class="space-y-6">
 
-  <!-- Header -->
-  <div class="border-b border-gray-200 pb-5">
-    <h3 class="text-xl font-semibold text-gray-900">Mis Órdenes</h3>
-    <p class="mt-1 text-sm text-gray-500">Historial de tus compras y su estado actual.</p>
+  <!-- Encabezado de Sección -->
+  <div class="border-b border-gray-200 pb-5 flex items-center justify-between">
+    <div>
+      <h3 class="text-xl font-black text-gray-900 tracking-tight">Mis Pedidos</h3>
+      <p class="mt-1 text-xs text-gray-500 font-medium">Historial completo de tus compras y su estado de entrega en tiempo real.</p>
+    </div>
+    <button (click)="fetchOrders()"
+      class="px-3.5 py-2 text-xs font-bold text-violet-700 bg-violet-50 hover:bg-violet-100 rounded-xl transition flex items-center gap-1.5 shadow-xs">
+      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      <span>Actualizar</span>
+    </button>
   </div>
 
-  <!-- Loading -->
+  <!-- Estado: Cargando -->
   @if (isLoading) {
-  <div class="space-y-3">
-    @for (i of [1,2,3]; track i) {
-    <div class="h-24 bg-gray-100 rounded-2xl animate-pulse"></div>
-    }
-  </div>
+    <div class="space-y-3">
+      @for (i of [1,2,3]; track i) {
+        <div class="h-28 bg-gray-100/80 rounded-2xl animate-pulse"></div>
+      }
+    </div>
   } @else if (loadError) {
-  <div class="text-center py-12">
-    <p class="text-gray-500">No se pudieron cargar tus órdenes. Intenta más tarde.</p>
-  </div>
+    <!-- Estado: Error -->
+    <div class="text-center py-14 bg-rose-50/50 rounded-2xl border border-rose-100 p-6">
+      <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3 font-bold text-lg">
+        ✕
+      </div>
+      <h4 class="text-sm font-black text-gray-900 mb-1">No se pudieron cargar tus pedidos</h4>
+      <p class="text-xs text-gray-500 mb-4">Verifica tu conexión y vuelve a intentarlo.</p>
+      <button (click)="fetchOrders()"
+        class="px-4 py-2 bg-rose-600 text-white rounded-xl text-xs font-bold hover:bg-rose-700 transition">
+        Reintentar
+      </button>
+    </div>
   } @else if (orders.length === 0) {
-  <!-- Vacío -->
-  <div class="text-center py-16 bg-white rounded-xl border border-dashed border-gray-300">
-    <div class="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-      <svg class="w-8 h-8 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-      </svg>
+    <!-- Estado: Sin Órdenes -->
+    <div class="text-center py-16 bg-white rounded-3xl border-2 border-dashed border-gray-200 p-6">
+      <div class="w-16 h-16 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-xs">
+        🛍️
+      </div>
+      <h3 class="text-base font-black text-gray-900">Aún no tienes pedidos registrados</h3>
+      <p class="mt-1 text-xs text-gray-500 mb-6 max-w-sm mx-auto">
+        Cuando realices una compra en Moorea, aparecerá aquí con su estado y comprobante.
+      </p>
+      <a routerLink="/store"
+        class="inline-flex items-center px-6 py-3 bg-violet-600 hover:bg-violet-700 text-white rounded-xl text-xs font-extrabold shadow-lg shadow-violet-600/20 active:scale-95 transition">
+        Explorar Tienda
+      </a>
     </div>
-    <h3 class="text-lg font-medium text-gray-900">Aún no tienes órdenes</h3>
-    <p class="mt-1 text-sm text-gray-500 mb-5">Tus compras aparecerán aquí.</p>
-    <a routerLink="/store"
-      class="inline-flex items-center px-5 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary/90 transition shadow-md">
-      Ir a la tienda
-    </a>
-  </div>
   } @else {
-  <!-- Lista de órdenes -->
-  <div class="space-y-3">
-    @for (order of orders; track order._id) {
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-shadow">
-      <div class="p-4 flex items-center gap-4">
+    <!-- Lista de Órdenes -->
+    <div class="space-y-4">
+      @for (order of orders; track order._id) {
+        <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-md transition-all">
+          <div class="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
 
-        <!-- Thumbnail del primer item -->
-        <div class="flex-shrink-0">
-          @if (thumbnail(order)) {
-          <img [src]="thumbnail(order)" alt="" class="w-14 h-14 object-cover rounded-xl">
-          } @else {
-          <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center">
-            <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-            </svg>
-          </div>
-          }
-        </div>
+            <div class="flex items-start gap-4">
+              <!-- Icono / Badge -->
+              <div class="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-100 to-fuchsia-100 text-violet-700 flex items-center justify-center font-black text-xl flex-shrink-0 shadow-xs">
+                🛍️
+              </div>
 
-        <!-- Info -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-start justify-between gap-2">
-            <div>
-              <p class="font-bold text-sm text-gray-900">{{ order.invoiceNumber }}</p>
-              <p class="text-xs text-gray-500 mt-0.5">
-                {{ order.createdAt | date:'dd MMM yyyy, HH:mm' }} ·
-                {{ itemCount(order) }} {{ itemCount(order) === 1 ? 'producto' : 'productos' }}
-              </p>
+              <!-- Información de la Orden -->
+              <div class="space-y-1">
+                <div class="flex items-center gap-2.5 flex-wrap">
+                  <h4 class="font-black text-sm text-gray-900">{{ order.invoiceNumber }}</h4>
+                  @if (order.paymentStatus === 'failed') {
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border bg-rose-100 text-rose-800 border-rose-200">
+                      🚫 Rechazado por Banco
+                    </span>
+                  } @else {
+                    <span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold border"
+                      [ngClass]="getStatusColor(order.status)">
+                      {{ getStatusLabel(order.status) }}
+                    </span>
+                  }
+                </div>
+
+                <p class="text-xs text-gray-500 font-medium">
+                  {{ order.createdAt | date:'dd MMM yyyy, HH:mm' }} ·
+                  <span class="font-bold text-gray-700">{{ order.items.length }} {{ order.items.length === 1 ? 'producto' : 'productos' }}</span>
+                </p>
+
+                <!-- Badges de Fulfillment y Pago -->
+                <div class="flex items-center gap-2 pt-1 flex-wrap">
+                  @if (order.fulfillment === 'pickup') {
+                    <span class="text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-100 rounded-lg px-2 py-0.5">
+                      🏪 Retiro en tienda: {{ order.pickupStore?.name ?? 'Tienda' }}
+                    </span>
+                  } @else {
+                    <span class="text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-100 rounded-lg px-2 py-0.5">
+                      🚚 Entrega a domicilio: {{ order.shippingAddress?.district ?? 'Lima' }}
+                    </span>
+                  }
+
+                  @if (order.paymentMethod === 'card') {
+                    <span class="text-[11px] font-bold bg-gray-50 text-gray-700 border border-gray-200 rounded-lg px-2 py-0.5">
+                      💳 Izipay (Tarjeta)
+                    </span>
+                  } @else if (order.paymentMethod === 'yape') {
+                    <span class="text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200 rounded-lg px-2 py-0.5">
+                      📱 Yape
+                    </span>
+                  } @else {
+                    <span class="text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg px-2 py-0.5">
+                      💵 Efectivo
+                    </span>
+                  }
+                </div>
+              </div>
             </div>
-            <span class="flex-shrink-0 inline-block px-2.5 py-1 rounded-full text-xs font-semibold"
-              [ngClass]="statusColors[order.status]">
-              {{ statusLabels[order.status] }}
-            </span>
-          </div>
 
-          <!-- Fulfillment tags -->
-          <div class="flex items-center gap-2 mt-2 flex-wrap">
-            @if (order.fulfillmentType === 'pickup') {
-            <span class="text-xs bg-purple-100 text-purple-700 rounded-full px-2 py-0.5">🏪 Retiro en tienda</span>
-            } @else {
-            <span class="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">🚚 Delivery</span>
-            }
-            @if (order.paymentMethod === 'card') {
-            <span class="text-xs bg-gray-100 text-gray-600 rounded-full px-2 py-0.5">💳 Tarjeta</span>
-            } @else if (order.paymentMethod === 'yape') {
-            <span class="text-xs bg-purple-100 text-purple-600 rounded-full px-2 py-0.5">📱 Yape</span>
-            } @else {
-            <span class="text-xs bg-green-100 text-green-700 rounded-full px-2 py-0.5">💵 Efectivo</span>
-            }
+            <!-- Precio Total y Botón de Detalle -->
+            <div class="flex items-center sm:flex-col sm:items-end justify-between border-t sm:border-t-0 pt-3 sm:pt-0 border-gray-100">
+              <div class="sm:text-right">
+                <span class="text-[10px] uppercase font-extrabold text-gray-400 block tracking-wider">Total Pedido</span>
+                <span class="font-black text-lg text-gray-900">
+                  {{ (order.pricing.total) | solCurrency }}
+                </span>
+              </div>
+
+              <a [routerLink]="['/orders', order._id, 'success']"
+                class="mt-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white font-extrabold text-xs rounded-xl transition shadow-xs flex items-center gap-1">
+                <span>Ver Detalle</span>
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
           </div>
         </div>
-
-        <!-- Total + CTA -->
-        <div class="flex-shrink-0 text-right space-y-2">
-          <p class="font-bold text-gray-900">{{ order.totalAmount | solCurrency }}</p>
-          <a [routerLink]="['/orders', order._id, 'success']"
-            class="block text-xs font-semibold text-primary hover:underline">
-            Ver detalle →
-          </a>
-        </div>
-      </div>
-
-      <!-- Barra de progreso del estado -->
-      <div class="h-1 w-full bg-gray-100">
-        @if (order.status === 'delivered') {
-          <div class="h-1 bg-green-500 w-full"></div>
-        } @else if (order.status === 'shipped' || order.status === 'ready_for_pickup') {
-          <div class="h-1 bg-indigo-500 w-3/4"></div>
-        } @else if (order.status === 'preparing' || order.status === 'paid') {
-          <div class="h-1 bg-orange-400 w-1/2"></div>
-        } @else if (order.status === 'pending_payment') {
-          <div class="h-1 bg-yellow-400 w-1/4"></div>
-        } @else if (order.status === 'cancelled') {
-          <div class="h-1 bg-red-400 w-full"></div>
-        }
-      </div>
+      }
     </div>
-    }
-  </div>
   }
-
 </div>

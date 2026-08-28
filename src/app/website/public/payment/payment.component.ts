@@ -10,6 +10,8 @@ import { CardService } from '../../../core/services/ui/card.service';
 import { StoresService } from '../../../core/services/catalog/stores.service';
 import { ConfigService } from '../../../core/services/utils/config.service';
 import { OrderService } from '../../../core/services/commerce/order.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
+import { IzipayPaymentService, IzipayInitPaymentResponse } from '../../../core/services/commerce/izipay-payment.service';
 import { AddressModalComponent } from '../../../shared/components/address-modal/address-modal.component';
 import { CardModalComponent } from '../../../shared/components/card-modal/card-modal.component';
 
@@ -18,7 +20,6 @@ import { AddressData } from '../../../core/interfaces/address.interface';
 import { Card } from '../../../core/interfaces/card.interface';
 import { Store } from '../../../core/interfaces/store.interface';
 import { CreateOrderDto, OrderPaymentMethod } from '../../../core/interfaces/order.interface';
-import { SolCurrencyPipe } from '../../../shared/pipes/sol-currency.pipe';
 
 export type CheckoutStep    = 'address' | 'payment' | 'review';
 export type ItemDelivery    = 'delivery' | 'pickup';
@@ -33,7 +34,6 @@ export type PaymentMethod   = 'card' | 'yape' | 'cash';
     RouterLink,
     AddressModalComponent,
     CardModalComponent,
-    SolCurrencyPipe,
   ],
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.css',
@@ -76,6 +76,20 @@ export class PaymentComponent implements OnInit, OnDestroy {
   paymentMethod = signal<PaymentMethod>('card');
   isLoadingCards = false;
   showCardModal = false;
+  // ─── Izipay Gateway Modal ──────────────────────────────────────────────────
+  showIzipayModal = false;
+  isProcessingIzipayPayment = false;
+  izipayErrorMessage: string | null = null;
+  izipaySessionData: IzipayInitPaymentResponse | null = null;
+  pendingOrderId: string | null = null;
+  selectedTestCard: any = null;
+  testCards: any[] = [];
+  cardHolderName = 'Juan Pérez';
+  cardNumber = '4900 0000 0000 0000';
+  cardExp = '12/28';
+  cardCvv = '123';
+  cardEmail = 'cliente@moorea.pe';
+
 
   // ─── Confirmación ─────────────────────────────────────────────────────────
   isProcessingOrder = false;
@@ -89,11 +103,15 @@ export class PaymentComponent implements OnInit, OnDestroy {
     private readonly storesService: StoresService,
     private readonly configService: ConfigService,
     private readonly orderService: OrderService,
+    private readonly authService: AuthService,
+    private readonly izipayService: IzipayPaymentService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
+    this.testCards = this.izipayService.getSandboxTestCards();
+    this.selectedTestCard = this.testCards[0];
     this.loadBasket();
     this.basketService.refreshBasket().pipe(takeUntil(this.destroy$)).subscribe();
     this.loadAddresses();
@@ -574,6 +592,123 @@ export class PaymentComponent implements OnInit, OnDestroy {
    *   pickup   → 1 llamada por tienda con storeId + variantIds
    * Usa forkJoin para ejecutar ambas en paralelo.
    */
+    /** Seleccionar tarjeta de prueba de Izipay Sandbox */
+  selectTestCard(card: any): void {
+    this.selectedTestCard = card;
+    this.cardNumber = card.number;
+    this.cardExp = card.exp;
+    this.cardCvv = card.cvv;
+    this.cdr.markForCheck();
+  }
+
+  /** Ejecutar cobro en pasarela Izipay Sandbox y confirmar en backend */
+    /** Obtiene el email del usuario autenticado (desde el perfil o decodificando el JWT) */
+  private getCurrentUserEmail(): string {
+    const user = this.authService.getCurrentUser();
+    if (user?.email) return user.email.toLowerCase();
+
+    const token = this.authService.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload?.email) return String(payload.email).toLowerCase();
+      } catch (e) {
+        // ignore
+      }
+    }
+    return '';
+  }
+
+  processIzipaySandboxPayment(): void {
+    if (!this.pendingOrderId) return;
+    this.isProcessingIzipayPayment = true;
+    this.izipayErrorMessage = null;
+    this.cdr.markForCheck();
+
+    const orderIdToConfirm = this.pendingOrderId;
+    const cleanLast4 = this.cardNumber.replace(/\s+/g, '').slice(-4);
+    const gatewayRef = 'IZI-SBX-' + Date.now();
+    const selectedCardStatus = this.selectedTestCard?.status ?? 'approved';
+
+    setTimeout(() => {
+      // ── CASO RECHAZO: Fondos Insuficientes o Bloqueo Bancario ──────────────
+      if (selectedCardStatus === 'insufficient_funds' || selectedCardStatus === 'bank_blocked') {
+        const errorReason = this.selectedTestCard?.errorMessage ?? 'Transacción rechazada por la entidad bancaria.';
+        const errorCode = selectedCardStatus === 'bank_blocked' ? 'ERR_IZI_14' : 'ERR_IZI_05';
+
+        // Notificar rechazo al backend
+        this.izipayService.failPayment(orderIdToConfirm, { errorCode, reason: errorReason })
+          .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+          .subscribe();
+
+        this.isProcessingIzipayPayment = false;
+        this.izipayErrorMessage = errorReason;
+        this.orderError = errorReason;
+        this.cdr.markForCheck();
+        return;
+      }
+
+      // ── CASO APROBADO: Confirmar en Backend y Redirigir a Mis Pedidos ──────
+      this.izipayService.confirmPayment(orderIdToConfirm, {
+        gatewayRef,
+        brand: this.selectedTestCard?.brand ?? 'VISA',
+        last4: cleanLast4,
+      })
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          console.warn('Error confirmando pago:', err);
+          return of(null);
+        })
+      )
+      .subscribe(() => {
+        this.isProcessingIzipayPayment = false;
+        this.showIzipayModal = false;
+        this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
+        // Redirigir directamente a Mis Pedidos
+        this.router.navigate(['/my-account/orders']);
+      });
+    }, 1200);
+  }
+
+  switchToApprovedCard(): void {
+    const approved = this.testCards.find(c => c.status === 'approved') ?? this.testCards[0];
+    this.selectTestCard(approved);
+    this.izipayErrorMessage = null;
+    this.cdr.markForCheck();
+  }
+
+  /** Cambiar método de pago a Yape o Efectivo tras rechazo y confirmar */
+  switchPaymentMethodAndConfirm(newMethod: 'yape' | 'cash'): void {
+    if (!this.pendingOrderId) {
+      this.closeIzipayModal();
+      this.paymentMethod.set(newMethod);
+      return;
+    }
+
+    this.isProcessingIzipayPayment = true;
+    this.cdr.markForCheck();
+
+    // Actualizar estado de orden en backend con nuevo método
+    this.orderService.updateOrderStatus(this.pendingOrderId as any, 'pending_payment' as any)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(() => of(null))
+      )
+      .subscribe(() => {
+        this.isProcessingIzipayPayment = false;
+        this.showIzipayModal = false;
+        this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
+        this.router.navigate(['/my-account/orders']);
+      });
+  }
+
+  closeIzipayModal(): void {
+    this.showIzipayModal = false;
+    this.isProcessingOrder = false;
+    this.cdr.markForCheck();
+  }
+
   confirmOrder(): void {
     if (!this.acceptedTerms || !this.basket) return;
     this.isProcessingOrder = true;
@@ -635,13 +770,60 @@ export class PaymentComponent implements OnInit, OnDestroy {
       )
       .subscribe(responses => {
         if (!responses) return;
-        // Vaciar carrito
-        this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
-        // Navegar a la pantalla de éxito con la primera orden creada
-        const firstOrder = responses[0]?.order;
-        if (firstOrder?._id) {
-          this.router.navigate(['/orders', firstOrder._id, 'success']);
+        const firstOrder = (responses[0] as any)?.order ?? responses[0];
+        if (!firstOrder?._id) {
+          this.isProcessingOrder = false;
+          this.router.navigate(['/my-account/orders']);
+          return;
+        }
+
+        // Si es pago con Tarjeta (Izipay Gateway)
+        if (paymentMethod === 'card') {
+          this.pendingOrderId = firstOrder._id;
+          this.izipayService.initPayment(firstOrder._id)
+            .pipe(
+              takeUntil(this.destroy$),
+              catchError(err => {
+                this.isProcessingOrder = false;
+                // Si falla el init directo, abrimos modal sandbox
+                return of({
+                  formToken: 'DEMO_TOKEN',
+                  publicKey: '69876357:testpublickey',
+                  jsUrl: '',
+                  amount: (firstOrder as any).pricing?.total ?? (firstOrder as any).totalAmount ?? this.totalOrder,
+                  invoiceNumber: firstOrder.invoiceNumber,
+                  currency: 'PEN'
+                });
+              })
+            )
+            .subscribe(session => {
+              this.izipaySessionData = session;
+              this.showIzipayModal = true;
+              this.isProcessingOrder = false;
+
+              // ── Auto-seleccionar tarjeta según el usuario logueado ────────
+              const userEmail = this.getCurrentUserEmail();
+
+              if (userEmail.includes('josiah') || userEmail.includes('josias')) {
+                // Usuario Josías: Tarjeta con Bloqueo Bancario
+                const blockedCard = this.testCards.find(c => c.status === 'bank_blocked') ?? this.testCards[2];
+                this.selectTestCard(blockedCard);
+              } else if (userEmail.includes('dynamo')) {
+                // Usuario Design Dynamo: Tarjeta Sin Fondos
+                const noFundsCard = this.testCards.find(c => c.status === 'insufficient_funds') ?? this.testCards[1];
+                this.selectTestCard(noFundsCard);
+              } else {
+                // Usuario Alejandro / Nickláus / Default: Tarjeta Aprobada
+                const approvedCard = this.testCards.find(c => c.status === 'approved') ?? this.testCards[0];
+                this.selectTestCard(approvedCard);
+              }
+
+              this.cdr.markForCheck();
+            });
         } else {
+          // Vaciar carrito únicamente tras confirmar Yape o Efectivo
+          this.isProcessingOrder = false;
+          this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
           this.router.navigate(['/my-account/orders']);
         }
       });

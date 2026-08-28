@@ -132,8 +132,8 @@
                       <p class="text-xs font-bold text-slate-900 truncate">{{ item.productName }}</p>
                       <p class="text-[11px] text-slate-400 font-mono mt-0.5">
                         {{ item.sku }}
-                        @if (item.color) { · {{ item.color.name }} }
-                        @if (item.size) { · Talla {{ item.size.value }} }
+                        @if (item.color) { · {{ (item.color?.name ?? item.color) }} }
+                        @if (item.size) { · Talla {{ (item.size?.value ?? item.size) }} }
                       </p>
                     </div>
                     <span class="shrink-0 ml-3 bg-white text-slate-800 text-xs font-black px-2.5 py-1 rounded-xl border border-slate-200 shadow-2xs">
@@ -145,7 +145,7 @@
 
               <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
                 <span class="text-xs text-slate-400 font-semibold">Total Pagado:</span>
-                <span class="font-black text-slate-900 text-lg">S/ {{ foundOrder.totalAmount.toFixed(2) }}</span>
+                <span class="font-black text-slate-900 text-lg">S/ {{ ((foundOrder.pricing?.total ?? foundOrder.totalAmount ?? 0)).toFixed(2) }}</span>
               </div>
 
               <!-- Botón Confirmar Entrega -->

@@ -597,3 +597,201 @@
     </div>
   </div>
 </div>
+
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODAL DE PAGO IZIPAY SANDBOX                                               -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+@if (showIzipayModal) {
+  <div class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-[fadeIn_0.2s_ease-out]">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden border border-gray-100 animate-[scaleUp_0.2s_ease-out]">
+
+      <!-- Header Izipay Premium -->
+      <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-6 text-white relative">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center font-black text-2xl shadow-sm">
+              💳
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h3 class="font-black text-lg tracking-tight">Izipay Gateway</h3>
+                <span class="px-2 py-0.5 text-[10px] font-black bg-amber-400 text-amber-950 rounded-md uppercase tracking-wider shadow-xs">
+                  🧪 Sandbox Interactivo
+                </span>
+              </div>
+              <p class="text-xs text-rose-100 font-medium">Pasarela Oficial de Pagos Seguros</p>
+            </div>
+          </div>
+          <button (click)="closeIzipayModal()" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/30 flex items-center justify-center text-white text-sm font-bold transition">
+            ✕
+          </button>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-white/20 flex items-center justify-between">
+          <div>
+            <span class="text-[11px] uppercase font-bold text-rose-200 block">Comprobante</span>
+            <span class="font-mono font-bold text-xs text-white">{{ izipaySessionData?.invoiceNumber ?? 'ORD-PROCESO' }}</span>
+          </div>
+          <div class="text-right">
+            <span class="text-[11px] uppercase font-bold text-rose-200 block">Monto a Cobrar</span>
+            <span class="font-black text-2xl text-white">S/ {{ (izipaySessionData?.amount ?? totalOrder) | number:'1.2-2' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cuerpo del Modal -->
+      <div class="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- TARJETA BANCARIA VISUAL 3D / PREVIEW EN VIVO                       -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div class="relative rounded-3xl p-5 text-white shadow-xl overflow-hidden transition-all duration-300 transform hover:scale-[1.01]"
+          [ngClass]="selectedTestCard?.status === 'approved' ? 'bg-gradient-to-tr from-slate-900 via-slate-800 to-indigo-950' : (selectedTestCard?.status === 'insufficient_funds' ? 'bg-gradient-to-tr from-amber-950 via-amber-900 to-yellow-950' : 'bg-gradient-to-tr from-rose-950 via-red-900 to-rose-950')">
+          
+          <!-- Efecto de brillo de fondo -->
+          <div class="absolute -right-10 -bottom-10 w-44 h-44 rounded-full bg-white/10 blur-2xl pointer-events-none"></div>
+
+          <div class="flex items-center justify-between mb-4 relative z-10">
+            <!-- Chip EMV Dorado -->
+            <div class="w-10 h-7 rounded-lg bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-200 border border-amber-400/80 shadow-xs flex items-center justify-center">
+              <div class="w-7 h-4 border-t border-b border-amber-600/40 rounded-xs"></div>
+            </div>
+            <!-- Contactless + Logo -->
+            <div class="flex items-center gap-2">
+              <span class="text-xs opacity-70">📡</span>
+              <span class="font-black text-base tracking-wider italic text-white/90">VISA</span>
+            </div>
+          </div>
+
+          <!-- Número de Tarjeta con espaciado -->
+          <div class="my-3 relative z-10">
+            <p class="font-mono text-lg sm:text-xl font-black tracking-widest text-white/95 drop-shadow-sm">
+              {{ cardNumber || '•••• •••• •••• ••••' }}
+            </p>
+          </div>
+
+          <div class="flex items-end justify-between text-xs pt-1 relative z-10">
+            <div>
+              <p class="text-[9px] uppercase tracking-wider text-white/60 font-bold">Titular de la Tarjeta</p>
+              <p class="font-bold tracking-wide uppercase text-white/90 text-[11px] truncate max-w-[200px]">
+                {{ cardHolderName || 'CLIENTE MOOREA' }}
+              </p>
+            </div>
+            <div class="text-right">
+              <p class="text-[9px] uppercase tracking-wider text-white/60 font-bold">Expira</p>
+              <p class="font-mono font-bold text-[11px] text-white/90">{{ cardExp || 'MM/AA' }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- BANNER DE RECHAZO BANCARIO Y OPCIONES DE RECUPERACIÓN              -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        @if (izipayErrorMessage) {
+          <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-5 space-y-4 animate-[fadeIn_0.2s_ease-out]">
+            <div class="flex items-start gap-3">
+              <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg flex-shrink-0">
+                ✕
+              </div>
+              <div class="space-y-1">
+                <h5 class="text-xs font-black text-rose-950">Transacción Rechazada por la Entidad Bancaria</h5>
+                <p class="text-xs text-rose-700 leading-relaxed font-medium">{{ izipayErrorMessage }}</p>
+              </div>
+            </div>
+
+            <!-- Botones de Acción Post-Rechazo -->
+            <div class="pt-2 border-t border-rose-100 space-y-2">
+              <p class="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider">
+                ¿Cómo deseas proceder?
+              </p>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button type="button" (click)="switchToApprovedCard()"
+                  class="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs">
+                  <span>🔄 Probar Tarjeta Aprobada</span>
+                </button>
+                <button type="button" (click)="switchPaymentMethodAndConfirm('yape')"
+                  class="p-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs">
+                  <span>📱 Cambiar a Yape</span>
+                </button>
+                <button type="button" (click)="switchPaymentMethodAndConfirm('cash')"
+                  class="p-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2">
+                  <span>💵 Pagar Contraentrega en Efectivo</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <!-- SELECTOR DE ESCENARIOS DE PRUEBA                                   -->
+        <!-- ═══════════════════════════════════════════════════════════════════ -->
+        <div>
+          <div class="flex items-center justify-between mb-2">
+            <label class="block text-xs font-black text-gray-800">
+              Escenarios de Prueba Sandbox:
+            </label>
+            <span class="text-[10px] font-bold text-gray-400">1-Clic para elegir</span>
+          </div>
+
+          <div class="grid grid-cols-1 gap-2">
+            @for (card of testCards; track card.number) {
+              <button type="button" (click)="selectTestCard(card); izipayErrorMessage = null;"
+                class="w-full p-3 rounded-2xl border-2 text-left transition-all flex items-center justify-between group"
+                [class.border-red-600]="selectedTestCard?.number === card.number"
+                [class.bg-red-50/50]="selectedTestCard?.number === card.number"
+                [class.border-gray-200]="selectedTestCard?.number !== card.number"
+                [class.hover:border-gray-300]="selectedTestCard?.number !== card.number">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-xl flex items-center justify-center font-bold text-xs border"
+                    [ngClass]="card.badgeColor">
+                    {{ card.status === 'approved' ? '✓' : (card.status === 'insufficient_funds' ? '⚠️' : '🚫') }}
+                  </div>
+                  <div>
+                    <div class="flex items-center gap-2">
+                      <p class="text-xs font-black text-gray-900">{{ card.brand }}</p>
+                      <span class="text-[9px] font-extrabold px-2 py-0.5 rounded-full border" [ngClass]="card.badgeColor">
+                        {{ card.label }}
+                      </span>
+                    </div>
+                    <p class="text-[11px] font-mono text-gray-500 mt-0.5">{{ card.number }} · CVV: {{ card.cvv }}</p>
+                  </div>
+                </div>
+                <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
+                  [class.border-red-600]="selectedTestCard?.number === card.number"
+                  [class.bg-red-600]="selectedTestCard?.number === card.number"
+                  [class.border-gray-300]="selectedTestCard?.number !== card.number">
+                  @if (selectedTestCard?.number === card.number) {
+                    <span class="text-white text-[10px] font-black">✓</span>
+                  }
+                </div>
+              </button>
+            }
+          </div>
+        </div>
+
+        <!-- Botón de Pago Principal Izipay -->
+        <button type="button" (click)="processIzipaySandboxPayment()" [disabled]="isProcessingIzipayPayment"
+          class="w-full py-4 bg-red-600 hover:bg-red-700 text-white font-black text-sm rounded-2xl shadow-xl shadow-red-600/25 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 cursor-pointer">
+          @if (isProcessingIzipayPayment) {
+            <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+            </svg>
+            <span>Conectando con Izipay y Banco emisor...</span>
+          } @else {
+            <span>🔒 Procesar Cobro de S/ {{ (izipaySessionData?.amount ?? totalOrder) | number:'1.2-2' }}</span>
+          }
+        </button>
+
+        <div class="flex items-center justify-center gap-4 text-[11px] text-gray-400 font-semibold pt-1 border-t border-gray-100">
+          <span>🛡️ Cifrado SSL 256-bit</span>
+          <span>•</span>
+          <span>PCI-DSS Certificado</span>
+          <span>•</span>
+          <span>Izipay Sandbox v2</span>
+        </div>
+
+      </div>
+    </div>
+  </div>
+}

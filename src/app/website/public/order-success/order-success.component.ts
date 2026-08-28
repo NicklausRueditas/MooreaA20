@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { switchMap, catchError, of } from 'rxjs';
@@ -7,6 +7,7 @@ import { OrderService } from '../../../core/services/commerce/order.service';
 import { SolCurrencyPipe } from '../../../shared/pipes/sol-currency.pipe';
 import {
   Order,
+  OrderStatus,
   OrderQrResponse,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLOR,
@@ -23,18 +24,15 @@ export class OrderSuccessComponent implements OnInit {
   isLoading = true;
   loadError = false;
 
-  // QR de retiro
   qrData: OrderQrResponse | null = null;
   qrImageUrl: string | null = null;
   isLoadingQr = false;
-
-  readonly statusLabels = ORDER_STATUS_LABELS;
-  readonly statusColors = ORDER_STATUS_COLOR;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly orderService: OrderService,
+    private readonly cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -42,20 +40,30 @@ export class OrderSuccessComponent implements OnInit {
       .pipe(
         switchMap(params => {
           const id = params.get('id');
-          if (!id) { this.router.navigate(['/']); return of(null); }
+          if (!id) {
+            this.router.navigate(['/']);
+            return of(null);
+          }
           return this.orderService.getMyOrder(id).pipe(
-            catchError(() => { this.loadError = true; return of(null); })
+            catchError((err) => {
+              console.error('Error cargando orden:', err);
+              this.loadError = true;
+              this.isLoading = false;
+              this.cdr.markForCheck();
+              return of(null);
+            })
           );
         })
       )
-      .subscribe(res => {
+      .subscribe((res: any) => {
         this.isLoading = false;
-        if (res?.order) {
-          this.order = res.order;
-          if (this.order.fulfillmentType === 'pickup') {
+        if (res) {
+          this.order = (res as any).order ?? res;
+          if (this.order && this.order.fulfillment === 'pickup') {
             this.loadPickupQr(this.order._id);
           }
         }
+        this.cdr.markForCheck();
       });
   }
 
@@ -67,7 +75,6 @@ export class OrderSuccessComponent implements OnInit {
         this.isLoadingQr = false;
         if (!qr) return;
         this.qrData = qr;
-        // Generar QR visual usando la librería qrcode (instalada por el usuario)
         try {
           const QRCode = await import('qrcode');
           this.qrImageUrl = await QRCode.toDataURL(qr.qrContent, {
@@ -76,27 +83,35 @@ export class OrderSuccessComponent implements OnInit {
             color: { dark: '#111827', light: '#ffffff' },
           });
         } catch {
-          // Si qrcode no está instalado, mostramos el código textual como fallback
           this.qrImageUrl = null;
         }
+        this.cdr.markForCheck();
       });
   }
 
+  getStatusLabel(status?: OrderStatus): string {
+    if (!status) return '';
+    return ORDER_STATUS_LABELS[status] ?? status;
+  }
+
+  getStatusColor(status?: OrderStatus): string {
+    if (!status) return '';
+    return ORDER_STATUS_COLOR[status] ?? 'bg-gray-100 text-gray-800';
+  }
+
   get hasDelivery(): boolean {
-    return this.order?.items.some(i => i.deliveryType === 'delivery') ?? false;
+    return this.order?.fulfillment === 'delivery';
   }
 
   get hasPickup(): boolean {
-    return this.order?.items.some(i => i.deliveryType === 'pickup') ?? false;
+    return this.order?.fulfillment === 'pickup';
   }
 
   get pickupStore(): string {
-    const item = this.order?.items.find(i => i.deliveryType === 'pickup');
-    return item?.pickupStore?.name ?? 'Tienda';
+    return this.order?.pickupStore?.name ?? 'Tienda Física';
   }
 
   get pickupStoreAddress(): string {
-    const item = this.order?.items.find(i => i.deliveryType === 'pickup');
-    return item?.pickupStore?.address ?? '';
+    return this.order?.pickupStore?.address ?? '';
   }
 }

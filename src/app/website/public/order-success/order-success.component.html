@@ -1,200 +1,238 @@
-<div class="min-h-screen bg-gray-50">
+<div class="min-h-screen bg-gray-50 py-10">
 
   <!-- Loading -->
   @if (isLoading) {
-  <div class="flex items-center justify-center min-h-screen">
-    <svg class="animate-spin h-10 w-10 text-primary" fill="none" viewBox="0 0 24 24">
-      <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-      <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
-    </svg>
+  <div class="flex items-center justify-center min-h-[60vh]">
+    <div class="text-center space-y-3">
+      <svg class="animate-spin h-10 w-10 text-violet-600 mx-auto" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+      </svg>
+      <p class="text-xs font-bold text-gray-500">Cargando comprobante de tu pedido...</p>
+    </div>
   </div>
   } @else if (loadError || !order) {
   <!-- Error -->
-  <div class="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
-    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-      <svg class="w-10 h-10 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-      </svg>
+  <div class="max-w-md mx-auto my-12 bg-white rounded-3xl p-8 border border-gray-200 shadow-sm text-center space-y-4">
+    <div class="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-black">
+      ✕
     </div>
-    <h1 class="text-2xl font-bold text-gray-900">No se pudo cargar la orden</h1>
-    <p class="text-gray-500">Puede que la orden no exista o no tengas acceso.</p>
+    <h2 class="text-lg font-black text-gray-900">No se pudo cargar la orden</h2>
+    <p class="text-xs text-gray-500">Es posible que la orden no exista o no tengas permisos de acceso.</p>
     <a routerLink="/my-account/orders"
-      class="mt-2 px-5 py-2.5 bg-primary text-white rounded-xl font-semibold text-sm hover:bg-primary/90 transition">
+      class="inline-block px-5 py-2.5 bg-violet-600 hover:bg-violet-700 text-white rounded-xl font-bold text-xs transition">
       Ver mis órdenes
     </a>
   </div>
   } @else {
 
-  <!-- ══ Contenido ══ -->
-  <div class="max-w-3xl mx-auto px-4 py-12 space-y-6">
+  <!-- ══ Contenedor Principal ══ -->
+  <div class="max-w-3xl mx-auto px-4 space-y-6 animate-[fadeIn_0.2s_ease-out]">
 
-    <!-- Header de éxito -->
-    <div class="text-center space-y-3">
-      <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-green-100 mb-2 animate-bounce-slow">
-        <svg class="w-10 h-10 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-        </svg>
+    <!-- Encabezado de Confirmación -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 text-center space-y-3">
+      <div class="w-16 h-16 rounded-3xl bg-emerald-50 text-emerald-600 flex items-center justify-center mx-auto text-3xl shadow-xs animate-bounce-slow">
+        ✓
       </div>
-      <h1 class="text-3xl font-extrabold text-gray-900">¡Pedido confirmado!</h1>
-      <p class="text-gray-500 text-sm">
-        Tu orden <span class="font-bold text-gray-800">{{ order.invoiceNumber }}</span>
-        fue registrada con éxito.
+      <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">¡Gracias por tu compra!</h1>
+      <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+        Tu pedido con comprobante <strong class="text-gray-900 font-extrabold">{{ order.invoiceNumber }}</strong> ha sido confirmado y registrado con éxito.
       </p>
-      <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ statusColors[order.status] }}">
-        {{ statusLabels[order.status] }}
-      </span>
+
+      <div class="pt-2 flex items-center justify-center gap-2 flex-wrap">
+        <span class="px-3 py-1 rounded-full text-xs font-extrabold border"
+          [ngClass]="getStatusColor(order.status)">
+          {{ getStatusLabel(order.status) }}
+        </span>
+        <span class="px-3 py-1 rounded-full text-xs font-bold bg-violet-50 text-violet-700 border border-violet-100">
+          💳 {{ order.paymentMethod === 'card' ? 'Izipay Aprobado' : (order.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}
+        </span>
+      </div>
     </div>
 
-    <!-- ── QR de Retiro (solo pickup) ── -->
-    @if (hasPickup) {
-    <div class="bg-white rounded-2xl border border-purple-200 shadow-sm overflow-hidden">
-      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 text-white">
-        <div class="flex items-center gap-3">
-          <svg class="w-7 h-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 4h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-          </svg>
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SEGUIMIENTO DEL PEDIDO (Estilo Falabella / Ripley)                       -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-7 space-y-6">
+      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
+        <h3 class="text-sm font-black text-gray-900 flex items-center gap-2">
+          <span>📍</span>
+          <span>Seguimiento de tu Pedido</span>
+        </h3>
+        <span class="text-[11px] font-extrabold text-violet-700 bg-violet-50 px-2.5 py-1 rounded-lg">
+          En Tiempo Real
+        </span>
+      </div>
+
+      <!-- Stepper Visual -->
+      <div class="grid grid-cols-4 gap-2 relative">
+        <!-- Barra de progreso de fondo -->
+        <div class="absolute top-4 left-6 right-6 h-1 bg-gray-100 -z-0"></div>
+
+        <!-- Paso 1: Pagado -->
+        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
+          <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-emerald-600/30 ring-4 ring-white">
+            ✓
+          </div>
           <div>
-            <h2 class="font-bold text-lg">Código de retiro</h2>
-            <p class="text-purple-200 text-sm">Muéstrale este QR al cajero al recoger tu pedido</p>
+            <p class="text-[11px] font-black text-gray-900">Pagado</p>
+            <p class="text-[9px] text-gray-400 font-medium">Cobro Aprobado</p>
+          </div>
+        </div>
+
+        <!-- Paso 2: Preparando -->
+        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
+          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+            [ngClass]="['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : (order.status === 'paid' ? 'bg-violet-600 text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
+            {{ ['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? '✓' : '2' }}
+          </div>
+          <div>
+            <p class="text-[11px] font-black text-gray-900">En Preparación</p>
+            <p class="text-[9px] text-gray-400 font-medium">Empaque de stock</p>
+          </div>
+        </div>
+
+        <!-- Paso 3: Listo / En Camino -->
+        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
+          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+            [ngClass]="['ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : (order.status === 'preparing' ? 'bg-violet-600 text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
+            {{ ['ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? '✓' : '3' }}
+          </div>
+          <div>
+            <p class="text-[11px] font-black text-gray-900">{{ hasPickup ? 'Listo en Tienda' : 'En Camino' }}</p>
+            <p class="text-[9px] text-gray-400 font-medium">{{ hasPickup ? 'Con código QR' : 'Repartidor en ruta' }}</p>
+          </div>
+        </div>
+
+        <!-- Paso 4: Entregado -->
+        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
+          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+            [ngClass]="order.status === 'delivered' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'bg-gray-100 text-gray-400'">
+            {{ order.status === 'delivered' ? '✓' : '4' }}
+          </div>
+          <div>
+            <p class="text-[11px] font-black text-gray-900">Entregado</p>
+            <p class="text-[9px] text-gray-400 font-medium">Pedido completado</p>
           </div>
         </div>
       </div>
-      <div class="p-6 flex flex-col sm:flex-row items-center gap-8">
-        <!-- QR image o skeleton -->
+    </div>
+
+    <!-- ── QR de Retiro (si aplica) ── -->
+    @if (hasPickup) {
+    <div class="bg-white rounded-3xl border border-purple-200 shadow-sm overflow-hidden">
+      <div class="bg-gradient-to-r from-purple-600 to-indigo-600 p-5 text-white flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center font-bold text-lg">
+            🏪
+          </div>
+          <div>
+            <h2 class="font-black text-sm sm:text-base">Código QR para Retiro en Tienda</h2>
+            <p class="text-purple-100 text-xs">Muestra este código al cajero para retirar tus productos</p>
+          </div>
+        </div>
+      </div>
+      <div class="p-6 flex flex-col sm:flex-row items-center gap-6">
         <div class="flex-shrink-0">
           @if (isLoadingQr) {
-          <div class="w-[220px] h-[220px] bg-gray-100 rounded-xl animate-pulse"></div>
+            <div class="w-[180px] h-[180px] bg-gray-100 rounded-2xl animate-pulse"></div>
           } @else if (qrImageUrl) {
-          <img [src]="qrImageUrl" alt="QR de retiro" class="w-[220px] h-[220px] rounded-xl shadow-md border border-gray-200">
+            <img [src]="qrImageUrl" alt="QR de retiro" class="w-[180px] h-[180px] rounded-2xl shadow-sm border border-gray-200">
           } @else if (qrData) {
-          <!-- Fallback textual si qrcode no está instalado -->
-          <div class="w-[220px] h-[220px] bg-gray-50 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center p-4 text-center">
-            <p class="text-xs text-gray-400 mb-2">QR no disponible</p>
-            <p class="font-mono font-bold text-2xl text-gray-700">{{ qrData.pickupCode }}</p>
-          </div>
+            <div class="w-[180px] h-[180px] bg-purple-50 border-2 border-dashed border-purple-200 rounded-2xl flex flex-col items-center justify-center p-4 text-center">
+              <p class="text-[10px] text-purple-600 font-bold uppercase">Código:</p>
+              <p class="font-mono font-black text-2xl text-purple-900">{{ qrData.pickupCode }}</p>
+            </div>
           }
         </div>
-        <div class="text-center sm:text-left space-y-3">
+        <div class="text-center sm:text-left space-y-2">
           @if (qrData) {
-          <div>
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Código</p>
-            <p class="font-mono font-bold text-3xl text-gray-900 tracking-widest">{{ qrData.pickupCode }}</p>
-          </div>
+            <div>
+              <p class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Código de Retiro</p>
+              <p class="font-mono font-black text-2xl text-gray-900">{{ qrData.pickupCode }}</p>
+            </div>
           }
           <div>
-            <p class="text-xs text-gray-500 uppercase tracking-wide">Tienda de retiro</p>
-            <p class="font-semibold text-gray-800">{{ pickupStore }}</p>
+            <p class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Tienda de Retiro</p>
+            <p class="font-bold text-sm text-gray-800">{{ pickupStore }}</p>
             @if (pickupStoreAddress) {
-            <p class="text-sm text-gray-500">{{ pickupStoreAddress }}</p>
+              <p class="text-xs text-gray-500">{{ pickupStoreAddress }}</p>
             }
           </div>
-          <p class="text-xs text-gray-400 bg-purple-50 rounded-lg p-3 border border-purple-100">
-            📌 El QR es válido por <strong>7 días</strong>. Preséntalo al cajero junto con tu DNI.
+          <p class="text-[11px] text-gray-400 bg-gray-50 p-2.5 rounded-xl">
+            📌 Presenta este código QR y tu documento de identidad para recibir tu compra.
           </p>
         </div>
       </div>
     </div>
     }
 
-    <!-- ── Resumen de la orden ── -->
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+    <!-- ── Detalle de Artículos y Costos ── -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
       <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-        <h2 class="font-bold text-gray-900">Detalle del pedido</h2>
-        <span class="text-xs text-gray-400">{{ order.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+        <h3 class="font-black text-sm text-gray-900">Resumen del Pedido</h3>
+        <span class="text-xs font-semibold text-gray-400">{{ order.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
       </div>
 
-      <!-- Items -->
       <div class="divide-y divide-gray-100">
         @for (item of order.items; track item.variantId) {
-        <div class="flex items-center gap-4 p-4">
-          @if (item.thumbnail) {
-          <img [src]="item.thumbnail" [alt]="item.productName" class="w-14 h-14 object-cover rounded-xl flex-shrink-0">
-          } @else {
-          <div class="w-14 h-14 bg-gray-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10"/>
-            </svg>
-          </div>
-          }
-          <div class="flex-1 min-w-0">
-            <p class="font-semibold text-sm text-gray-900 truncate">{{ item.productName }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">
-              SKU: {{ item.sku }}
-              @if (item.color) { · {{ item.color.name }} }
-              @if (item.size) { · T. {{ item.size.value }} }
-            </p>
-            <div class="flex items-center gap-2 mt-1">
-              <span class="text-xs text-gray-400">{{ item.quantity }} × {{ item.unitPrice | solCurrency }}</span>
-              @if (item.deliveryType === 'pickup') {
-              <span class="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 rounded-full px-2 py-0.5">
-                🏪 Retiro
-              </span>
-              } @else {
-              <span class="inline-flex items-center gap-1 text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5">
-                🚚 Delivery
-              </span>
-              }
+        <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5 min-w-0">
+            <div class="w-12 h-12 rounded-xl bg-violet-50 text-violet-700 flex items-center justify-center font-bold text-xl flex-shrink-0">
+              🛍️
+            </div>
+            <div class="min-w-0">
+              <p class="font-black text-xs sm:text-sm text-gray-900 truncate">{{ item.productName }}</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">
+                SKU: {{ item.sku }} · {{ item.color }} · T. {{ item.size }}
+              </p>
+              <p class="text-xs font-semibold text-gray-500 mt-0.5">
+                {{ item.quantity }} × {{ item.unitPrice | solCurrency }}
+              </p>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
-            <p class="font-bold text-sm text-gray-900">{{ item.subtotal | solCurrency }}</p>
+            <p class="font-black text-sm text-gray-900">{{ item.subtotal | solCurrency }}</p>
           </div>
         </div>
         }
       </div>
 
-      <!-- Total -->
-      <div class="p-5 border-t border-gray-100 bg-gray-50 flex justify-between items-center">
-        <div>
-          <p class="text-xs text-gray-500">Método de pago</p>
-          <p class="font-semibold text-gray-800 capitalize">
-            @if (order.paymentMethod === 'card') { 💳 Tarjeta }
-            @else if (order.paymentMethod === 'yape') { 📱 Yape }
-            @else { 💵 Efectivo }
-          </p>
+      <!-- Desglose Financiero -->
+      <div class="p-5 border-t border-gray-100 bg-gray-50/70 space-y-2">
+        <div class="flex justify-between text-xs text-gray-600 font-medium">
+          <span>Subtotal de Productos:</span>
+          <span class="font-bold text-gray-800">{{ order.pricing.subtotalBeforeDiscount | solCurrency }}</span>
         </div>
-        <div class="text-right">
-          <p class="text-xs text-gray-500">Total</p>
-          <p class="text-2xl font-extrabold text-primary">{{ order.totalAmount | solCurrency }}</p>
+        @if (order.pricing.discount > 0) {
+        <div class="flex justify-between text-xs text-emerald-600 font-bold">
+          <span>Descuento Aplicado:</span>
+          <span>- {{ order.pricing.discount | solCurrency }}</span>
+        </div>
+        }
+        <div class="flex justify-between text-xs text-gray-600 font-medium">
+          <span>Costo de Entrega:</span>
+          <span class="font-bold text-gray-800">{{ order.pricing.shippingCost === 0 ? 'Gratis (Recojo)' : (order.pricing.shippingCost | solCurrency) }}</span>
+        </div>
+        <div class="pt-2 border-t border-gray-200 flex justify-between items-center">
+          <span class="text-xs font-black uppercase tracking-wider text-gray-900">Total Pagado:</span>
+          <span class="text-2xl font-black text-violet-700">{{ order.pricing.total | solCurrency }}</span>
         </div>
       </div>
     </div>
 
-    <!-- ── Dirección de entrega (si hay delivery) ── -->
-    @if (hasDelivery && order.shippingAddress) {
-    <div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
-      <h2 class="font-bold text-gray-900 mb-3 flex items-center gap-2">
-        <svg class="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
-        </svg>
-        Dirección de envío
-      </h2>
-      <p class="text-sm text-gray-700">
-        {{ order.shippingAddress.street }} {{ order.shippingAddress.streetNumber }}
-        @if (order.shippingAddress.apartment) { , Dpto. {{ order.shippingAddress.apartment }} }
-      </p>
-      <p class="text-sm text-gray-500">
-        {{ order.shippingAddress.district }}, {{ order.shippingAddress.province }}, {{ order.shippingAddress.country }}
-      </p>
-    </div>
-    }
-
-    <!-- ── Acciones ── -->
-    <div class="flex flex-col sm:flex-row gap-3">
+    <!-- Botones de Navegación -->
+    <div class="flex items-center justify-between pt-2">
       <a routerLink="/my-account/orders"
-        class="flex-1 text-center px-6 py-3 border-2 border-gray-200 text-gray-700 font-semibold rounded-xl hover:bg-gray-50 transition text-sm">
-        📋 Ver mis órdenes
+        class="px-5 py-3 border border-gray-200 bg-white text-gray-700 rounded-2xl text-xs font-bold hover:bg-gray-50 transition shadow-xs">
+        ← Ir a Mis Pedidos
       </a>
       <a routerLink="/store"
-        class="flex-1 text-center px-6 py-3 bg-primary text-white font-semibold rounded-xl hover:bg-primary/90 shadow-md transition text-sm">
-        🛍️ Seguir comprando
+        class="px-6 py-3 bg-violet-600 text-white rounded-2xl text-xs font-extrabold hover:bg-violet-700 shadow-lg shadow-violet-600/20 active:scale-95 transition">
+        Seguir Comprando
       </a>
     </div>
 
   </div>
   }
-
 </div>

@@ -76,7 +76,7 @@
                 <span class="text-gray-500"> productos</span>
               </td>
               <td class="px-5 py-4">
-                @if (order.fulfillmentType === 'pickup') {
+                @if ((order.fulfillment === 'pickup' || order.fulfillmentType === 'pickup')) {
                 <span class="inline-flex items-center gap-1 text-xs bg-purple-100 text-purple-700 rounded-full px-2.5 py-1 font-medium">
                   🏪 Pickup
                 </span>
@@ -96,7 +96,7 @@
                 </span>
               </td>
               <td class="px-5 py-4">
-                <span class="font-bold text-gray-900">{{ order.totalAmount | solCurrency }}</span>
+                <span class="font-bold text-gray-900">{{ (order.pricing?.total ?? order.totalAmount ?? 0) | solCurrency }}</span>
               </td>
               <td class="px-5 py-4">
                 <div class="flex flex-wrap gap-1.5">

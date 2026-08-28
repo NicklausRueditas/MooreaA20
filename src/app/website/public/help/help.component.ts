@@ -25,7 +25,7 @@ export interface SupportCategory {
 @Component({
   selector: 'app-help',
   standalone: true,
-  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './help.component.html',
   styleUrl: './help.component.css'
 })
