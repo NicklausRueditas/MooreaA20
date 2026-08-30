@@ -52,7 +52,7 @@ export class OrdersAdminComponent implements OnInit {
         finalize(() => { this.isLoading = false; })
       )
       .subscribe(res => {
-        this.orders = res?.orders ?? [];
+        this.orders = Array.isArray(res) ? res : (res?.orders ?? []);
       });
   }
 
@@ -64,8 +64,9 @@ export class OrdersAdminComponent implements OnInit {
   updateStatus(order: Order, status: OrderStatus): void {
     this.orderService.updateOrderStatus(order._id, status).subscribe({
       next: res => {
+        const updated = res?.order ?? res;
         const idx = this.orders.findIndex(o => o._id === order._id);
-        if (idx !== -1 && res.order) this.orders[idx] = res.order;
+        if (idx !== -1 && updated) this.orders[idx] = updated;
       },
       error: () => {},
     });
