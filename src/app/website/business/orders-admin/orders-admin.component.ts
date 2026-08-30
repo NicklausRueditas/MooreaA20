@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { catchError, of, finalize } from 'rxjs';
 
 import { OrderService } from '../../../core/services/commerce/order.service';
+import { AuthService } from '../../../core/services/auth/auth.service';
 import { SolCurrencyPipe } from '../../../shared/pipes/sol-currency.pipe';
 import {
   Order,
@@ -10,7 +12,6 @@ import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLOR,
 } from '../../../core/interfaces/order.interface';
-import { catchError, of, finalize } from 'rxjs';
 
 @Component({
   selector: 'app-orders-admin',
@@ -37,7 +38,30 @@ export class OrdersAdminComponent implements OnInit {
     { label: 'Canceladas', value: 'cancelled' },
   ];
 
-  constructor(private readonly orderService: OrderService) {}
+  constructor(
+    private readonly orderService: OrderService,
+    private readonly authService: AuthService,
+  ) {}
+
+  get currentUser() {
+    return this.authService.getCurrentUser();
+  }
+
+  get userRole(): string {
+    return this.currentUser?.roles?.[0] || 'user';
+  }
+
+  get isAdmin(): boolean {
+    return this.userRole === 'admin' || (this.currentUser?.roles?.includes('admin' as any) ?? false);
+  }
+
+  get isWorker(): boolean {
+    return this.userRole === 'worker' || (this.currentUser?.roles?.includes('worker' as any) ?? false);
+  }
+
+  get isSeller(): boolean {
+    return this.userRole === 'seller' || (this.currentUser?.roles?.includes('seller' as any) ?? false);
+  }
 
   ngOnInit(): void {
     this.loadOrders();
@@ -78,7 +102,7 @@ export class OrdersAdminComponent implements OnInit {
       case 'paid':
         return [{ label: 'Marcar en preparación', status: 'preparing', color: 'orange' }];
       case 'preparing':
-        return order.fulfillmentType === 'pickup'
+        return order.fulfillmentType === 'pickup' || (order as any).fulfillment === 'pickup'
           ? [{ label: 'Listo para retiro', status: 'ready_for_pickup', color: 'purple' }]
           : [{ label: 'Marcar enviado', status: 'shipped', color: 'indigo' }];
       case 'shipped':
@@ -89,6 +113,6 @@ export class OrdersAdminComponent implements OnInit {
   }
 
   totalItems(order: Order): number {
-    return order.items.reduce((sum, i) => sum + i.quantity, 0);
+    return (order.items || []).reduce((sum: number, i: any) => sum + (i.quantity || 1), 0);
   }
 }

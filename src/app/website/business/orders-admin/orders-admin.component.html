@@ -3,18 +3,43 @@
 
     <!-- Header -->
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-      <div>
-        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Gestión de Órdenes</h1>
-        <p class="text-xs sm:text-sm text-gray-500 mt-0.5">Supervisa y administra el estado de los pedidos y despachos</p>
+      <div class="space-y-1">
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Gestión de Órdenes</h1>
+          @if (isAdmin) {
+            <span class="px-3 py-1 bg-violet-100 text-violet-800 border border-violet-200 rounded-full text-xs font-black flex items-center gap-1 shadow-2xs">
+              <span>👑</span>
+              <span>Super Admin (Moorea + Sellers)</span>
+            </span>
+          } @else if (isWorker) {
+            <span class="px-3 py-1 bg-amber-100 text-amber-900 border border-amber-200 rounded-full text-xs font-black flex items-center gap-1 shadow-2xs">
+              <span>👷</span>
+              <span>Operativo (Tienda / Despacho)</span>
+            </span>
+          } @else if (isSeller) {
+            <span class="px-3 py-1 bg-emerald-100 text-emerald-900 border border-emerald-200 rounded-full text-xs font-black flex items-center gap-1 shadow-2xs">
+              <span>🛍️</span>
+              <span>Ventas del Vendedor</span>
+            </span>
+          }
+        </div>
+        <p class="text-xs sm:text-sm text-gray-500">
+          @if (isAdmin) { Supervisión total de pedidos de Moorea y de todos los vendedores aliados. }
+          @else if (isWorker) { Panel de preparación de pedidos, despachos y validación de retiros QR. }
+          @else { Seguimiento y estado de las órdenes que incluyen tus prendas y productos. }
+        </p>
       </div>
-      <a routerLink="/business/pickup-scanner"
-        class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-2xl text-xs font-black shadow-md transition active:scale-95 cursor-pointer shrink-0">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 4h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
-        </svg>
-        Scanner de retiros QR
-      </a>
+
+      <div class="flex items-center gap-2">
+        <a routerLink="/business/pickup-scanner"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-2xl text-xs font-black shadow-md shadow-purple-600/20 transition active:scale-95 cursor-pointer shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 4h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/>
+          </svg>
+          <span>Scanner QR</span>
+        </a>
+      </div>
     </div>
 
     <!-- Filtros de estado -->
