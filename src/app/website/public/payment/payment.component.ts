@@ -189,11 +189,10 @@ export class PaymentComponent implements OnInit, OnDestroy {
   }
 
   get canContinueFromPayment(): boolean {
-    return (
-      (this.paymentMethod() === 'card' && !!this.selectedCard) ||
-      this.paymentMethod() === 'yape' ||
-      this.paymentMethod() === 'cash'
-    );
+    if (this.paymentMethod() === 'card') {
+      return !!this.selectedCard;
+    }
+    return this.paymentMethod() === 'yape' || this.paymentMethod() === 'cash';
   }
 
   continueToPayment(): void {
@@ -855,12 +854,37 @@ export class PaymentComponent implements OnInit, OnDestroy {
         // Si es pago con Tarjeta (Izipay Gateway)
         if (paymentMethod === 'card') {
           this.pendingOrderId = firstOrder._id;
+
+          // ── CASO A: Cliente seleccionó una tarjeta guardada de su cuenta ──
+          if (this.selectedCard && this.selectedCard._id) {
+            const cleanNumber = (this.selectedCard.cardNumber || '').replace(/\s+/g, '');
+            const cleanLast4 = cleanNumber.length >= 4 ? cleanNumber.slice(-4) : '0000';
+            const gatewayRef = 'IZI-SAVED-' + Date.now();
+            const brand = (this.selectedCard.cardType || 'VISA').toUpperCase();
+
+            this.izipayService.confirmPayment(firstOrder._id, {
+              gatewayRef,
+              brand,
+              last4: cleanLast4,
+            })
+            .pipe(
+              takeUntil(this.destroy$),
+              catchError(err => of(null))
+            )
+            .subscribe(() => {
+              this.isProcessingOrder = false;
+              this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
+              this.router.navigate(['/my-account/orders']);
+            });
+            return;
+          }
+
+          // ── CASO B: Cliente paga con Nueva Tarjeta en Checkout ────────────
           this.izipayService.initPayment(firstOrder._id)
             .pipe(
               takeUntil(this.destroy$),
               catchError(err => {
                 this.isProcessingOrder = false;
-                // Si falla el init directo, abrimos modal sandbox
                 return of({
                   formToken: 'DEMO_TOKEN',
                   publicKey: '69876357:testpublickey',
@@ -875,24 +899,6 @@ export class PaymentComponent implements OnInit, OnDestroy {
               this.izipaySessionData = session;
               this.showIzipayModal = true;
               this.isProcessingOrder = false;
-
-              // ── Auto-seleccionar tarjeta según el usuario logueado ────────
-              const userEmail = this.getCurrentUserEmail();
-
-              if (userEmail.includes('josiah') || userEmail.includes('josias')) {
-                // Usuario Josías: Tarjeta con Bloqueo Bancario
-                const blockedCard = this.testCards.find(c => c.status === 'bank_blocked') ?? this.testCards[2];
-                this.selectTestCard(blockedCard);
-              } else if (userEmail.includes('dynamo')) {
-                // Usuario Design Dynamo: Tarjeta Sin Fondos
-                const noFundsCard = this.testCards.find(c => c.status === 'insufficient_funds') ?? this.testCards[1];
-                this.selectTestCard(noFundsCard);
-              } else {
-                // Usuario Alejandro / Nickláus / Default: Tarjeta Aprobada
-                const approvedCard = this.testCards.find(c => c.status === 'approved') ?? this.testCards[0];
-                this.selectTestCard(approvedCard);
-              }
-
               this.cdr.markForCheck();
             });
         } else {
