@@ -145,7 +145,7 @@
 
               <div class="pt-3 border-t border-slate-100 flex justify-between items-center">
                 <span class="text-xs text-slate-400 font-semibold">Total Pagado:</span>
-                <span class="font-black text-slate-900 text-lg">S/ {{ ((foundOrder.pricing?.total ?? foundOrder.totalAmount ?? 0)).toFixed(2) }}</span>
+                <span class="font-black text-slate-900 text-lg">S/ {{ getOrderTotal(foundOrder).toFixed(2) }}</span>
               </div>
 
               <!-- Botón Confirmar Entrega -->

@@ -115,4 +115,8 @@ export class OrdersAdminComponent implements OnInit {
   totalItems(order: Order): number {
     return (order.items || []).reduce((sum: number, i: any) => sum + (i.quantity || 1), 0);
   }
+
+  getOrderTotal(order: Order): number {
+    return Number(order?.pricing?.total ?? (order as any)?.totalAmount ?? 0);
+  }
 }

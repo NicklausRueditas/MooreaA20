@@ -142,4 +142,9 @@ export class PickupScannerComponent implements OnInit, OnDestroy {
       hour: '2-digit', minute: '2-digit'
     });
   }
+
+  getOrderTotal(order: Order | null): number {
+    if (!order) return 0;
+    return Number(order?.pricing?.total ?? (order as any)?.totalAmount ?? 0);
+  }
 }

@@ -121,7 +121,7 @@
                 </span>
               </td>
               <td class="px-5 py-4">
-                <span class="font-bold text-gray-900">{{ (order.pricing?.total ?? order.totalAmount ?? 0) | solCurrency }}</span>
+                <span class="font-bold text-gray-900">{{ getOrderTotal(order) | solCurrency }}</span>
               </td>
               <td class="px-5 py-4">
                 <div class="flex flex-wrap gap-1.5">
