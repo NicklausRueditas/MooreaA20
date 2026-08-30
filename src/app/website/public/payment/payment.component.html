@@ -533,8 +533,37 @@
           </div>
 
           @if (orderError) {
-            <div class="p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-2xl text-xs font-semibold">
-              {{ orderError }}
+            <div class="bg-rose-50 border-2 border-rose-200 rounded-3xl p-5 space-y-4 animate-[fadeIn_0.2s_ease-out]">
+              <div class="flex items-start gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-rose-100 text-rose-600 flex items-center justify-center font-black text-lg flex-shrink-0">
+                  ✕
+                </div>
+                <div class="space-y-1">
+                  <h5 class="text-xs font-black text-rose-950">Transacción Rechazada por la Entidad Bancaria</h5>
+                  <p class="text-xs text-rose-700 leading-relaxed font-medium">{{ orderError }}</p>
+                </div>
+              </div>
+
+              <!-- Botones de Acción Post-Rechazo -->
+              <div class="pt-2 border-t border-rose-100 space-y-2">
+                <p class="text-[11px] font-extrabold text-gray-700 uppercase tracking-wider">
+                  ¿Cómo deseas proceder?
+                </p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <button type="button" (click)="goToStep('payment'); orderError = null;"
+                    class="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>🔄 Cambiar / Probar Otra Tarjeta</span>
+                  </button>
+                  <button type="button" (click)="switchPaymentMethodAndConfirm('yape')"
+                    class="p-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+                    <span>📱 Pagar con Yape</span>
+                  </button>
+                  <button type="button" (click)="switchPaymentMethodAndConfirm('cash')"
+                    class="p-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2 cursor-pointer">
+                    <span>💵 Pagar Contraentrega en Efectivo</span>
+                  </button>
+                </div>
+              </div>
             </div>
           }
 

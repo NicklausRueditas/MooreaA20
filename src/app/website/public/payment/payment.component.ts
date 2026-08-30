@@ -859,6 +859,31 @@ export class PaymentComponent implements OnInit, OnDestroy {
           if (this.selectedCard && this.selectedCard._id) {
             const cleanNumber = (this.selectedCard.cardNumber || '').replace(/\s+/g, '');
             const cleanLast4 = cleanNumber.length >= 4 ? cleanNumber.slice(-4) : '0000';
+            const userEmail = this.getCurrentUserEmail();
+
+            // Verificar si la tarjeta guardada corresponde a un escenario de prueba con fallo
+            const isBlocked = cleanNumber.endsWith('0004') || userEmail.includes('josiah') || userEmail.includes('josias');
+            const isInsufficient = cleanNumber.endsWith('0005') || userEmail.includes('dynamo');
+
+            if (isBlocked || isInsufficient) {
+              const errorCode = isBlocked ? 'ERR_IZI_14' : 'ERR_IZI_05';
+              const errorReason = isBlocked
+                ? 'Transacción denegada: La entidad bancaria bloqueó la tarjeta por seguridad (Código: ERR_IZI_14).'
+                : 'Transacción rechazada por el banco emisor: Saldo insuficiente en la tarjeta (Código: ERR_IZI_05).';
+
+              // Notificar rechazo al backend
+              this.izipayService.failPayment(firstOrder._id, { errorCode, reason: errorReason })
+                .pipe(takeUntil(this.destroy$), catchError(() => of(null)))
+                .subscribe();
+
+              this.isProcessingOrder = false;
+              this.orderError = errorReason;
+              this.izipayErrorMessage = errorReason;
+              this.cdr.markForCheck();
+              return;
+            }
+
+            // Caso tarjeta válida aprobada
             const gatewayRef = 'IZI-SAVED-' + Date.now();
             const brand = (this.selectedCard.cardType || 'VISA').toUpperCase();
 
