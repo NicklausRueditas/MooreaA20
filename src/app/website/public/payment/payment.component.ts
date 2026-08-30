@@ -84,17 +84,24 @@ export class PaymentComponent implements OnInit, OnDestroy {
   pendingOrderId: string | null = null;
   selectedTestCard: any = null;
   testCards: any[] = [];
-  cardHolderName = 'Juan Pérez';
-  cardNumber = '4900 0000 0000 0000';
-  cardExp = '12/28';
-  cardCvv = '123';
-  cardEmail = 'cliente@moorea.pe';
+  cardHolderName = '';
+  cardNumber = '';
+  cardExp = '';
+  cardCvv = '';
+  cardEmail = '';
+  selectedInstallments = 1;
+  saveCardForFuture = false;
+  showSandboxTools = false;
 
 
   // ─── Confirmación ─────────────────────────────────────────────────────────
   isProcessingOrder = false;
   orderError: string | null = null;
   acceptedTerms = false;
+
+  get currentUser() {
+    return this.authService.getCurrentUser();
+  }
 
   constructor(
     private readonly basketService: BasketService,
@@ -601,8 +608,75 @@ export class PaymentComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
   }
 
-  /** Ejecutar cobro en pasarela Izipay Sandbox y confirmar en backend */
-    /** Obtiene el email del usuario autenticado (desde el perfil o decodificando el JWT) */
+  get detectedBrand(): 'visa' | 'mastercard' | 'amex' | 'diners' | 'generic' {
+    const clean = (this.cardNumber || '').replace(/\D/g, '');
+    if (clean.startsWith('4')) return 'visa';
+    if (/^(5[1-5]|2[2-7])/.test(clean)) return 'mastercard';
+    if (/^(34|37)/.test(clean)) return 'amex';
+    if (/^(30|36|38)/.test(clean)) return 'diners';
+    return 'generic';
+  }
+
+  get brandLabel(): string {
+    switch (this.detectedBrand) {
+      case 'visa': return 'VISA';
+      case 'mastercard': return 'Mastercard';
+      case 'amex': return 'American Express';
+      case 'diners': return 'Diners Club';
+      default: return 'Tarjeta de Crédito / Débito';
+    }
+  }
+
+  onCardNumberInput(event: any): void {
+    let value = (event.target.value || '').replace(/\D/g, '');
+    if (value.length > 16) value = value.slice(0, 16);
+    const parts = value.match(/[\s\S]{1,4}/g) || [];
+    this.cardNumber = parts.join(' ');
+    this.izipayErrorMessage = null;
+    this.cdr.markForCheck();
+  }
+
+  onCardExpInput(event: any): void {
+    let value = (event.target.value || '').replace(/\D/g, '');
+    if (value.length > 4) value = value.slice(0, 4);
+    if (value.length >= 3) {
+      this.cardExp = `${value.slice(0, 2)}/${value.slice(2)}`;
+    } else {
+      this.cardExp = value;
+    }
+    this.izipayErrorMessage = null;
+    this.cdr.markForCheck();
+  }
+
+  onCardCvvInput(event: any): void {
+    let value = (event.target.value || '').replace(/\D/g, '');
+    const maxLen = this.detectedBrand === 'amex' ? 4 : 3;
+    this.cardCvv = value.slice(0, maxLen);
+    this.izipayErrorMessage = null;
+    this.cdr.markForCheck();
+  }
+
+  get isCardFormComplete(): boolean {
+    const cleanNum = (this.cardNumber || '').replace(/\D/g, '');
+    const validNum = cleanNum.length >= 15 && cleanNum.length <= 16;
+    const cleanExp = (this.cardExp || '').replace(/\D/g, '');
+    const validExp = cleanExp.length === 4;
+    const validCvv = (this.cardCvv || '').length >= 3;
+    const validHolder = (this.cardHolderName || '').trim().length >= 3;
+    return validNum && validExp && validCvv && validHolder;
+  }
+
+  get installmentsList(): { count: number; label: string; amount: number }[] {
+    const total = this.izipaySessionData?.amount ?? this.totalOrder;
+    return [
+      { count: 1, label: '1 cuota (Pago al contado)', amount: total },
+      { count: 3, label: '3 cuotas sin interés', amount: total / 3 },
+      { count: 6, label: '6 cuotas sin interés', amount: total / 6 },
+      { count: 12, label: '12 cuotas', amount: total / 12 },
+    ];
+  }
+
+  /** Ejecutar cobro en pasarela Izipay y confirmar en backend */
   private getCurrentUserEmail(): string {
     const user = this.authService.getCurrentUser();
     if (user?.email) return user.email.toLowerCase();
@@ -626,7 +700,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
     this.cdr.markForCheck();
 
     const orderIdToConfirm = this.pendingOrderId;
-    const cleanLast4 = this.cardNumber.replace(/\s+/g, '').slice(-4);
+    const cleanNumber = (this.cardNumber || '').replace(/\s+/g, '');
+    const cleanLast4 = cleanNumber.length >= 4 ? cleanNumber.slice(-4) : '0000';
     const gatewayRef = 'IZI-SBX-' + Date.now();
     const selectedCardStatus = this.selectedTestCard?.status ?? 'approved';
 
@@ -651,7 +726,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
       // ── CASO APROBADO: Confirmar en Backend y Redirigir a Mis Pedidos ──────
       this.izipayService.confirmPayment(orderIdToConfirm, {
         gatewayRef,
-        brand: this.selectedTestCard?.brand ?? 'VISA',
+        brand: this.brandLabel.toUpperCase(),
         last4: cleanLast4,
       })
       .pipe(
