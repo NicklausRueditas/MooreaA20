@@ -195,18 +195,17 @@
                 @for (color of colors; track color.code) {
                   @let isColorActive = selectedColorCode === color.code;
                   <button type="button" (click)="selectColor(color.code)" [title]="color.name"
-                    class="relative w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center shadow-xs"
+                    class="relative w-9 h-9 rounded-full transition-all duration-200 flex items-center justify-center cursor-pointer shadow-2xs hover:scale-105 active:scale-95"
                     [style.background]="color.hex"
                     [class.ring-2]="isColorActive"
-                    [class.ring-slate-900]="isColorActive"
+                    [class.ring-slate-400]="isColorActive"
                     [class.ring-offset-2]="isColorActive"
-                    [class.scale-105]="isColorActive"
-                    [class.border]="color.hex === '#ffffff' || color.hex === '#fff'"
-                    [class.border-slate-300]="color.hex === '#ffffff' || color.hex === '#fff'">
+                    [class.border]="isLightColor(color.hex)"
+                    [class.border-slate-200]="isLightColor(color.hex)">
                     @if (isColorActive) {
-                      <svg class="w-4 h-4 drop-shadow-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                        [class.text-white]="color.hex !== '#ffffff' && color.hex !== '#fff'"
-                        [class.text-slate-900]="color.hex === '#ffffff' || color.hex === '#fff'">
+                      <svg class="w-4 h-4 drop-shadow-2xs" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                        [class.text-white]="!isLightColor(color.hex)"
+                        [class.text-slate-600]="isLightColor(color.hex)">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                       </svg>
                     }

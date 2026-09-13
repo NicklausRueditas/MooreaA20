@@ -161,29 +161,56 @@
              ───────────────────────────────────────────────────────────────── -->
         <section aria-label="Productos en la bolsa" class="lg:col-span-8 space-y-4">
 
-          <!-- Barra Dinámica de Envío Gratuito -->
-          <div class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/70 shadow-xs space-y-2.5">
+          <!-- Barra Dinámica de Envío Gratuito (3 Etapas: Inicial <50%, En camino 50-99%, Completado 100%) -->
+          @let isComplete = freeDeliveryProgress >= 100;
+          @let isHalfway  = freeDeliveryProgress >= 50 && freeDeliveryProgress < 100;
+
+          <div class="p-4 sm:p-5 rounded-3xl border transition-colors duration-300 shadow-xs space-y-2.5"
+            [class]="isComplete ? 'bg-emerald-50/85 border-emerald-200/80' : isHalfway ? 'bg-amber-50/80 border-amber-200/80' : 'bg-white border-slate-200/70'">
             <div class="flex items-center justify-between text-xs font-bold">
-              @if (freeDeliveryRemaining > 0) {
+              @if (isComplete) {
+                <!-- ETAPA 3 (100%): COMPLETADO -->
+                <span class="text-emerald-800 flex items-center gap-2 font-black">
+                  <span class="w-5 h-5 rounded-lg bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                  </span>
+                  <span>¡Felicidades! Tu orden califica para <strong>Envío Gratis a Domicilio</strong></span>
+                </span>
+                <span class="text-emerald-700 font-black text-xs font-mono">✓ 100%</span>
+              } @else if (isHalfway) {
+                <!-- ETAPA 2 (50%-99%): EN PROGRESO / CASI LISTO -->
+                <span class="text-amber-900 flex items-center gap-2">
+                  <span class="w-5 h-5 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-2xs">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a2 2 0 104 0m-4 0a2 2 0 114 0m-6 0H9" />
+                    </svg>
+                  </span>
+                  <span>¡Casi listo! Agrega solo <strong class="text-amber-950 font-black">S/ {{ freeDeliveryRemaining | number:'1.2-2' }}</strong> más para <strong>Envío Gratis</strong></span>
+                </span>
+                <span class="text-amber-700 font-mono text-xs font-black">{{ freeDeliveryProgress }}%</span>
+              } @else {
+                <!-- ETAPA 1 (<50%): INICIAL -->
                 <span class="text-slate-700 flex items-center gap-2">
-                  <span class="text-base">🚚</span>
+                  <span class="w-5 h-5 rounded-lg bg-slate-200 text-slate-700 flex items-center justify-center shrink-0">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
+                  </span>
                   <span>Agrega <strong class="text-slate-900 font-black">S/ {{ freeDeliveryRemaining | number:'1.2-2' }}</strong> más para calificar a <strong>Envío Gratis</strong></span>
                 </span>
                 <span class="text-slate-400 font-mono text-[11px] font-black">{{ freeDeliveryProgress }}%</span>
-              } @else {
-                <span class="text-emerald-700 flex items-center gap-2 font-black">
-                  <span class="text-base">🎉</span>
-                  <span>¡Felicidades! Tu orden califica para <strong>Envío Gratis a Domicilio</strong></span>
-                </span>
-                <span class="text-emerald-700 font-black text-xs font-mono">100%</span>
               }
             </div>
             
-            <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+            <div class="w-full rounded-full h-2 overflow-hidden transition-colors duration-300"
+              [class]="isComplete ? 'bg-emerald-100' : isHalfway ? 'bg-amber-100' : 'bg-slate-100'">
               <div
                 class="h-full rounded-full transition-all duration-500"
-                [class.bg-slate-900]="freeDeliveryRemaining > 0"
-                [class.bg-emerald-500]="freeDeliveryRemaining === 0"
+                [class.bg-emerald-500]="isComplete"
+                [class.bg-amber-500]="isHalfway"
+                [class.bg-slate-900]="!isComplete && !isHalfway"
                 [style.width.%]="freeDeliveryProgress"
               ></div>
             </div>
