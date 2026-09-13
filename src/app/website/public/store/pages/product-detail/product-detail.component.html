@@ -5,48 +5,45 @@
        ═══════════════════════════════════════════════════════════════════════ -->
   <header class="border-b border-slate-100 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between gap-4">
-      
+
       <!-- Breadcrumb con navegación semántica -->
-      <nav aria-label="Breadcrumb" class="flex items-center gap-2 text-xs font-semibold text-slate-400 overflow-hidden truncate">
+      <nav aria-label="Breadcrumb"
+        class="flex items-center gap-2 text-xs font-semibold text-slate-400 overflow-hidden truncate">
         <a routerLink="/" class="hover:text-slate-900 transition flex items-center gap-1.5 flex-shrink-0">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
           </svg>
           <span class="hidden sm:inline">Inicio</span>
         </a>
         <span class="text-slate-300">/</span>
         <a routerLink="/store" class="hover:text-slate-900 transition flex-shrink-0">Tienda</a>
         @if (product?.category?.[0]) {
-          <span class="text-slate-300">/</span>
-          <a [routerLink]="['/store']" [queryParams]="{ category: product?.category?.[0] }" class="hover:text-slate-900 transition capitalize flex-shrink-0">
-            {{ product?.category?.[0] }}
-          </a>
+        <span class="text-slate-300">/</span>
+        <a [routerLink]="['/store']" [queryParams]="{ category: product?.category?.[0] }"
+          class="hover:text-slate-900 transition capitalize flex-shrink-0">
+          {{ product?.category?.[0] }}
+        </a>
         }
         @if (product?.name) {
-          <span class="text-slate-300">/</span>
-          <span class="text-slate-900 font-bold truncate">{{ product?.name }}</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-900 font-bold truncate">{{ product?.name }}</span>
         }
       </nav>
 
       <!-- Botones de Acción Rápida (Volver / Compartir) -->
       <div class="flex items-center gap-2 flex-shrink-0">
-        <button
-          type="button"
-          (click)="shareProduct()"
-          aria-label="Compartir producto"
+        <button type="button" (click)="shareProduct()" aria-label="Compartir producto"
           class="p-2 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition cursor-pointer border border-slate-200/60"
-          title="Compartir enlace"
-        >
+          title="Compartir enlace">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
           </svg>
         </button>
 
-        <button
-          type="button"
-          (click)="goBack()"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition cursor-pointer"
-        >
+        <button type="button" (click)="goBack()"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-bold text-slate-700 transition cursor-pointer">
           <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
@@ -61,869 +58,874 @@
        2. SKELETON LOADING STATE
        ═══════════════════════════════════════════════════════════════════════ -->
   @if (loading) {
-    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-      <div class="lg:grid lg:grid-cols-12 lg:gap-12 animate-pulse">
-        <div class="lg:col-span-7 flex flex-col md:flex-row gap-4">
-          <div class="hidden md:flex flex-col gap-3 w-20">
-            @for (i of [1,2,3,4]; track i) {
-              <div class="w-20 h-24 bg-slate-200 rounded-2xl"></div>
-            }
-          </div>
-          <div class="flex-1 aspect-[4/5] bg-slate-200 rounded-3xl"></div>
+  <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12 animate-pulse">
+      <div class="lg:col-span-7 flex flex-col md:flex-row gap-4">
+        <div class="hidden md:flex flex-col gap-3 w-24 xl:w-28">
+          @for (i of [1,2,3,4]; track i) {
+          <div class="w-20 h-24 bg-slate-200 rounded-2xl"></div>
+          }
         </div>
-        <div class="lg:col-span-5 space-y-6 mt-8 lg:mt-0">
-          <div class="h-4 w-24 bg-slate-200 rounded-lg"></div>
-          <div class="h-8 w-3/4 bg-slate-200 rounded-xl"></div>
-          <div class="h-10 w-44 bg-slate-200 rounded-xl"></div>
-          <div class="h-16 w-full bg-slate-200 rounded-2xl"></div>
-          <div class="h-28 w-full bg-slate-200 rounded-2xl"></div>
-          <div class="h-14 w-full bg-slate-200 rounded-2xl"></div>
-        </div>
+        <div class="flex-1 aspect-[4/5] bg-slate-200 rounded-3xl"></div>
+      </div>
+      <div class="lg:col-span-5 space-y-6 mt-8 lg:mt-0">
+        <div class="h-4 w-24 bg-slate-200 rounded-lg"></div>
+        <div class="h-8 w-3/4 bg-slate-200 rounded-xl"></div>
+        <div class="h-10 w-44 bg-slate-200 rounded-xl"></div>
+        <div class="h-16 w-full bg-slate-200 rounded-2xl"></div>
+        <div class="h-28 w-full bg-slate-200 rounded-2xl"></div>
+        <div class="h-14 w-full bg-slate-200 rounded-2xl"></div>
       </div>
     </div>
+  </div>
   }
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        3. MAIN PRODUCT LAYOUT (2 COLUMNS ASYMMETRICAL)
        ═══════════════════════════════════════════════════════════════════════ -->
   @if (product && !loading) {
-    <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-      <div class="lg:grid lg:grid-cols-12 lg:gap-12 xl:gap-16">
+  <main class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+    <div class="lg:grid lg:grid-cols-12 lg:gap-12 xl:gap-16">
 
-        <!-- ─────────────────────────────────────────────────────────────────
+      <!-- ─────────────────────────────────────────────────────────────────
              LEFT COLUMN: GALLERY & VISUAL PREVIEWS (Cols 7)
              ───────────────────────────────────────────────────────────────── -->
-        <section aria-label="Galería del Producto" class="lg:col-span-7 flex flex-col md:flex-row gap-4 lg:sticky lg:top-24 h-fit">
-          
-          <!-- Tira vertical de Thumbnails (Desktop >= 768px) -->
-          @if (combinedGallery.length > 1) {
-            <div class="hidden md:flex flex-col gap-3 w-20 xl:w-24 flex-shrink-0 max-h-[640px] overflow-y-auto no-scrollbar py-0.5">
-              @for (item of combinedGallery; track $index; let i = $index) {
-                <button
-                  type="button"
-                  (click)="selectImage(item)"
-                  (mouseenter)="selectImage(item)"
-                  class="group relative aspect-[3/4] w-full rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer focus:outline-none"
-                  [class.border-slate-900]="sliderIndex === i"
-                  [class.ring-4]="sliderIndex === i"
-                  [class.ring-slate-900/10]="sliderIndex === i"
-                  [class.border-slate-200/80]="sliderIndex !== i"
-                  [class.opacity-60]="sliderIndex !== i"
-                  [class.hover:opacity-100]="sliderIndex !== i"
-                  [attr.aria-label]="'Ver imagen ' + (i + 1)"
-                >
-                  <img
-                    [src]="item.url | cloudinary:'w_200,c_fill,q_auto,f_auto'"
-                    [alt]="product.name + ' miniatura ' + (i + 1)"
-                    class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-300"
-                    (error)="onImgError($event)"
-                  />
-                  <!-- Indicador de color en miniatura si pertenece a variante -->
-                  @if (item.colorCode) {
-                    <span
-                      class="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs"
-                      [style.background-color]="getColorHex(item.colorCode)"
-                      [title]="item.colorName ?? ''"
-                    ></span>
-                  }
-                </button>
-              }
-            </div>
+      <section aria-label="Galería del Producto"
+        class="lg:col-span-7 flex flex-col md:flex-row gap-4 lg:sticky lg:top-24 h-fit">
+
+        <!-- Tira vertical de Thumbnails (Desktop >= 768px) -->
+        @if (combinedGallery.length > 1) {
+        <div
+          class="hidden md:flex flex-col gap-3 w-24 xl:w-28 flex-shrink-0 max-h-[640px] overflow-y-auto no-scrollbar py-0.5">
+          @for (item of combinedGallery; track $index; let i = $index) {
+          <button type="button" (click)="selectImage(item)" (mouseenter)="selectImage(item)"
+            class="group relative aspect-[3/4] mx-2 rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer focus:outline-none"
+            [class.border-slate-900]="sliderIndex === i" [class.ring-4]="sliderIndex === i"
+            [class.ring-slate-900/10]="sliderIndex === i" [class.border-slate-200/80]="sliderIndex !== i"
+            [class.opacity-60]="sliderIndex !== i" [class.hover:opacity-100]="sliderIndex !== i"
+            [attr.aria-label]="'Ver imagen ' + (i + 1)">
+            <img [src]="item.url | cloudinary:'w_200,c_fill,q_auto,f_auto'"
+              [alt]="product.name + ' miniatura ' + (i + 1)"
+              class="w-full h-full object-cover object-center group-hover:scale-105 transition duration-300"
+              (error)="onImgError($event)" />
+            <!-- Indicador de color en miniatura si pertenece a variante -->
+            @if (item.colorCode) {
+            <span class="absolute bottom-1 right-1 w-3.5 h-3.5 rounded-full border-2 border-white shadow-xs"
+              [style.background-color]="getColorHex(item.colorCode)" [title]="item.colorName ?? ''"></span>
+            }
+          </button>
           }
+        </div>
+        }
 
-          <!-- Exhibidor Principal (Hero Image) con Magnifier y Lightbox -->
-          <div class="flex-1 flex flex-col gap-3">
-            <figure
-              class="gallery-hero relative aspect-[4/5] sm:aspect-square w-full rounded-3xl bg-slate-50 border border-slate-200/60 overflow-hidden group select-none shadow-sm cursor-zoom-in"
-              (click)="openFullscreen()"
-              (mousemove)="onMouseMove($event)"
-              (mouseenter)="onMouseEnter()"
-              (mouseleave)="onMouseLeave()"
-            >
-              <!-- Imagen principal -->
-              @if (imageKey >= 0) {
-                <img
-                  [src]="(selectedImage || 'assets/images/placeholder.svg') | cloudinary:'w_1200,c_fill,q_auto,f_auto'"
-                  [alt]="product.name"
-                  class="gallery-main-img w-full h-full object-cover object-center transition-all duration-300"
-                  (error)="onImgError($event)"
-                />
-              }
-
-              <!-- Lupa de Zoom Óptico (Magnifier) -->
-              @if (isZooming && selectedImage) {
-                <div
-                  class="absolute inset-0 pointer-events-none z-10 rounded-3xl transition-opacity duration-150"
-                  [style.background-image]="'url(' + selectedImage + ')'"
-                  [style.background-position]="zoomX + '% ' + zoomY + '%'"
-                  style="background-size: 230%; background-repeat: no-repeat;"
-                ></div>
-              }
-
-              <!-- Badges Flotantes Superiores -->
-              <div class="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-none">
-                @if (discountPct > 0) {
-                  <span class="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-md shadow-rose-600/20">
-                    -{{ discountPct }}% OFF
-                  </span>
-                }
-                @if (product.ownerId) {
-                  <span class="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs">
-                    ★ Seller Exclusivo
-                  </span>
-                } @else {
-                  <span class="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs">
-                    Oficial Moorea
-                  </span>
-                }
-              </div>
-
-              <!-- Botones de Acción en Imagen (Zoom Lightbox & Wishlist) -->
-              <div class="absolute top-4 right-4 z-20 flex items-center gap-2">
-                <button
-                  type="button"
-                  (click)="toggleWishlist(); $event.stopPropagation()"
-                  [attr.aria-label]="isWishlisted ? 'Quitar de lista de deseos' : 'Guardar en lista de deseos'"
-                  class="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer"
-                  [class.text-rose-500]="isWishlisted"
-                  [class.text-slate-600]="!isWishlisted"
-                >
-                  <svg class="w-5 h-5 transition-colors" [attr.fill]="isWishlisted ? 'currentColor' : 'none'" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-                  </svg>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="openFullscreen(); $event.stopPropagation()"
-                  aria-label="Ver imagen en tamaño completo"
-                  class="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all hover:scale-110 active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100"
-                  title="Ampliar imagen"
-                >
-                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
-                  </svg>
-                </button>
-              </div>
-
-              <!-- Flechas de navegación (Hover) -->
-              @if (combinedGallery.length > 1) {
-                <button
-                  type="button"
-                  (click)="previousImage(); $event.stopPropagation()"
-                  aria-label="Imagen anterior"
-                  class="absolute left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer"
-                >
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
-                  </svg>
-                </button>
-
-                <button
-                  type="button"
-                  (click)="nextImage(); $event.stopPropagation()"
-                  aria-label="Siguiente imagen"
-                  class="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer"
-                >
-                  <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              }
-
-              <!-- Badges Inferiores de Contador y Color Activo -->
-              <div class="absolute bottom-4 inset-x-4 z-20 flex items-center justify-between pointer-events-none">
-                @if (combinedGallery.length > 1) {
-                  <span class="rounded-full bg-slate-900/70 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-white tracking-widest font-mono">
-                    {{ sliderIndex + 1 }} / {{ combinedGallery.length }}
-                  </span>
-                } @else {
-                  <div></div>
-                }
-
-                @if (selectedColorCode && combinedGallery[sliderIndex]?.colorName) {
-                  <span class="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md px-3 py-1 text-xs font-bold text-slate-900 shadow-sm border border-slate-200/50">
-                    <span
-                      class="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block"
-                      [style.background-color]="getColorHex(combinedGallery[sliderIndex].colorCode)"
-                    ></span>
-                    {{ combinedGallery[sliderIndex].colorName }}
-                  </span>
-                }
-              </div>
-
-            </figure>
-
-            <!-- Tira horizontal de miniaturas en Móvil (< 768px) -->
-            @if (combinedGallery.length > 1) {
-              <div class="md:hidden flex gap-2 overflow-x-auto py-1 no-scrollbar">
-                @for (item of combinedGallery; track $index; let i = $index) {
-                  <button
-                    type="button"
-                    (click)="selectImage(item)"
-                    class="relative aspect-[3/4] w-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition cursor-pointer"
-                    [class.border-slate-900]="sliderIndex === i"
-                    [class.opacity-60]="sliderIndex !== i"
-                  >
-                    <img
-                      [src]="item.url | cloudinary:'w_140,c_fill,q_auto,f_auto'"
-                      [alt]="product.name + ' ' + (i + 1)"
-                      class="w-full h-full object-cover"
-                      (error)="onImgError($event)"
-                    />
-                  </button>
-                }
-              </div>
+        <!-- Exhibidor Principal (Hero Image) con Magnifier y Lightbox -->
+        <div class="flex-1 flex flex-col gap-3">
+          <figure
+            class="gallery-hero relative aspect-[4/5] sm:aspect-square w-full rounded-3xl bg-slate-50 border border-slate-200/60 overflow-hidden group select-none shadow-sm cursor-zoom-in"
+            (click)="openFullscreen()" (mousemove)="onMouseMove($event)" (mouseenter)="onMouseEnter()"
+            (mouseleave)="onMouseLeave()">
+            <!-- Imagen principal -->
+            @if (imageKey >= 0) {
+            <img [src]="(selectedImage || 'assets/images/placeholder.svg') | cloudinary:'w_1200,c_fill,q_auto,f_auto'"
+              [alt]="product.name"
+              class="gallery-main-img w-full h-full object-cover object-center transition-all duration-300"
+              (error)="onImgError($event)" />
             }
 
+            <!-- Lupa de Zoom Óptico (Magnifier) -->
+            @if (isZooming && selectedImage) {
+            <div class="absolute inset-0 pointer-events-none z-10 rounded-3xl transition-opacity duration-150"
+              [style.background-image]="'url(' + selectedImage + ')'"
+              [style.background-position]="zoomX + '% ' + zoomY + '%'"
+              style="background-size: 230%; background-repeat: no-repeat;"></div>
+            }
+
+            <!-- Badges Flotantes Superiores -->
+            <div class="absolute top-4 left-4 z-20 flex flex-col gap-2 pointer-events-none">
+              @if (discountPct > 0) {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-rose-600 px-3 py-1 text-[11px] font-black uppercase tracking-wider text-white shadow-md shadow-rose-600/20">
+                -{{ discountPct }}% OFF
+              </span>
+              }
+              @if (product.ownerId) {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-amber-500 text-white px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs">
+                ★ Seller Exclusivo
+              </span>
+              } @else {
+              <span
+                class="inline-flex items-center gap-1 rounded-full bg-slate-900 text-white px-2.5 py-0.5 text-[10px] font-black uppercase tracking-wider shadow-xs">
+                Oficial Moorea
+              </span>
+              }
+            </div>
+
+            <!-- Botones de Acción en Imagen (Zoom Lightbox & Wishlist) -->
+            <div class="absolute top-4 right-4 z-20 flex items-center gap-2">
+              <button type="button" (click)="toggleWishlist(); $event.stopPropagation()"
+                [attr.aria-label]="isWishlisted ? 'Quitar de lista de deseos' : 'Guardar en lista de deseos'"
+                class="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                [class.text-rose-500]="isWishlisted" [class.text-slate-600]="!isWishlisted">
+                <svg class="w-5 h-5 transition-colors" [attr.fill]="isWishlisted ? 'currentColor' : 'none'"
+                  viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </button>
+
+              <button type="button" (click)="openFullscreen(); $event.stopPropagation()"
+                aria-label="Ver imagen en tamaño completo"
+                class="w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-600 hover:text-slate-900 transition-all hover:scale-110 active:scale-95 cursor-pointer opacity-0 group-hover:opacity-100"
+                title="Ampliar imagen">
+                <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Flechas de navegación (Hover) -->
+            @if (combinedGallery.length > 1) {
+            <button type="button" (click)="previousImage(); $event.stopPropagation()" aria-label="Imagen anterior"
+              class="absolute left-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+
+            <button type="button" (click)="nextImage(); $event.stopPropagation()" aria-label="Siguiente imagen"
+              class="absolute right-3.5 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-white/90 backdrop-blur-md shadow-md flex items-center justify-center text-slate-800 opacity-0 group-hover:opacity-100 transition-all hover:bg-white hover:scale-110 active:scale-95 cursor-pointer">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            }
+
+            <!-- Badges Inferiores de Contador y Color Activo -->
+            <div class="absolute bottom-4 inset-x-4 z-20 flex items-center justify-between pointer-events-none">
+              @if (combinedGallery.length > 1) {
+              <span
+                class="rounded-full bg-slate-900/70 backdrop-blur-md px-3 py-1 text-[11px] font-bold text-white tracking-widest font-mono">
+                {{ sliderIndex + 1 }} / {{ combinedGallery.length }}
+              </span>
+              } @else {
+              <div></div>
+              }
+
+              @if (selectedColorCode && combinedGallery[sliderIndex]?.colorName) {
+              <span
+                class="inline-flex items-center gap-1.5 rounded-full bg-white/90 backdrop-blur-md px-3 py-1 text-xs font-bold text-slate-900 shadow-sm border border-slate-200/50">
+                <span class="w-2.5 h-2.5 rounded-full border border-slate-300 inline-block"
+                  [style.background-color]="getColorHex(combinedGallery[sliderIndex].colorCode)"></span>
+                {{ combinedGallery[sliderIndex].colorName }}
+              </span>
+              }
+            </div>
+
+          </figure>
+
+          <!-- Tira horizontal de miniaturas en Móvil (< 768px) -->
+          @if (combinedGallery.length > 1) {
+          <div class="md:hidden flex gap-2 overflow-x-auto py-1 no-scrollbar">
+            @for (item of combinedGallery; track $index; let i = $index) {
+            <button type="button" (click)="selectImage(item)"
+              class="relative aspect-[3/4] w-16 rounded-xl overflow-hidden border-2 flex-shrink-0 transition cursor-pointer"
+              [class.border-slate-900]="sliderIndex === i" [class.opacity-60]="sliderIndex !== i">
+              <img [src]="item.url | cloudinary:'w_140,c_fill,q_auto,f_auto'" [alt]="product.name + ' ' + (i + 1)"
+                class="w-full h-full object-cover" (error)="onImgError($event)" />
+            </button>
+            }
           </div>
+          }
 
-        </section>
+        </div>
 
-        <!-- ─────────────────────────────────────────────────────────────────
+      </section>
+
+      <!-- ─────────────────────────────────────────────────────────────────
              RIGHT COLUMN: DETAILS, SELECTION & CONVERSION (Cols 5)
              ───────────────────────────────────────────────────────────────── -->
-        <aside aria-label="Detalles de Compra" class="lg:col-span-5 space-y-6 mt-8 lg:mt-0">
+      <aside aria-label="Detalles de Compra" class="lg:col-span-5 space-y-6 mt-8 lg:mt-0">
 
-          <!-- 1. Marca, Modelo & Reviews -->
-          <div class="space-y-2 border-b border-slate-100 pb-5">
-            <div class="flex items-center justify-between gap-3">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-black uppercase tracking-widest text-slate-400">
-                  {{ product.brand || 'Moorea' }}
-                </span>
-                @if (product.model) {
-                  <span class="text-slate-300">&bull;</span>
-                  <span class="text-xs font-bold text-slate-500 uppercase">{{ product.model }}</span>
-                }
-              </div>
-
-              <!-- Rating con scroll a opiniones -->
-              <button
-                type="button"
-                (click)="scrollToReviews()"
-                class="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 transition cursor-pointer group"
-                title="Ver opiniones de clientes"
-              >
-                <div class="flex text-amber-400">
-                  @for (s of getFilledStars(); track s) {
-                    <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  }
-                  @for (s of getEmptyStars(); track s) {
-                    <svg class="w-3.5 h-3.5 text-slate-200 fill-current" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  }
-                </div>
-                <span class="font-bold underline decoration-slate-300 group-hover:decoration-slate-900">
-                  {{ product.rating?.average ? (product.rating?.average | number:'1.1-1') : '5.0' }}
-                  ({{ product.rating?.count || 12 }})
-                </span>
-              </button>
-            </div>
-
-            <!-- Título Principal del Producto -->
-            <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
-              {{ product.name }}
-            </h1>
-
-            <!-- SKU / Código de Modelo -->
-            <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
-              <span>REF:</span>
-              <span class="font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{{ selectedVariant?.sku || product.code }}</span>
-            </div>
-          </div>
-
-          <!-- 2. Bloque de Precio y Financiación -->
-          <div class="rounded-3xl bg-slate-50/80 border border-slate-200/70 p-5 space-y-3">
-            <div class="flex flex-wrap items-baseline gap-3">
-              <span class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
-                S/ {{ finalPrice | number:'1.2-2' }}
+        <!-- 1. Marca, Modelo & Reviews -->
+        <div class="space-y-2 border-b border-slate-100 pb-5">
+          <div class="flex items-center justify-between gap-3">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-black uppercase tracking-widest text-slate-400">
+                {{ product.brand || 'Moorea' }}
               </span>
-              @if (discountPct > 0) {
-                <span class="text-base text-slate-400 line-through font-semibold">
-                  S/ {{ originalPrice | number:'1.2-2' }}
-                </span>
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 text-xs font-black border border-rose-200/60">
-                  Ahorras {{ discountPct }}%
-                </span>
+              @if (product.model) {
+              <span class="text-slate-300">&bull;</span>
+              <span class="text-xs font-bold text-slate-500 uppercase">{{ product.model }}</span>
               }
             </div>
 
-            <!-- Financiación en 3 Cuotas Sin Intereses -->
-            <div class="pt-2 border-t border-slate-200/50 flex items-center gap-2 text-xs text-slate-600 font-semibold">
-              <svg class="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-              </svg>
-              <span>Hasta <strong class="text-slate-900">3 cuotas de S/ {{ installmentAmount | number:'1.2-2' }}</strong> sin intereses</span>
-            </div>
+            <!-- Rating con scroll a opiniones -->
+            <button type="button" (click)="scrollToReviews()"
+              class="flex items-center gap-1.5 text-xs text-slate-600 hover:text-slate-900 transition cursor-pointer group"
+              title="Ver opiniones de clientes">
+              <div class="flex text-amber-400">
+                @for (s of getFilledStars(); track s) {
+                <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                }
+                @for (s of getEmptyStars(); track s) {
+                <svg class="w-3.5 h-3.5 text-slate-200 fill-current" viewBox="0 0 20 20">
+                  <path
+                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                }
+              </div>
+              <span class="font-bold underline decoration-slate-300 group-hover:decoration-slate-900">
+                {{ product.rating?.average ? (product.rating?.average | number:'1.1-1') : '5.0' }}
+                ({{ product.rating?.count || 12 }})
+              </span>
+            </button>
           </div>
 
-          <!-- 3. Selector de Color (Swatches Modernos con Doble Anillo) -->
-          @if (!loadingVariants && uniqueColors.length > 0) {
-            <div class="space-y-3">
-              <div class="flex items-center justify-between text-xs">
-                <span class="font-black uppercase tracking-wider text-slate-400">Color</span>
-                <span class="font-black text-slate-900 capitalize">{{ selectedColorName || 'Selecciona un color' }}</span>
-              </div>
+          <!-- Título Principal del Producto -->
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight leading-snug">
+            {{ product.name }}
+          </h1>
 
-              <div class="flex flex-wrap gap-3">
-                @for (color of uniqueColors; track color.code) {
-                  @let isColorActive = selectedColorCode === color.code;
-                  <button
-                    type="button"
-                    (click)="selectColor(color.code)"
-                    [attr.title]="color.name"
-                    [attr.aria-label]="'Seleccionar color ' + color.name"
-                    [attr.aria-pressed]="isColorActive"
-                    class="relative w-11 h-11 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer flex items-center justify-center shadow-2xs"
-                    [style.background-color]="color.hex"
-                    [class.ring-2]="isColorActive"
-                    [class.ring-offset-2]="isColorActive"
-                    [class.ring-slate-400]="isColorActive"
-                    [class.border]="isLightColor(color.hex)"
-                    [class.border-slate-200]="isLightColor(color.hex)"
-                  >
-                    @if (isColorActive) {
-                      <svg
-                        class="w-5 h-5 drop-shadow-2xs"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                        [class.text-white]="!isLightColor(color.hex)"
-                        [class.text-slate-600]="isLightColor(color.hex)"
-                      >
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                      </svg>
-                    }
-                  </button>
-                }
-              </div>
+          <!-- SKU / Código de Modelo -->
+          <div class="flex items-center gap-2 text-[11px] font-mono text-slate-400">
+            <span>REF:</span>
+            <span class="font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">{{ selectedVariant?.sku ||
+              product.code }}</span>
+          </div>
+        </div>
+
+        <!-- 2. Bloque de Precio y Financiación -->
+        <div class="rounded-3xl bg-slate-50/80 border border-slate-200/70 p-5 space-y-3">
+          <div class="flex flex-wrap items-baseline gap-3">
+            <span class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight font-sans">
+              S/ {{ finalPrice | number:'1.2-2' }}
+            </span>
+            @if (discountPct > 0) {
+            <span class="text-base text-slate-400 line-through font-semibold">
+              S/ {{ originalPrice | number:'1.2-2' }}
+            </span>
+            <span
+              class="inline-flex items-center px-2.5 py-0.5 rounded-full bg-rose-50 text-rose-600 text-xs font-black border border-rose-200/60">
+              Ahorras {{ discountPct }}%
+            </span>
+            }
+          </div>
+
+          <!-- Financiación en 3 Cuotas Sin Intereses -->
+          <div class="pt-2 border-t border-slate-200/50 flex items-center gap-2 text-xs text-slate-600 font-semibold">
+            <svg class="w-4 h-4 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+            </svg>
+            <span>Hasta <strong class="text-slate-900">3 cuotas de S/ {{ installmentAmount | number:'1.2-2' }}</strong>
+              sin intereses</span>
+          </div>
+        </div>
+
+        <!-- 3. Selector de Color (Swatches Modernos con Doble Anillo) -->
+        @if (!loadingVariants && uniqueColors.length > 0) {
+        <div class="space-y-3">
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-black uppercase tracking-wider text-slate-400">Color</span>
+            <span class="font-black text-slate-900 capitalize">{{ selectedColorName || 'Selecciona un color' }}</span>
+          </div>
+
+          <div class="flex flex-wrap gap-3">
+            @for (color of uniqueColors; track color.code) {
+            @let isColorActive = selectedColorCode === color.code;
+            <button type="button" (click)="selectColor(color.code)" [attr.title]="color.name"
+              [attr.aria-label]="'Seleccionar color ' + color.name" [attr.aria-pressed]="isColorActive"
+              class="relative w-11 h-11 rounded-full transition-all duration-200 hover:scale-105 active:scale-95 focus:outline-none cursor-pointer flex items-center justify-center shadow-2xs"
+              [style.background-color]="color.hex" [class.ring-2]="isColorActive" [class.ring-offset-2]="isColorActive"
+              [class.ring-slate-400]="isColorActive" [class.border]="isLightColor(color.hex)"
+              [class.border-slate-200]="isLightColor(color.hex)">
+              @if (isColorActive) {
+              <svg class="w-5 h-5 drop-shadow-2xs" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                stroke-width="2.5" [class.text-white]="!isLightColor(color.hex)"
+                [class.text-slate-600]="isLightColor(color.hex)">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              }
+            </button>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- 4. Selector de Tallas con Botón de Guía de Tallas -->
+        @if (!loadingVariants && availableSizes.length > 0) {
+        <div class="space-y-3 pt-2">
+          <div class="flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span class="font-black uppercase tracking-wider text-slate-400">{{ getSizeLabel(availableSizes[0].type)
+                }}</span>
+              @if (selectedSizeValue) {
+              <span class="font-black text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded-md">{{ selectedSizeValue
+                }}</span>
+              }
             </div>
+
+            <!-- Enlace interactivo a Guía de Tallas -->
+            <button type="button" (click)="openSizeGuide()"
+              class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition cursor-pointer hover:underline">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                  d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+              </svg>
+              Guía de tallas
+            </button>
+          </div>
+
+          <!-- Grid de Botones de Talla -->
+          <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            @for (size of availableSizes; track size.value) {
+            @let isAvailable = isSizeAvailable(size.value);
+            <button type="button" (click)="selectSize(size.value)" [disabled]="!isAvailable"
+              [attr.aria-label]="'Talla ' + size.value" [attr.aria-pressed]="selectedSizeValue === size.value"
+              class="py-3 px-2 rounded-2xl text-xs font-black uppercase transition-all duration-200 text-center cursor-pointer border-2"
+              [class.bg-slate-900]="selectedSizeValue === size.value"
+              [class.text-white]="selectedSizeValue === size.value"
+              [class.border-slate-900]="selectedSizeValue === size.value"
+              [class.shadow-md]="selectedSizeValue === size.value"
+              [class.bg-white]="selectedSizeValue !== size.value && isAvailable"
+              [class.text-slate-800]="selectedSizeValue !== size.value && isAvailable"
+              [class.border-slate-200]="selectedSizeValue !== size.value && isAvailable"
+              [class.hover:border-slate-400]="selectedSizeValue !== size.value && isAvailable"
+              [class.opacity-30]="!isAvailable" [class.line-through]="!isAvailable"
+              [class.cursor-not-allowed]="!isAvailable" [class.bg-slate-50]="!isAvailable">
+              {{ size.value }}
+            </button>
+            }
+          </div>
+        </div>
+        }
+
+        <!-- Alerta de Stock Real / Urgencia sutil -->
+        @if (selectedVariant) {
+        <div class="pt-1">
+          @if (isLowStock) {
+          <div
+            class="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs font-bold text-amber-800">
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+            <span>🔥 ¡Solo quedan <strong>{{ availableStock }} unidades</strong> en stock!</span>
+          </div>
+          } @else {
+          <div class="flex items-center gap-2 text-xs font-bold text-emerald-600">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+            </svg>
+            <span>En stock &bull; Listo para preparación y despacho</span>
+          </div>
           }
+        </div>
+        }
 
-          <!-- 4. Selector de Tallas con Botón de Guía de Tallas -->
-          @if (!loadingVariants && availableSizes.length > 0) {
-            <div class="space-y-3 pt-2">
-              <div class="flex items-center justify-between text-xs">
-                <div class="flex items-center gap-2">
-                  <span class="font-black uppercase tracking-wider text-slate-400">{{ getSizeLabel(availableSizes[0].type) }}</span>
-                  @if (selectedSizeValue) {
-                    <span class="font-black text-slate-900 font-mono bg-slate-100 px-2 py-0.5 rounded-md">{{ selectedSizeValue }}</span>
-                  }
-                </div>
+        <!-- 5. Barra de Acción (Cantidad + Botón Agregar al Carrito) -->
+        <div class="space-y-3 pt-2">
+          <div class="flex items-stretch gap-3">
 
-                <!-- Enlace interactivo a Guía de Tallas -->
-                <button
-                  type="button"
-                  (click)="openSizeGuide()"
-                  class="text-xs font-bold text-slate-600 hover:text-slate-900 flex items-center gap-1 transition cursor-pointer hover:underline"
-                >
-                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                  </svg>
-                  Guía de tallas
-                </button>
-              </div>
-
-              <!-- Grid de Botones de Talla -->
-              <div class="grid grid-cols-4 sm:grid-cols-6 gap-2">
-                @for (size of availableSizes; track size.value) {
-                  @let isAvailable = isSizeAvailable(size.value);
-                  <button
-                    type="button"
-                    (click)="selectSize(size.value)"
-                    [disabled]="!isAvailable"
-                    [attr.aria-label]="'Talla ' + size.value"
-                    [attr.aria-pressed]="selectedSizeValue === size.value"
-                    class="py-3 px-2 rounded-2xl text-xs font-black uppercase transition-all duration-200 text-center cursor-pointer border-2"
-                    [class.bg-slate-900]="selectedSizeValue === size.value"
-                    [class.text-white]="selectedSizeValue === size.value"
-                    [class.border-slate-900]="selectedSizeValue === size.value"
-                    [class.shadow-md]="selectedSizeValue === size.value"
-                    [class.bg-white]="selectedSizeValue !== size.value && isAvailable"
-                    [class.text-slate-800]="selectedSizeValue !== size.value && isAvailable"
-                    [class.border-slate-200]="selectedSizeValue !== size.value && isAvailable"
-                    [class.hover:border-slate-400]="selectedSizeValue !== size.value && isAvailable"
-                    [class.opacity-30]="!isAvailable"
-                    [class.line-through]="!isAvailable"
-                    [class.cursor-not-allowed]="!isAvailable"
-                    [class.bg-slate-50]="!isAvailable"
-                  >
-                    {{ size.value }}
-                  </button>
-                }
-              </div>
+            <!-- Selector de Cantidad -->
+            <div class="flex items-center rounded-2xl bg-slate-100 border border-slate-200/80 p-1 flex-shrink-0">
+              <button type="button" (click)="decreaseQuantity()" [disabled]="quantity <= 1"
+                aria-label="Disminuir cantidad"
+                class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                </svg>
+              </button>
+              <span class="w-10 text-center text-sm font-black text-slate-900 font-mono select-none">{{ quantity
+                }}</span>
+              <button type="button" (click)="increaseQuantity()" aria-label="Aumentar cantidad"
+                class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                </svg>
+              </button>
             </div>
-          }
 
-          <!-- Alerta de Stock Real / Urgencia sutil -->
-          @if (selectedVariant) {
-            <div class="pt-1">
-              @if (isLowStock) {
-                <div class="flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50 border border-amber-200/70 text-xs font-bold text-amber-800">
-                  <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
-                  <span>🔥 ¡Solo quedan <strong>{{ availableStock }} unidades</strong> en stock!</span>
-                </div>
+            <!-- Botón Primario de Agregar al Carrito -->
+            <button type="button" (click)="addToCart()" [disabled]="addingToCart || !canAddToCart"
+              class="flex-1 py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-98 disabled:cursor-not-allowed"
+              [class.bg-slate-900]="canAddToCart" [class.hover:bg-slate-800]="canAddToCart"
+              [class.text-white]="canAddToCart" [class.shadow-slate-900/15]="canAddToCart"
+              [class.bg-slate-200]="!canAddToCart" [class.text-slate-400]="!canAddToCart"
+              [class.shadow-none]="!canAddToCart">
+              @if (addingToCart) {
+              <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
+              </svg>
+              <span>Agregando...</span>
+              } @else if (!canAddToCart && cartValidationMsg) {
+              <span>{{ cartValidationMsg }}</span>
               } @else {
-                <div class="flex items-center gap-2 text-xs font-bold text-emerald-600">
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                  <span>En stock &bull; Listo para preparación y despacho</span>
-                </div>
+              <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+              </svg>
+              <span>Agregar al Carrito &bull; S/ {{ (finalPrice * quantity) | number:'1.2-2' }}</span>
               }
-            </div>
-          }
+            </button>
 
-          <!-- 5. Barra de Acción (Cantidad + Botón Agregar al Carrito) -->
-          <div class="space-y-3 pt-2">
-            <div class="flex items-stretch gap-3">
-              
-              <!-- Selector de Cantidad -->
-              <div class="flex items-center rounded-2xl bg-slate-100 border border-slate-200/80 p-1 flex-shrink-0">
-                <button
-                  type="button"
-                  (click)="decreaseQuantity()"
-                  [disabled]="quantity <= 1"
-                  aria-label="Disminuir cantidad"
-                  class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition disabled:opacity-30 disabled:hover:bg-transparent cursor-pointer"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
-                  </svg>
-                </button>
-                <span class="w-10 text-center text-sm font-black text-slate-900 font-mono select-none">{{ quantity }}</span>
-                <button
-                  type="button"
-                  (click)="increaseQuantity()"
-                  aria-label="Aumentar cantidad"
-                  class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-600 hover:text-slate-900 hover:bg-white transition cursor-pointer"
-                >
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
-                  </svg>
-                </button>
-              </div>
-
-              <!-- Botón Primario de Agregar al Carrito -->
-              <button
-                type="button"
-                (click)="addToCart()"
-                [disabled]="addingToCart || !canAddToCart"
-                class="flex-1 py-4 px-6 rounded-2xl text-xs font-black uppercase tracking-wider transition-all duration-200 flex items-center justify-center gap-2 shadow-lg cursor-pointer active:scale-98 disabled:cursor-not-allowed"
-                [class.bg-slate-900]="canAddToCart"
-                [class.hover:bg-slate-800]="canAddToCart"
-                [class.text-white]="canAddToCart"
-                [class.shadow-slate-900/15]="canAddToCart"
-                [class.bg-slate-200]="!canAddToCart"
-                [class.text-slate-400]="!canAddToCart"
-                [class.shadow-none]="!canAddToCart"
-              >
-                @if (addingToCart) {
-                  <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-                  </svg>
-                  <span>Agregando...</span>
-                } @else if (!canAddToCart && cartValidationMsg) {
-                  <span>{{ cartValidationMsg }}</span>
-                } @else {
-                  <svg class="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                  </svg>
-                  <span>Agregar al Carrito &bull; S/ {{ (finalPrice * quantity) | number:'1.2-2' }}</span>
-                }
-              </button>
-
-            </div>
           </div>
+        </div>
 
-          <!-- 6. Disponibilidad en Tiendas Físicas (Geo) -->
-          @if (selectedVariant && $any(selectedVariant).storeAvailability?.length > 0) {
-            <div class="rounded-3xl bg-slate-50 border border-slate-200/70 p-5 space-y-3">
-              <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
-                <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Disponibilidad y Entrega en Tienda
-              </h3>
+        <!-- 6. Disponibilidad en Tiendas Físicas (Geo) -->
+        @if (selectedVariant && $any(selectedVariant).storeAvailability?.length > 0) {
+        <div class="rounded-3xl bg-slate-50 border border-slate-200/70 p-5 space-y-3">
+          <h3 class="text-xs font-black uppercase tracking-wider text-slate-800 flex items-center gap-2">
+            <svg class="w-4 h-4 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            Disponibilidad y Entrega en Tienda
+          </h3>
 
-              <div class="space-y-3 divide-y divide-slate-200/60">
-                @for (store of $any(selectedVariant).storeAvailability; track store.storeCode; let first = $first) {
-                  <div class="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
-                    <div>
-                      <div class="flex items-center gap-1.5 font-bold text-slate-900">
-                        <span>{{ store.storeName }}</span>
-                        @if (first) {
-                          <span class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Más cercana</span>
-                        }
-                      </div>
-                      <p class="text-[11px] text-slate-500">{{ store.address }} &bull; {{ store.distanceKm | number:'1.1-1' }} km</p>
-                    </div>
-
-                    <div class="text-right">
-                      <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
-                            [class]="store.availableQty > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'">
-                        {{ store.availableQty > 0 ? store.availableQty + ' disp.' : 'Agotado' }}
-                      </span>
-                    </div>
-                  </div>
-                }
-              </div>
-            </div>
-          }
-
-          <!-- 7. Beneficios y Sellos de Confianza (4 Micro-Cards) -->
-          <div class="grid grid-cols-2 gap-2.5 pt-2">
-            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-              <svg class="w-5 h-5 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+          <div class="space-y-3 divide-y divide-slate-200/60">
+            @for (store of $any(selectedVariant).storeAvailability; track store.storeCode; let first = $first) {
+            <div class="pt-3 first:pt-0 flex items-center justify-between gap-3 text-xs">
               <div>
-                <p class="text-xs font-bold text-slate-900">Garantía Oficial</p>
-                <p class="text-[10px] text-slate-500">100% Original</p>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-              <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-              <div>
-                <p class="text-xs font-bold text-slate-900">Cambios Gratis</p>
-                <p class="text-[10px] text-slate-500">30 días de plazo</p>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-              <svg class="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-              <div>
-                <p class="text-xs font-bold text-slate-900">Pago Seguro</p>
-                <p class="text-[10px] text-slate-500">Cifrado SSL & PCI</p>
-              </div>
-            </div>
-
-            <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
-              <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
-              <div>
-                <p class="text-xs font-bold text-slate-900">Envío Rápido</p>
-                <p class="text-[10px] text-slate-500">A todo el Perú</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- 8. Acordeones Modernos de Información Técnica (Zara / Farfetch Style) -->
-          <div class="border-t border-slate-200 divide-y divide-slate-100 pt-2">
-            
-            <!-- Acordeón 1: Descripción -->
-            @if (product.description) {
-              <div class="py-4">
-                <button
-                  type="button"
-                  (click)="toggleAccordion('description')"
-                  class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left"
-                >
-                  <span>Descripción y Detalles</span>
-                  <svg class="w-4 h-4 transition-transform duration-200 text-slate-400" [class.rotate-180]="openAccordions['description']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                @if (openAccordions['description']) {
-                  <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
-                    <p>{{ product.description }}</p>
-                    @if (product.tags.length) {
-                      <div class="flex flex-wrap gap-1.5 pt-2">
-                        @for (t of product.tags; track t) {
-                          <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">#{{ t }}</span>
-                        }
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-            }
-
-            <!-- Acordeón 2: Especificaciones Técnicas -->
-            @if (getSpecificationsArray().length > 0) {
-              <div class="py-4">
-                <button
-                  type="button"
-                  (click)="toggleAccordion('specifications')"
-                  class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left"
-                >
-                  <span>Especificaciones Técnicas</span>
-                  <svg class="w-4 h-4 transition-transform duration-200 text-slate-400" [class.rotate-180]="openAccordions['specifications']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                  </svg>
-                </button>
-                @if (openAccordions['specifications']) {
-                  <div class="mt-3 grid grid-cols-2 gap-3 text-xs">
-                    @for (spec of getSpecificationsArray(); track spec.key) {
-                      <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                        <dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ spec.key }}</dt>
-                        <dd class="text-xs font-bold text-slate-800 mt-0.5">{{ spec.value }}</dd>
-                      </div>
-                    }
-                  </div>
-                }
-              </div>
-            }
-
-            <!-- Acordeón 3: Garantía y Compromiso -->
-            <div class="py-4">
-              <button
-                type="button"
-                (click)="toggleAccordion('warranty')"
-                class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left"
-              >
-                <span>Garantía y Póliza</span>
-                <svg class="w-4 h-4 transition-transform duration-200 text-slate-400" [class.rotate-180]="openAccordions['warranty']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              @if (openAccordions['warranty']) {
-                <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
-                  @if (product.warranty) {
-                    <p class="font-bold text-slate-900">
-                      {{ product.warranty.duration }} {{ getWarrantyUnitLabel(product.warranty.unit) }} &bull; {{ getWarrantyTypeLabel(product.warranty.type) }}
-                    </p>
-                    <p>{{ product.warranty.description || 'Garantía oficial para asegurar el óptimo funcionamiento del producto.' }}</p>
-                  } @else {
-                    <p>Todos los productos comercializados en Moorea cuentan con garantía oficial de fábrica para asegurar su originalidad y óptimo rendimiento.</p>
+                <div class="flex items-center gap-1.5 font-bold text-slate-900">
+                  <span>{{ store.storeName }}</span>
+                  @if (first) {
+                  <span
+                    class="text-[9px] font-black uppercase px-1.5 py-0.5 rounded-full bg-indigo-100 text-indigo-700">Más
+                    cercana</span>
                   }
                 </div>
-              }
-            </div>
+                <p class="text-[11px] text-slate-500">{{ store.address }} &bull; {{ store.distanceKm | number:'1.1-1' }}
+                  km</p>
+              </div>
 
-            <!-- Acordeón 4: Envíos y Métodos de Pago -->
-            <div class="py-4">
-              <button
-                type="button"
-                (click)="toggleAccordion('shipping')"
-                class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left"
-              >
-                <span>Envíos, Retiro y Pagos</span>
-                <svg class="w-4 h-4 transition-transform duration-200 text-slate-400" [class.rotate-180]="openAccordions['shipping']" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
-                </svg>
-              </button>
-              @if (openAccordions['shipping']) {
-                <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
-                  <p><strong>Envíos a Domicilio:</strong> Despachamos a Lima y provincias mediante couriers autorizados con número de seguimiento en tiempo real.</p>
-                  <p><strong>Retiro en Tienda:</strong> Disponible sin costo en tiendas autorizadas según stock de cada sede.</p>
-                  <p><strong>Medios de Pago:</strong> Tarjetas de crédito/débito (Visa, Mastercard, Diners, Amex), billeteras digitales y pasarela Izipay con protección anti-fraude.</p>
-                </div>
-              }
+              <div class="text-right">
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black"
+                  [class]="store.availableQty > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'">
+                  {{ store.availableQty > 0 ? store.availableQty + ' disp.' : 'Agotado' }}
+                </span>
+              </div>
             </div>
+            }
+          </div>
+        </div>
+        }
 
+        <!-- 7. Beneficios y Sellos de Confianza (4 Micro-Cards) -->
+        <div class="grid grid-cols-2 gap-2.5 pt-2">
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-indigo-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <div>
+              <p class="text-xs font-bold text-slate-900">Garantía Oficial</p>
+              <p class="text-[10px] text-slate-500">100% Original</p>
+            </div>
           </div>
 
-        </aside>
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+            <div>
+              <p class="text-xs font-bold text-slate-900">Cambios Gratis</p>
+              <p class="text-[10px] text-slate-500">30 días de plazo</p>
+            </div>
+          </div>
 
-      </div>
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-sky-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <div>
+              <p class="text-xs font-bold text-slate-900">Pago Seguro</p>
+              <p class="text-[10px] text-slate-500">Cifrado SSL & PCI</p>
+            </div>
+          </div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════════
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-100 flex items-center gap-2.5">
+            <svg class="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+              stroke-width="1.8">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            <div>
+              <p class="text-xs font-bold text-slate-900">Envío Rápido</p>
+              <p class="text-[10px] text-slate-500">A todo el Perú</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- 8. Acordeones Modernos de Información Técnica (Zara / Farfetch Style) -->
+        <div class="border-t border-slate-200 divide-y divide-slate-100 pt-2">
+
+          <!-- Acordeón 1: Descripción -->
+          @if (product.description) {
+          <div class="py-4">
+            <button type="button" (click)="toggleAccordion('description')"
+              class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left">
+              <span>Descripción y Detalles</span>
+              <svg class="w-4 h-4 transition-transform duration-200 text-slate-400"
+                [class.rotate-180]="openAccordions['description']" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            @if (openAccordions['description']) {
+            <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
+              <p>{{ product.description }}</p>
+              @if (product.tags.length) {
+              <div class="flex flex-wrap gap-1.5 pt-2">
+                @for (t of product.tags; track t) {
+                <span class="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">#{{ t }}</span>
+                }
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          <!-- Acordeón 2: Especificaciones Técnicas -->
+          @if (getSpecificationsArray().length > 0) {
+          <div class="py-4">
+            <button type="button" (click)="toggleAccordion('specifications')"
+              class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left">
+              <span>Especificaciones Técnicas</span>
+              <svg class="w-4 h-4 transition-transform duration-200 text-slate-400"
+                [class.rotate-180]="openAccordions['specifications']" fill="none" viewBox="0 0 24 24"
+                stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            @if (openAccordions['specifications']) {
+            <div class="mt-3 grid grid-cols-2 gap-3 text-xs">
+              @for (spec of getSpecificationsArray(); track spec.key) {
+              <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-100">
+                <dt class="text-[10px] font-bold uppercase tracking-wider text-slate-400">{{ spec.key }}</dt>
+                <dd class="text-xs font-bold text-slate-800 mt-0.5">{{ spec.value }}</dd>
+              </div>
+              }
+            </div>
+            }
+          </div>
+          }
+
+          <!-- Acordeón 3: Garantía y Compromiso -->
+          <div class="py-4">
+            <button type="button" (click)="toggleAccordion('warranty')"
+              class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left">
+              <span>Garantía y Póliza</span>
+              <svg class="w-4 h-4 transition-transform duration-200 text-slate-400"
+                [class.rotate-180]="openAccordions['warranty']" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            @if (openAccordions['warranty']) {
+            <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
+              @if (product.warranty) {
+              <p class="font-bold text-slate-900">
+                {{ product.warranty.duration }} {{ getWarrantyUnitLabel(product.warranty.unit) }} &bull; {{
+                getWarrantyTypeLabel(product.warranty.type) }}
+              </p>
+              <p>{{ product.warranty.description || 'Garantía oficial para asegurar el óptimo funcionamiento del
+                producto.' }}</p>
+              } @else {
+              <p>Todos los productos comercializados en Moorea cuentan con garantía oficial de fábrica para asegurar su
+                originalidad y óptimo rendimiento.</p>
+              }
+            </div>
+            }
+          </div>
+
+          <!-- Acordeón 4: Envíos y Métodos de Pago -->
+          <div class="py-4">
+            <button type="button" (click)="toggleAccordion('shipping')"
+              class="w-full flex items-center justify-between text-xs font-black uppercase tracking-wider text-slate-900 cursor-pointer text-left">
+              <span>Envíos, Retiro y Pagos</span>
+              <svg class="w-4 h-4 transition-transform duration-200 text-slate-400"
+                [class.rotate-180]="openAccordions['shipping']" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            @if (openAccordions['shipping']) {
+            <div class="mt-3 text-xs text-slate-600 leading-relaxed space-y-2">
+              <p><strong>Envíos a Domicilio:</strong> Despachamos a Lima y provincias mediante couriers autorizados con
+                número de seguimiento en tiempo real.</p>
+              <p><strong>Retiro en Tienda:</strong> Disponible sin costo en tiendas autorizadas según stock de cada
+                sede.</p>
+              <p><strong>Medios de Pago:</strong> Tarjetas de crédito/débito (Visa, Mastercard, Diners, Amex),
+                billeteras digitales y pasarela Izipay con protección anti-fraude.</p>
+            </div>
+            }
+          </div>
+
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════
            4. PRODUCTOS RELACIONADOS & RESEÑAS
            ═══════════════════════════════════════════════════════════════════════ -->
-      <section aria-label="Productos Relacionados" class="mt-16 pt-12 border-t border-slate-100">
-        <app-related-products [product]="product" />
-      </section>
+    <section aria-label="Productos Relacionados" class="mt-16 pt-12 border-t border-slate-100">
+      <app-related-products [product]="product" />
+    </section>
 
-      <section id="reviews-section" aria-label="Opiniones de Clientes" class="mt-16 pt-12 border-t border-slate-100">
-        <app-product-reviews [productId]="product._id" />
-      </section>
+    <section id="reviews-section" aria-label="Opiniones de Clientes" class="mt-16 pt-12 border-t border-slate-100">
+      <app-product-reviews [productId]="product._id" />
+    </section>
 
-    </main>
+  </main>
   }
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        5. GUÍA DE TALLAS MODAL (SIZE GUIDE)
        ═══════════════════════════════════════════════════════════════════════ -->
   @if (showSizeGuide) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-      <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 max-h-[90vh] overflow-y-auto">
-        <div class="flex items-center justify-between border-b border-slate-100 pb-4">
-          <div class="flex items-center gap-2">
-            <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            <h3 class="text-base font-black text-slate-900 uppercase tracking-wider">Guía Oficial de Tallas</h3>
-          </div>
-          <button
-            type="button"
-            (click)="closeSizeGuide()"
-            class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
-          >
-            ✕
-          </button>
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
+    <div
+      class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 space-y-6 max-h-[90vh] overflow-y-auto">
+      <div class="flex items-center justify-between border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-2">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round"
+              d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          <h3 class="text-base font-black text-slate-900 uppercase tracking-wider">Guía Oficial de Tallas</h3>
         </div>
-
-        <!-- Selector de Categoría Calzado / Ropa -->
-        <div class="flex rounded-2xl bg-slate-100 p-1">
-          <button
-            type="button"
-            (click)="sizeGuideTab = 'footwear'"
-            class="flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
-            [class.bg-white]="sizeGuideTab === 'footwear'"
-            [class.text-slate-900]="sizeGuideTab === 'footwear'"
-            [class.shadow-xs]="sizeGuideTab === 'footwear'"
-            [class.text-slate-500]="sizeGuideTab !== 'footwear'"
-          >
-            Calzado (Zapatillas)
-          </button>
-          <button
-            type="button"
-            (click)="sizeGuideTab = 'clothing'"
-            class="flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
-            [class.bg-white]="sizeGuideTab === 'clothing'"
-            [class.text-slate-900]="sizeGuideTab === 'clothing'"
-            [class.shadow-xs]="sizeGuideTab === 'clothing'"
-            [class.text-slate-500]="sizeGuideTab !== 'clothing'"
-          >
-            Ropa (Prendas)
-          </button>
-        </div>
-
-        <!-- Tabla de Calzado -->
-        @if (sizeGuideTab === 'footwear') {
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left">
-              <thead class="bg-slate-50 text-slate-400 uppercase font-black tracking-wider border-b border-slate-100">
-                <tr>
-                  <th class="py-2.5 px-3">EU</th>
-                  <th class="py-2.5 px-3">US Men</th>
-                  <th class="py-2.5 px-3">US Women</th>
-                  <th class="py-2.5 px-3">UK</th>
-                  <th class="py-2.5 px-3 text-right">CM</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
-                <tr><td class="py-2 px-3 font-bold text-slate-900">36</td><td class="py-2 px-3">4.5</td><td class="py-2 px-3">6.0</td><td class="py-2 px-3">3.5</td><td class="py-2 px-3 text-right font-mono">23.0</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">37</td><td class="py-2 px-3">5.0</td><td class="py-2 px-3">6.5</td><td class="py-2 px-3">4.0</td><td class="py-2 px-3 text-right font-mono">23.5</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">38</td><td class="py-2 px-3">5.5</td><td class="py-2 px-3">7.0</td><td class="py-2 px-3">4.5</td><td class="py-2 px-3 text-right font-mono">24.0</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">39</td><td class="py-2 px-3">6.5</td><td class="py-2 px-3">8.0</td><td class="py-2 px-3">5.5</td><td class="py-2 px-3 text-right font-mono">24.5</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">40</td><td class="py-2 px-3">7.5</td><td class="py-2 px-3">9.0</td><td class="py-2 px-3">6.5</td><td class="py-2 px-3 text-right font-mono">25.5</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">41</td><td class="py-2 px-3">8.0</td><td class="py-2 px-3">9.5</td><td class="py-2 px-3">7.0</td><td class="py-2 px-3 text-right font-mono">26.0</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">42</td><td class="py-2 px-3">8.5</td><td class="py-2 px-3">10.0</td><td class="py-2 px-3">7.5</td><td class="py-2 px-3 text-right font-mono">26.5</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">43</td><td class="py-2 px-3">9.5</td><td class="py-2 px-3">11.0</td><td class="py-2 px-3">8.5</td><td class="py-2 px-3 text-right font-mono">27.5</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">44</td><td class="py-2 px-3">10.0</td><td class="py-2 px-3">11.5</td><td class="py-2 px-3">9.0</td><td class="py-2 px-3 text-right font-mono">28.0</td></tr>
-              </tbody>
-            </table>
-          </div>
-        } @else {
-          <div class="overflow-x-auto">
-            <table class="w-full text-xs text-left">
-              <thead class="bg-slate-50 text-slate-400 uppercase font-black tracking-wider border-b border-slate-100">
-                <tr>
-                  <th class="py-2.5 px-3">Talla</th>
-                  <th class="py-2.5 px-3">Pecho (cm)</th>
-                  <th class="py-2.5 px-3">Cintura (cm)</th>
-                  <th class="py-2.5 px-3 text-right">Cadera (cm)</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
-                <tr><td class="py-2 px-3 font-bold text-slate-900">XS</td><td class="py-2 px-3">82 - 87</td><td class="py-2 px-3">67 - 72</td><td class="py-2 px-3 text-right font-mono">84 - 89</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">S</td><td class="py-2 px-3">88 - 93</td><td class="py-2 px-3">73 - 78</td><td class="py-2 px-3 text-right font-mono">90 - 95</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">M</td><td class="py-2 px-3">94 - 99</td><td class="py-2 px-3">79 - 84</td><td class="py-2 px-3 text-right font-mono">96 - 101</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">L</td><td class="py-2 px-3">100 - 105</td><td class="py-2 px-3">85 - 90</td><td class="py-2 px-3 text-right font-mono">102 - 107</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">XL</td><td class="py-2 px-3">106 - 111</td><td class="py-2 px-3">91 - 96</td><td class="py-2 px-3 text-right font-mono">108 - 113</td></tr>
-                <tr><td class="py-2 px-3 font-bold text-slate-900">XXL</td><td class="py-2 px-3">112 - 118</td><td class="py-2 px-3">97 - 102</td><td class="py-2 px-3 text-right font-mono">114 - 119</td></tr>
-              </tbody>
-            </table>
-          </div>
-        }
-
-        <p class="text-[11px] text-slate-400 italic">
-          Tip: Si estás entre dos tallas, te sugerimos pedir la mayor para un calce más cómodo.
-        </p>
-
-        <button
-          type="button"
-          (click)="closeSizeGuide()"
-          class="w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition cursor-pointer"
-        >
-          Entendido
+        <button type="button" (click)="closeSizeGuide()"
+          class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer">
+          ✕
         </button>
       </div>
+
+      <!-- Selector de Categoría Calzado / Ropa -->
+      <div class="flex rounded-2xl bg-slate-100 p-1">
+        <button type="button" (click)="sizeGuideTab = 'footwear'"
+          class="flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+          [class.bg-white]="sizeGuideTab === 'footwear'" [class.text-slate-900]="sizeGuideTab === 'footwear'"
+          [class.shadow-xs]="sizeGuideTab === 'footwear'" [class.text-slate-500]="sizeGuideTab !== 'footwear'">
+          Calzado (Zapatillas)
+        </button>
+        <button type="button" (click)="sizeGuideTab = 'clothing'"
+          class="flex-1 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer"
+          [class.bg-white]="sizeGuideTab === 'clothing'" [class.text-slate-900]="sizeGuideTab === 'clothing'"
+          [class.shadow-xs]="sizeGuideTab === 'clothing'" [class.text-slate-500]="sizeGuideTab !== 'clothing'">
+          Ropa (Prendas)
+        </button>
+      </div>
+
+      <!-- Tabla de Calzado -->
+      @if (sizeGuideTab === 'footwear') {
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-400 uppercase font-black tracking-wider border-b border-slate-100">
+            <tr>
+              <th class="py-2.5 px-3">EU</th>
+              <th class="py-2.5 px-3">US Men</th>
+              <th class="py-2.5 px-3">US Women</th>
+              <th class="py-2.5 px-3">UK</th>
+              <th class="py-2.5 px-3 text-right">CM</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">36</td>
+              <td class="py-2 px-3">4.5</td>
+              <td class="py-2 px-3">6.0</td>
+              <td class="py-2 px-3">3.5</td>
+              <td class="py-2 px-3 text-right font-mono">23.0</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">37</td>
+              <td class="py-2 px-3">5.0</td>
+              <td class="py-2 px-3">6.5</td>
+              <td class="py-2 px-3">4.0</td>
+              <td class="py-2 px-3 text-right font-mono">23.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">38</td>
+              <td class="py-2 px-3">5.5</td>
+              <td class="py-2 px-3">7.0</td>
+              <td class="py-2 px-3">4.5</td>
+              <td class="py-2 px-3 text-right font-mono">24.0</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">39</td>
+              <td class="py-2 px-3">6.5</td>
+              <td class="py-2 px-3">8.0</td>
+              <td class="py-2 px-3">5.5</td>
+              <td class="py-2 px-3 text-right font-mono">24.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">40</td>
+              <td class="py-2 px-3">7.5</td>
+              <td class="py-2 px-3">9.0</td>
+              <td class="py-2 px-3">6.5</td>
+              <td class="py-2 px-3 text-right font-mono">25.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">41</td>
+              <td class="py-2 px-3">8.0</td>
+              <td class="py-2 px-3">9.5</td>
+              <td class="py-2 px-3">7.0</td>
+              <td class="py-2 px-3 text-right font-mono">26.0</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">42</td>
+              <td class="py-2 px-3">8.5</td>
+              <td class="py-2 px-3">10.0</td>
+              <td class="py-2 px-3">7.5</td>
+              <td class="py-2 px-3 text-right font-mono">26.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">43</td>
+              <td class="py-2 px-3">9.5</td>
+              <td class="py-2 px-3">11.0</td>
+              <td class="py-2 px-3">8.5</td>
+              <td class="py-2 px-3 text-right font-mono">27.5</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">44</td>
+              <td class="py-2 px-3">10.0</td>
+              <td class="py-2 px-3">11.5</td>
+              <td class="py-2 px-3">9.0</td>
+              <td class="py-2 px-3 text-right font-mono">28.0</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      } @else {
+      <div class="overflow-x-auto">
+        <table class="w-full text-xs text-left">
+          <thead class="bg-slate-50 text-slate-400 uppercase font-black tracking-wider border-b border-slate-100">
+            <tr>
+              <th class="py-2.5 px-3">Talla</th>
+              <th class="py-2.5 px-3">Pecho (cm)</th>
+              <th class="py-2.5 px-3">Cintura (cm)</th>
+              <th class="py-2.5 px-3 text-right">Cadera (cm)</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-100 font-semibold text-slate-700">
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">XS</td>
+              <td class="py-2 px-3">82 - 87</td>
+              <td class="py-2 px-3">67 - 72</td>
+              <td class="py-2 px-3 text-right font-mono">84 - 89</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">S</td>
+              <td class="py-2 px-3">88 - 93</td>
+              <td class="py-2 px-3">73 - 78</td>
+              <td class="py-2 px-3 text-right font-mono">90 - 95</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">M</td>
+              <td class="py-2 px-3">94 - 99</td>
+              <td class="py-2 px-3">79 - 84</td>
+              <td class="py-2 px-3 text-right font-mono">96 - 101</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">L</td>
+              <td class="py-2 px-3">100 - 105</td>
+              <td class="py-2 px-3">85 - 90</td>
+              <td class="py-2 px-3 text-right font-mono">102 - 107</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">XL</td>
+              <td class="py-2 px-3">106 - 111</td>
+              <td class="py-2 px-3">91 - 96</td>
+              <td class="py-2 px-3 text-right font-mono">108 - 113</td>
+            </tr>
+            <tr>
+              <td class="py-2 px-3 font-bold text-slate-900">XXL</td>
+              <td class="py-2 px-3">112 - 118</td>
+              <td class="py-2 px-3">97 - 102</td>
+              <td class="py-2 px-3 text-right font-mono">114 - 119</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      }
+
+      <p class="text-[11px] text-slate-400 italic">
+        Tip: Si estás entre dos tallas, te sugerimos pedir la mayor para un calce más cómodo.
+      </p>
+
+      <button type="button" (click)="closeSizeGuide()"
+        class="w-full py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-wider hover:bg-slate-800 transition cursor-pointer">
+        Entendido
+      </button>
     </div>
+  </div>
   }
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        6. LIGHTBOX MODAL (PANTALLA COMPLETA)
        ═══════════════════════════════════════════════════════════════════════ -->
   @if (showLightbox) {
-    <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 animate-fade-in" (click)="closeLightbox()">
-      <button
-        type="button"
-        (click)="closeLightbox()"
-        class="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer text-lg font-bold"
-      >
-        ✕
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/90 backdrop-blur-md p-4 animate-fade-in"
+    (click)="closeLightbox()">
+    <button type="button" (click)="closeLightbox()"
+      class="absolute top-6 right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center transition cursor-pointer text-lg font-bold">
+      ✕
+    </button>
+
+    <div class="relative max-w-4xl max-h-[85vh] flex items-center justify-center" (click)="$event.stopPropagation()">
+      <img [src]="selectedImage | cloudinary:'w_1600,c_fit,q_auto,f_auto'" [alt]="product?.name"
+        class="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl" />
+
+      @if (combinedGallery.length > 1) {
+      <button type="button" (click)="previousImage()"
+        class="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition cursor-pointer">
+        ‹
       </button>
-
-      <div class="relative max-w-4xl max-h-[85vh] flex items-center justify-center" (click)="$event.stopPropagation()">
-        <img
-          [src]="selectedImage | cloudinary:'w_1600,c_fit,q_auto,f_auto'"
-          [alt]="product?.name"
-          class="max-w-full max-h-[80vh] object-contain rounded-2xl shadow-2xl"
-        />
-
-        @if (combinedGallery.length > 1) {
-          <button
-            type="button"
-            (click)="previousImage()"
-            class="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition cursor-pointer"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            (click)="nextImage()"
-            class="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition cursor-pointer"
-          >
-            ›
-          </button>
-        }
-      </div>
+      <button type="button" (click)="nextImage()"
+        class="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center transition cursor-pointer">
+        ›
+      </button>
+      }
     </div>
+  </div>
   }
 
   <!-- ═══════════════════════════════════════════════════════════════════════
        7. STICKY MOBILE ACTION BAR (< 1024px)
        ═══════════════════════════════════════════════════════════════════════ -->
   @if (product && showStickyBar) {
-    <aside class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-3 shadow-2xl animate-slide-up flex items-center justify-between gap-3">
-      <div class="flex items-center gap-2.5 overflow-hidden">
-        <img
-          [src]="(selectedImage || product.gallery[0]) | cloudinary:'w_100,c_fill,q_auto,f_auto'"
-          [alt]="product.name"
-          class="w-11 h-11 rounded-xl object-cover border border-slate-200/60 flex-shrink-0"
-        />
-        <div class="overflow-hidden">
-          <p class="text-xs font-black text-slate-900 truncate leading-tight">{{ product.name }}</p>
-          <p class="text-xs font-black text-slate-900 font-sans">S/ {{ finalPrice | number:'1.2-2' }}</p>
-        </div>
+  <aside
+    class="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/80 px-4 py-3 shadow-2xl animate-slide-up flex items-center justify-between gap-3">
+    <div class="flex items-center gap-2.5 overflow-hidden">
+      <img [src]="(selectedImage || product.gallery[0]) | cloudinary:'w_100,c_fill,q_auto,f_auto'" [alt]="product.name"
+        class="w-11 h-11 rounded-xl object-cover border border-slate-200/60 flex-shrink-0" />
+      <div class="overflow-hidden">
+        <p class="text-xs font-black text-slate-900 truncate leading-tight">{{ product.name }}</p>
+        <p class="text-xs font-black text-slate-900 font-sans">S/ {{ finalPrice | number:'1.2-2' }}</p>
       </div>
+    </div>
 
-      <button
-        type="button"
-        (click)="addToCart()"
-        [disabled]="addingToCart || !canAddToCart"
-        class="py-3 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider transition shadow-md flex-shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-      >
-        @if (addingToCart) {
-          <span>Agregando...</span>
-        } @else {
-          <span>Agregar</span>
-        }
-      </button>
-    </aside>
+    <button type="button" (click)="addToCart()" [disabled]="addingToCart || !canAddToCart"
+      class="py-3 px-5 rounded-2xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider transition shadow-md flex-shrink-0 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+      @if (addingToCart) {
+      <span>Agregando...</span>
+      } @else {
+      <span>Agregar</span>
+      }
+    </button>
+  </aside>
   }
 
 </div>
