@@ -20,19 +20,48 @@
       </div>
 
       <!-- Medidor de Calidad / Score de Ficha -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 flex items-center gap-4 shrink-0 sm:min-w-[280px]">
-        <div class="w-12 h-12 rounded-xl bg-white text-slate-950 flex items-center justify-center font-black font-mono text-base shrink-0 shadow-sm">
+      <div class="bg-slate-900/95 border border-slate-800/90 rounded-2xl p-4 flex items-center gap-4 shrink-0 w-full sm:w-auto sm:min-w-[320px] shadow-sm backdrop-blur-xs">
+        <div class="w-12 h-12 rounded-xl bg-white text-slate-950 flex items-center justify-center font-black font-mono text-base shrink-0 shadow-xs ring-1 ring-white/10">
           {{ completionPercentage }}%
         </div>
-        <div class="space-y-1.5 flex-1">
-          <div class="flex items-center justify-between text-xs">
-            <span class="font-bold text-slate-200">Completitud de Ficha</span>
-            <span class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">
+        <div class="space-y-2 flex-1 min-w-0">
+          <div class="flex items-center justify-between gap-3">
+            <span class="text-xs font-bold text-slate-200 tracking-tight">Completitud de Ficha</span>
+            <span class="text-[10px] font-mono text-slate-400 font-semibold shrink-0">{{ completionPercentage }}/100</span>
+          </div>
+          <div class="w-full bg-slate-800/90 h-2 rounded-full overflow-hidden p-0.5 ring-1 ring-white/5">
+            <div
+              class="h-full rounded-full transition-all duration-500 ease-out"
+              [class.bg-emerald-400]="completionPercentage >= 80"
+              [class.shadow-[0_0_8px_rgba(52,211,153,0.5)]]="completionPercentage >= 80"
+              [class.bg-amber-400]="completionPercentage >= 50 && completionPercentage < 80"
+              [class.shadow-[0_0_8px_rgba(251,191,36,0.5)]]="completionPercentage >= 50 && completionPercentage < 80"
+              [class.bg-slate-500]="completionPercentage < 50"
+              [style.width.%]="completionPercentage"
+            ></div>
+          </div>
+          <div class="flex items-center justify-start">
+            <span
+              class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border transition-colors"
+              [class.bg-emerald-500/15]="completionPercentage >= 80"
+              [class.text-emerald-400]="completionPercentage >= 80"
+              [class.border-emerald-500/25]="completionPercentage >= 80"
+              [class.bg-amber-500/15]="completionPercentage >= 50 && completionPercentage < 80"
+              [class.text-amber-400]="completionPercentage >= 50 && completionPercentage < 80"
+              [class.border-amber-500/25]="completionPercentage >= 50 && completionPercentage < 80"
+              [class.bg-slate-800/80]="completionPercentage < 50"
+              [class.text-slate-400]="completionPercentage < 50"
+              [class.border-slate-700/50]="completionPercentage < 50"
+            >
+              <span
+                class="w-1.5 h-1.5 rounded-full"
+                [class.bg-emerald-400]="completionPercentage >= 80"
+                [class.animate-pulse]="completionPercentage >= 80"
+                [class.bg-amber-400]="completionPercentage >= 50 && completionPercentage < 80"
+                [class.bg-slate-400]="completionPercentage < 50"
+              ></span>
               {{ completionPercentage >= 80 ? 'Listo para publicar' : completionPercentage >= 50 ? 'En progreso' : 'Datos iniciales' }}
             </span>
-          </div>
-          <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
-            <div class="bg-emerald-400 h-full rounded-full transition-all duration-500" [style.width.%]="completionPercentage"></div>
           </div>
         </div>
       </div>

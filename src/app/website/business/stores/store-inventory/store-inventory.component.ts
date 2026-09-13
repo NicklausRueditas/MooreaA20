@@ -2,7 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { forkJoin } from 'rxjs';
 import { StoresService } from '../../../../core/services/catalog/stores.service';
+import { ToastService } from '../../../../core/services/ui/toast.service';
 import {
   ProductVariantsService,
   FlatCatalogVariant,
@@ -16,6 +18,21 @@ import { Product } from '../../../../core/interfaces/product.interface';
 export interface InventoryRow {
   item: InventoryItem;
   variant: ProductVariant | null;
+}
+
+/** Configuración de variante interactiva para el modal de inventario */
+export interface ModalVariantItem {
+  variant: FlatCatalogVariant;
+  selected: boolean;
+  quantity: number;
+  cost: number | null;
+  wholesalePrice: number | null;
+  reorderPoint: number;
+  reorderQuantity: number;
+  locationAisle?: string;
+  locationShelf?: string;
+  locationBin?: string;
+  isExpanded: boolean;
 }
 
 /** Grupo de variantes que comparten el mismo producto maestro */
@@ -45,8 +62,19 @@ export class StoreInventoryComponent implements OnInit {
   private productMap = new Map<string, Product>();
   isLoading = false;
 
-  // UI State
+  // UI State: Interactive Studio Modal
   showAddModal = false;
+  modalVariants: ModalVariantItem[] = [];
+  batchQuantity: number = 10;
+  batchAisle: string = '';
+  batchShelf: string = '';
+  batchBin: string = '';
+  showBatchLocation: boolean = false;
+  keepModalOpenAfterSave: boolean = false;
+  isSubmittingBatch: boolean = false;
+  activeMobileTab: 'products' | 'variants' = 'products';
+
+  // Modal legacy support if needed
   modalStep: 1 | 2 | 3 = 1;
   selectedModalVariant: FlatCatalogVariant | null = null;
   isAddingToInventory = false;
@@ -65,8 +93,9 @@ export class StoreInventoryComponent implements OnInit {
   variantsForModal: FlatCatalogVariant[] = [];
   isLoadingVariants = false;
 
-  // Filters
+  // Filters & Tabs
   searchTerm = '';
+  stockStatusFilter: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock' = 'all';
 
   // Accordion state — persists across getter recalculations
   private expandedGroups = new Map<string, boolean>();
@@ -76,6 +105,7 @@ export class StoreInventoryComponent implements OnInit {
     private router: Router,
     private storesService: StoresService,
     private variantsService: ProductVariantsService,
+    private toastService: ToastService,
     private fb: FormBuilder
   ) {
     this.addInventoryForm = this.fb.group({
@@ -226,6 +256,27 @@ export class StoreInventoryComponent implements OnInit {
     return `${v.size.value}${v.size.region ? ' ' + v.size.region : ''}`;
   }
 
+  /** Devuelve la ubicación en almacén formateada */
+  getLocationLabel(item: InventoryItem): string {
+    const loc = item.location;
+    if (!loc || (!loc.aisle && !loc.shelf && !loc.bin)) return 'Sin asignar';
+    const parts: string[] = [];
+    if (loc.aisle) parts.push(`P: ${loc.aisle}`);
+    if (loc.shelf) parts.push(`E: ${loc.shelf}`);
+    if (loc.bin)   parts.push(`C: ${loc.bin}`);
+    return parts.join(' · ');
+  }
+
+  /** Devuelve la etiqueta legible del tipo de tienda */
+  getStoreTypeLabel(type?: string): string {
+    switch (type) {
+      case 'physical': return 'Física';
+      case 'virtual': return 'Virtual';
+      case 'hybrid': return 'Híbrida';
+      default: return 'Almacén / Tienda';
+    }
+  }
+
   /** Extrae el productId como string (puede estar populado) */
   getProductId(item: InventoryItem): string {
     const v = this.getVariant(item);
@@ -299,19 +350,30 @@ export class StoreInventoryComponent implements OnInit {
 
   // ─── GROUPED VIEW ────────────────────────────────────────────────────────────
 
-  /** Agrupa los items de inventario por producto maestro */
+  /** Agrupa los items de inventario por producto maestro y aplica filtros activos */
   get productGroups(): ProductGroup[] {
-    const term = this.searchTerm.toLowerCase();
+    const term = this.searchTerm.toLowerCase().trim();
     const groupMap = new Map<string, ProductGroup>();
 
     for (const item of this.inventory) {
-      const productId = this.getProductId(item);
-      const productName = this.getProductName(item);
-      const productCode = this.getProductCode(item);
-      const productBrand = this.getProductBrand(item);
-      const variant = this.getVariant(item);
+      const qty = item.quantity ?? 0;
+      const reorderPt = item.reorderPoint ?? 10;
+      const isOutOfStock = qty === 0;
+      const isLowStock   = qty <= reorderPt && qty > 0;
+      const isInStock    = qty > reorderPt;
 
-      // Filtro de búsqueda
+      // Filtro por estado de stock
+      if (this.stockStatusFilter === 'in_stock' && !isInStock) continue;
+      if (this.stockStatusFilter === 'low_stock' && !isLowStock) continue;
+      if (this.stockStatusFilter === 'out_of_stock' && !isOutOfStock) continue;
+
+      const productId    = this.getProductId(item);
+      const productName  = this.getProductName(item);
+      const productCode  = this.getProductCode(item);
+      const productBrand = this.getProductBrand(item);
+      const variant      = this.getVariant(item);
+
+      // Filtro de búsqueda textual
       if (term) {
         const matches =
           productName.toLowerCase().includes(term) ||
@@ -324,7 +386,6 @@ export class StoreInventoryComponent implements OnInit {
       }
 
       if (!groupMap.has(productId)) {
-        // Usar estado guardado; por defecto contraído la primera vez
         const isExpanded = this.expandedGroups.has(productId)
           ? this.expandedGroups.get(productId)!
           : false;
@@ -342,7 +403,7 @@ export class StoreInventoryComponent implements OnInit {
 
       const group = groupMap.get(productId)!;
       group.rows.push({ item, variant });
-      group.totalStock += item.quantity;
+      group.totalStock += qty;
       if (!group.productImage) {
         group.productImage = this.getProductImage(item);
       }
@@ -355,6 +416,28 @@ export class StoreInventoryComponent implements OnInit {
     const next = !group.isExpanded;
     this.expandedGroups.set(group.productId, next);
     group.isExpanded = next;
+  }
+
+  expandAll(): void {
+    for (const group of this.productGroups) {
+      this.expandedGroups.set(group.productId, true);
+      group.isExpanded = true;
+    }
+  }
+
+  collapseAll(): void {
+    for (const group of this.productGroups) {
+      this.expandedGroups.set(group.productId, false);
+      group.isExpanded = false;
+    }
+  }
+
+  setStockFilter(filter: 'all' | 'in_stock' | 'low_stock' | 'out_of_stock'): void {
+    this.stockStatusFilter = filter;
+  }
+
+  clearSearch(): void {
+    this.searchTerm = '';
   }
 
   /** Devuelve colores únicos (sin repetir hex) de un grupo para los swatches */
@@ -387,47 +470,135 @@ export class StoreInventoryComponent implements OnInit {
     ).length;
   }
 
-  /** Selecciona un producto en el wizard y avanza automáticamente al paso 2 */
-  selectProductInWizard(product: Product): void {
-    this.selectedProductId = product._id;
-    this.onModalProductChange(product._id);
-    this.selectedModalVariant = null;
-    this.modalStep = 2;
-  }
-
-  /** Selecciona una variante en el wizard y avanza automáticamente al paso 3 */
-  selectVariantInWizard(variant: FlatCatalogVariant): void {
-    this.selectedModalVariant = variant;
-    this.addInventoryForm.get('variantId')?.setValue(variant._id);
-    this.onVariantSelected(variant);
-    this.modalStep = 3;
-  }
-
-  /** Cambia de paso manualmente desde el stepper superior */
-  goToModalStep(step: 1 | 2 | 3): void {
-    if (step === 2 && !this.selectedProductId) return;
-    if (step === 3 && (!this.selectedProductId || !this.addInventoryForm.get('variantId')?.value)) return;
-    this.modalStep = step;
-  }
-
   openAddModal(): void {
-    this.addInventoryForm.reset({ quantity: 10, reorderPoint: 5, reorderQuantity: 20 });
-    this.selectedProductId = '';
     this.modalProductSearch = '';
-    this.variantsForModal = [];
-    this.modalStep = 1;
-    this.selectedModalVariant = null;
+    this.batchQuantity = 10;
+    this.batchAisle = '';
+    this.batchShelf = '';
+    this.batchBin = '';
+    this.showBatchLocation = false;
+    this.isSubmittingBatch = false;
+    this.activeMobileTab = 'products';
     this.showAddModal = true;
+
+    // Si hay un producto disponible, seleccionarlo automáticamente
+    const available = this.filteredModalProducts;
+    if (available.length > 0) {
+      this.selectProductInStudio(available[0]);
+    } else {
+      this.selectedProductId = '';
+      this.modalVariants = [];
+    }
   }
 
   closeAddModal(): void {
     this.showAddModal = false;
     this.selectedProductId = '';
     this.modalProductSearch = '';
-    this.variantsForModal = [];
-    this.modalStep = 1;
-    this.selectedModalVariant = null;
-    this.addInventoryForm.reset();
+    this.modalVariants = [];
+    this.isSubmittingBatch = false;
+  }
+
+  selectProductInStudio(product: Product): void {
+    this.selectedProductId = product._id;
+    this.activeMobileTab = 'variants';
+
+    const existingIds = new Set(
+      this.inventory.map(item =>
+        typeof item.variantId === 'string'
+          ? item.variantId
+          : (item.variantId as ProductVariant)._id
+      )
+    );
+
+    const unassigned = this.allCatalogVariants.filter(v =>
+      v.product._id === product._id && !existingIds.has(v._id)
+    );
+
+    const basePrice = product.basePrice ?? 0;
+
+    this.modalVariants = unassigned.map(v => {
+      const adjustment = v.priceAdjustment ?? 0;
+      const cost = parseFloat((basePrice + adjustment).toFixed(2));
+      const wholesalePrice = parseFloat((cost * 0.90).toFixed(2));
+      return {
+        variant: v,
+        selected: false,
+        quantity: this.batchQuantity || 10,
+        cost,
+        wholesalePrice,
+        reorderPoint: 5,
+        reorderQuantity: 20,
+        locationAisle: this.batchAisle || undefined,
+        locationShelf: this.batchShelf || undefined,
+        locationBin: this.batchBin || undefined,
+        isExpanded: false
+      };
+    });
+  }
+
+  toggleVariantSelection(item: ModalVariantItem): void {
+    item.selected = !item.selected;
+  }
+
+  selectAllVariants(select: boolean): void {
+    for (const item of this.modalVariants) {
+      item.selected = select;
+    }
+  }
+
+  adjustVariantQuantity(item: ModalVariantItem, delta: number): void {
+    item.quantity = Math.max(1, (item.quantity || 0) + delta);
+  }
+
+  setVariantQuantity(item: ModalVariantItem, val: number): void {
+    item.quantity = Math.max(1, val);
+  }
+
+  toggleVariantExpanded(item: ModalVariantItem): void {
+    item.isExpanded = !item.isExpanded;
+  }
+
+  applyBatchQuantity(): void {
+    if (!this.batchQuantity || this.batchQuantity < 1) return;
+    for (const item of this.modalVariants) {
+      if (item.selected) {
+        item.quantity = this.batchQuantity;
+      }
+    }
+    this.toastService.showSuccess(`Cantidad ${this.batchQuantity} aplicada a las variantes seleccionadas`);
+  }
+
+  applyBatchLocation(): void {
+    for (const item of this.modalVariants) {
+      if (item.selected) {
+        item.locationAisle = this.batchAisle || undefined;
+        item.locationShelf = this.batchShelf || undefined;
+        item.locationBin = this.batchBin || undefined;
+      }
+    }
+    this.toastService.showSuccess('Ubicación de almacén aplicada al lote seleccionado');
+    this.showBatchLocation = false;
+  }
+
+  get selectedModalVariants(): ModalVariantItem[] {
+    return this.modalVariants.filter(i => i.selected);
+  }
+
+  get selectedModalVariantsCount(): number {
+    return this.selectedModalVariants.length;
+  }
+
+  get isAllVariantsSelected(): boolean {
+    return this.modalVariants.length > 0 && this.modalVariants.every(i => i.selected);
+  }
+
+  get selectedModalVariantsTotalQty(): number {
+    return this.selectedModalVariants.reduce((sum, i) => sum + (i.quantity || 0), 0);
+  }
+
+  get selectedModalVariantsTotalValuation(): number {
+    return this.selectedModalVariants.reduce((sum, i) => sum + ((i.quantity || 0) * (i.cost || i.wholesalePrice || 0)), 0);
   }
 
   /**
@@ -607,48 +778,75 @@ export class StoreInventoryComponent implements OnInit {
         }
         this.isSavingEdit = false;
         this.closeEditModal();
+        this.toastService.showSuccess('Inventario de la variante actualizado');
       },
       error: (err) => {
         console.error('❌ Error updating inventory item:', err);
         this.isSavingEdit = false;
+        this.toastService.showError('No se pudieron guardar los cambios de inventario');
+      }
+    });
+  }
+
+  onAddInventoryBatch(): void {
+    const selected = this.selectedModalVariants;
+    if (selected.length === 0) {
+      this.toastService.showWarning('Selecciona al menos una variante para ingresar al inventario');
+      return;
+    }
+
+    this.isSubmittingBatch = true;
+
+    const requests = selected.map(item => {
+      const location = (item.locationAisle || item.locationShelf || item.locationBin)
+        ? {
+            aisle: item.locationAisle || undefined,
+            shelf: item.locationShelf || undefined,
+            bin:   item.locationBin   || undefined,
+          }
+        : undefined;
+
+      return this.storesService.createInventoryItem({
+        variantId:        item.variant._id,
+        storeId:          this.storeId,
+        quantity:         item.quantity,
+        location,
+        reorderPoint:     item.reorderPoint || undefined,
+        reorderQuantity:  item.reorderQuantity || undefined,
+        cost:             item.cost || undefined,
+        wholesalePrice:   item.wholesalePrice || undefined,
+      });
+    });
+
+    forkJoin(requests).subscribe({
+      next: (createdItems) => {
+        this.inventory = [...this.inventory, ...createdItems];
+        this.isSubmittingBatch = false;
+
+        const count = createdItems.length;
+        this.toastService.showSuccess(
+          count === 1
+            ? 'Variante ingresada exitosamente al inventario'
+            : `${count} variantes ingresadas exitosamente en lote al inventario`
+        );
+
+        if (this.keepModalOpenAfterSave) {
+          const createdIds = new Set(createdItems.map(c => typeof c.variantId === 'string' ? c.variantId : (c.variantId as any)._id));
+          this.modalVariants = this.modalVariants.filter(m => !createdIds.has(m.variant._id));
+        } else {
+          this.closeAddModal();
+        }
+      },
+      error: (err) => {
+        console.error('❌ Error agregando variantes al inventario:', err);
+        this.isSubmittingBatch = false;
+        this.toastService.showError('No se pudieron registrar las variantes en el inventario');
       }
     });
   }
 
   onAddInventory(): void {
-    if (!this.addInventoryForm.valid) return;
-    const fv = this.addInventoryForm.value;
-
-    // Construir location solo si se informó al menos un campo (.http L537-541)
-    const location = (fv.locationAisle || fv.locationShelf || fv.locationBin)
-      ? {
-          aisle: fv.locationAisle || undefined,
-          shelf: fv.locationShelf || undefined,
-          bin:   fv.locationBin   || undefined,
-        }
-      : undefined;
-
-    this.isAddingToInventory = true;
-    this.storesService.createInventoryItem({
-      variantId:        fv.variantId,
-      storeId:          this.storeId,
-      quantity:         fv.quantity,
-      location,
-      reorderPoint:     fv.reorderPoint    || undefined,
-      reorderQuantity:  fv.reorderQuantity || undefined,
-      cost:             fv.cost            || undefined,
-      wholesalePrice:   fv.wholesalePrice  || undefined,
-    }).subscribe({
-      next: (created) => {
-        this.inventory = [...this.inventory, created];
-        this.isAddingToInventory = false;
-        this.closeAddModal();
-      },
-      error: (err) => {
-        console.error('❌ Error creating inventory item:', err);
-        this.isAddingToInventory = false;
-      }
-    });
+    this.onAddInventoryBatch();
   }
 
   /**
@@ -667,11 +865,13 @@ export class StoreInventoryComponent implements OnInit {
     this.storesService.updateInventoryItem(item._id, { quantity: newQuantity }).subscribe({
       next: (updated) => {
         item.quantity = updated.quantity;
+        this.toastService.showSuccess(`Stock de ${this.getVariantSku(item)} actualizado a ${updated.quantity}`);
       },
       error: (err) => {
         console.error('❌ Error updating stock:', err);
         // Revertir en caso de error
         item.quantity = previous;
+        this.toastService.showError('No se pudo actualizar el stock');
       }
     });
   }
@@ -680,22 +880,49 @@ export class StoreInventoryComponent implements OnInit {
     const id = item._id;
     if (!id) return;
     const sku = this.getVariantSku(item);
-    if (!confirm(`¿Eliminar "${sku}" del inventario?`)) return;
 
-    this.storesService.deleteInventoryItem(id).subscribe({
-      next: () => {
-        this.inventory = this.inventory.filter(i => i._id !== id);
+    this.toastService.showConfirm(
+      `¿Estás seguro de eliminar la variante "${sku}" del inventario de esta tienda?`,
+      () => {
+        this.storesService.deleteInventoryItem(id).subscribe({
+          next: () => {
+            this.inventory = this.inventory.filter(i => i._id !== id);
+            this.toastService.showSuccess(`Variante "${sku}" eliminada del inventario`);
+          },
+          error: (err) => {
+            console.error('❌ Error removing item:', err);
+            this.toastService.showError('No se pudo eliminar el ítem del inventario');
+          }
+        });
       },
-      error: (err) => console.error('❌ Error removing item:', err)
-    });
+      undefined,
+      'Eliminar',
+      'Cancelar'
+    );
   }
 
-  // ─── STATS ───────────────────────────────────────────────────────────────────
+  // ─── STATS & KPIS ─────────────────────────────────────────────────────────────
 
+  get totalProducts(): number {
+    const uniqueIds = new Set(this.inventory.map(i => this.getProductId(i)));
+    return uniqueIds.size;
+  }
   get totalVariants(): number { return this.inventory.length; }
-  get totalStock(): number { return this.inventory.reduce((s, i) => s + i.quantity, 0); }
+  get totalPhysicalStock(): number { return this.inventory.reduce((s, i) => s + (i.quantity || 0), 0); }
+  get totalReservedStock(): number { return this.inventory.reduce((s, i) => s + (i.reservedQuantity || 0), 0); }
+  get totalAvailableStock(): number { return Math.max(0, this.totalPhysicalStock - this.totalReservedStock); }
+
+  get inStockCount(): number {
+    return this.inventory.filter(i => (i.quantity || 0) > (i.reorderPoint ?? 10)).length;
+  }
   get lowStockCount(): number {
-    return this.inventory.filter(i => i.quantity <= (i.reorderPoint ?? 10)).length;
+    return this.inventory.filter(i => (i.quantity || 0) <= (i.reorderPoint ?? 10) && (i.quantity || 0) > 0).length;
+  }
+  get outOfStockCount(): number {
+    return this.inventory.filter(i => (i.quantity || 0) === 0).length;
+  }
+  get totalInventoryValuation(): number {
+    return this.inventory.reduce((sum, item) => sum + ((item.quantity || 0) * (item.cost || item.wholesalePrice || 0)), 0);
   }
 
   goBack(): void {

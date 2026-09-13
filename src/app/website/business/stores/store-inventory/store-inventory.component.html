@@ -1,112 +1,371 @@
-<div class="min-h-screen bg-gray-50">
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="min-h-screen bg-slate-50/60 pb-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
-    <!-- ── Header ─────────────────────────────────────────────────────────── -->
-    <div class="mb-8">
-      <button (click)="goBack()"
-        class="mb-4 flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors text-sm font-medium">
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-        </svg>
-        Volver a Tiendas
-      </button>
-
-      <div class="flex items-center justify-between flex-wrap gap-4">
-        <div>
-          <h1 class="text-2xl font-bold text-gray-900 flex items-center gap-3">
-            <span class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
-              <svg class="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-              </svg>
-            </span>
-            {{ store?.name ?? 'Inventario' }}
-          </h1>
-          <p class="text-gray-400 mt-0.5 text-sm ml-13">Inventario · variantes agrupadas por producto</p>
-        </div>
-        <button (click)="openAddModal()"
-          class="px-5 py-2.5 bg-primary text-white rounded-xl hover:bg-primary/90 active:scale-95 transition-all flex items-center gap-2 text-sm font-semibold shadow-sm">
-          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+    <!-- ── Breadcrumbs & Top Navigation ──────────────────────────────────── -->
+    <div class="flex items-center justify-between flex-wrap gap-3 mb-6">
+      <nav class="flex items-center gap-2 text-xs font-medium text-slate-500">
+        <button (click)="goBack()" class="hover:text-primary transition-colors flex items-center gap-1.5 group">
+          <svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-primary group-hover:-translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          Agregar variante
+          <span>Tiendas</span>
+        </button>
+        <svg class="w-3 h-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="text-slate-700 font-semibold truncate max-w-[200px] sm:max-w-xs">{{ store?.name ?? 'Cargando...' }}</span>
+        <svg class="w-3 h-3 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+        </svg>
+        <span class="px-2.5 py-0.5 rounded-full bg-[#ff2056]/10 text-[#ff2056] font-bold text-[11px]">Inventario</span>
+      </nav>
+
+      <div class="flex items-center gap-2.5">
+        <button (click)="goBack()"
+          class="px-3.5 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-50 hover:border-slate-300 active:scale-95 transition-all shadow-xs flex items-center gap-1.5">
+          <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+          <span>Volver al listado</span>
+        </button>
+        <button (click)="openAddModal()"
+          class="px-4 py-2 bg-[#ff2056] hover:bg-[#e01648] text-white rounded-xl text-xs font-bold shadow-sm shadow-[#ff2056]/25 active:scale-95 transition-all flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+          </svg>
+          <span>Agregar variante</span>
         </button>
       </div>
     </div>
 
-    <!-- ── Stats ───────────────────────────────────────────────────────────── -->
-    <div class="grid grid-cols-3 gap-4 mb-6">
-      <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-        <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Productos</p>
-        <p class="text-3xl font-bold text-gray-900 mt-1">{{ productGroups.length }}</p>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-        <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Variantes</p>
-        <p class="text-3xl font-bold text-gray-900 mt-1">{{ totalVariants }}</p>
-      </div>
-      <div class="bg-white rounded-2xl shadow-sm p-5 border border-gray-100">
-        <p class="text-xs text-gray-400 font-semibold uppercase tracking-wider">Stock Bajo</p>
-        <p class="text-3xl font-bold mt-1"
-          [class.text-orange-500]="lowStockCount > 0"
-          [class.text-gray-900]="lowStockCount === 0">{{ lowStockCount }}</p>
+    <!-- ── Store Identity Banner ─────────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 mb-6">
+      <div class="flex items-start sm:items-center justify-between flex-col sm:flex-row gap-4">
+        <div class="flex items-center gap-3.5">
+          <div class="w-12 h-12 rounded-2xl bg-[#1d293d] text-white flex items-center justify-center shadow-md shadow-[#1d293d]/20 flex-shrink-0">
+            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+          </div>
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h1 class="text-xl font-extrabold text-slate-900 tracking-tight">{{ store?.name ?? 'Gestión de Inventario' }}</h1>
+              @if (store?.code) {
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[11px] font-mono font-bold">
+                  {{ store?.code }}
+                </span>
+              }
+              <span class="px-2 py-0.5 rounded-md text-[11px] font-bold"
+                [class.bg-emerald-50]="store?.isActive"
+                [class.text-emerald-700]="store?.isActive"
+                [class.border]="store?.isActive"
+                [class.border-emerald-200]="store?.isActive"
+                [class.bg-slate-100]="!store?.isActive"
+                [class.text-slate-500]="!store?.isActive">
+                {{ store?.isActive ? 'Operativa' : 'Inactiva' }}
+              </span>
+              <span class="px-2 py-0.5 bg-[#1d293d]/5 text-[#1d293d] border border-[#1d293d]/15 rounded-md text-[11px] font-semibold">
+                {{ getStoreTypeLabel(store?.type) }}
+              </span>
+            </div>
+            <p class="text-slate-500 text-xs mt-1 flex items-center gap-1.5 flex-wrap">
+              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+              <span>{{ store?.location?.address || 'Sin dirección' }}, {{ store?.location?.city || '' }}</span>
+              <span class="text-slate-300">·</span>
+              <span>Control centralizado de existencias por catálogo maestro y variantes</span>
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+          <button (click)="loadInventory()" [disabled]="isLoading" title="Actualizar inventario"
+            class="p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl border border-slate-200/80 transition-colors active:scale-95 disabled:opacity-50">
+            <svg class="w-4 h-4" [class.animate-spin]="isLoading" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
 
-    <!-- ── Search ──────────────────────────────────────────────────────────── -->
-    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 mb-6">
-      <div class="relative">
-        <svg class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24"
-          stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <!-- searchTerm FUERA del formGroup → standalone: true -->
-        <input [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}"
-          type="text" placeholder="Buscar por nombre, código, color, talla o SKU..."
-          class="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary transition outline-none">
+    <!-- ── Executive KPI Dashboard ───────────────────────────────────────── -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5 mb-6">
+
+      <!-- KPI 1: Productos Únicos -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Productos</span>
+          <div class="w-7 h-7 rounded-lg bg-[#1d293d]/10 text-[#1d293d] flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-2xl font-black text-slate-900 leading-none">{{ totalProducts }}</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">Líneas en catálogo</p>
+        </div>
+      </div>
+
+      <!-- KPI 2: Variantes Registradas -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Variantes</span>
+          <div class="w-7 h-7 rounded-lg bg-[#ff2056]/10 text-[#ff2056] flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-2xl font-black text-slate-900 leading-none">{{ totalVariants }}</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">SKUs registrados</p>
+        </div>
+      </div>
+
+      <!-- KPI 3: Stock Disponible -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Disponible</span>
+          <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-2xl font-black text-emerald-600 leading-none">{{ totalAvailableStock }}</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">Listo para venta</p>
+        </div>
+      </div>
+
+      <!-- KPI 4: Stock Reservado -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Reservado</span>
+          <div class="w-7 h-7 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-2xl font-black text-amber-600 leading-none">{{ totalReservedStock }}</p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">En pedidos en curso</p>
+        </div>
+      </div>
+
+      <!-- KPI 5: Alertas de Stock -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Alertas</span>
+          <div class="w-7 h-7 rounded-lg flex items-center justify-center"
+            [class.bg-rose-50]="(lowStockCount + outOfStockCount) > 0"
+            [class.text-rose-600]="(lowStockCount + outOfStockCount) > 0"
+            [class.bg-emerald-50]="(lowStockCount + outOfStockCount) === 0"
+            [class.text-emerald-600]="(lowStockCount + outOfStockCount) === 0">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-2xl font-black leading-none"
+            [class.text-rose-600]="(lowStockCount + outOfStockCount) > 0"
+            [class.text-slate-900]="(lowStockCount + outOfStockCount) === 0">
+            {{ lowStockCount + outOfStockCount }}
+          </p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">
+            {{ lowStockCount }} bajo · {{ outOfStockCount }} agotado
+          </p>
+        </div>
+      </div>
+
+      <!-- KPI 6: Valoración Estimada -->
+      <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-xs flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Valuación</span>
+          <div class="w-7 h-7 rounded-lg bg-teal-50 text-teal-600 flex items-center justify-center">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </div>
+        </div>
+        <div>
+          <p class="text-xl font-black text-slate-900 leading-none truncate" [title]="'S/ ' + (totalInventoryValuation | number:'1.2-2')">
+            S/ {{ totalInventoryValuation | number:'1.2-2' }}
+          </p>
+          <p class="text-[11px] text-slate-500 font-medium mt-1">Costo estimado total</p>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ── Filter & Search Toolbar ───────────────────────────────────────── -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 mb-6">
+      <div class="flex items-center justify-between flex-wrap gap-4">
+
+        <!-- Status Filter Tabs -->
+        <div class="flex items-center p-1 bg-slate-100 rounded-xl gap-1 flex-wrap">
+          <button (click)="setStockFilter('all')"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            [class.bg-white]="stockStatusFilter === 'all'"
+            [class.text-slate-900]="stockStatusFilter === 'all'"
+            [class.shadow-xs]="stockStatusFilter === 'all'"
+            [class.text-slate-600]="stockStatusFilter !== 'all'">
+            <span>Todos</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono"
+              [class.bg-slate-200]="stockStatusFilter === 'all'"
+              [class.text-slate-700]="stockStatusFilter === 'all'"
+              [class.bg-slate-200/60]="stockStatusFilter !== 'all'"
+              [class.text-slate-500]="stockStatusFilter !== 'all'">
+              {{ totalVariants }}
+            </span>
+          </button>
+
+          <button (click)="setStockFilter('in_stock')"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            [class.bg-white]="stockStatusFilter === 'in_stock'"
+            [class.text-emerald-700]="stockStatusFilter === 'in_stock'"
+            [class.shadow-xs]="stockStatusFilter === 'in_stock'"
+            [class.text-slate-600]="stockStatusFilter !== 'in_stock'">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span>En stock</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-emerald-100 text-emerald-700">
+              {{ inStockCount }}
+            </span>
+          </button>
+
+          <button (click)="setStockFilter('low_stock')"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            [class.bg-white]="stockStatusFilter === 'low_stock'"
+            [class.text-amber-700]="stockStatusFilter === 'low_stock'"
+            [class.shadow-xs]="stockStatusFilter === 'low_stock'"
+            [class.text-slate-600]="stockStatusFilter !== 'low_stock'">
+            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+            <span>Stock bajo</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-amber-100 text-amber-700">
+              {{ lowStockCount }}
+            </span>
+          </button>
+
+          <button (click)="setStockFilter('out_of_stock')"
+            class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5"
+            [class.bg-white]="stockStatusFilter === 'out_of_stock'"
+            [class.text-rose-700]="stockStatusFilter === 'out_of_stock'"
+            [class.shadow-xs]="stockStatusFilter === 'out_of_stock'"
+            [class.text-slate-600]="stockStatusFilter !== 'out_of_stock'">
+            <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+            <span>Agotados</span>
+            <span class="px-1.5 py-0.2 rounded-full text-[10px] font-mono bg-rose-100 text-rose-700">
+              {{ outOfStockCount }}
+            </span>
+          </button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="flex-1 min-w-[260px] max-w-md relative">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input [(ngModel)]="searchTerm" [ngModelOptions]="{standalone: true}"
+            type="text" placeholder="Buscar por producto, SKU, código, color o talla..."
+            class="w-full pl-10 pr-9 py-2 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition bg-slate-50/50 focus:bg-white">
+          @if (searchTerm) {
+            <button (click)="clearSearch()"
+              class="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 hover:bg-slate-300 text-slate-600 text-xs transition">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          }
+        </div>
+
+        <!-- Expand / Collapse Controls -->
+        <div class="flex items-center gap-1.5 text-xs text-slate-500">
+          <button (click)="expandAll()"
+            class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1 font-semibold">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+            </svg>
+            <span>Expandir todo</span>
+          </button>
+          <button (click)="collapseAll()"
+            class="px-2.5 py-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 active:scale-95 transition-all flex items-center gap-1 font-semibold">
+            <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+            </svg>
+            <span>Colapsar</span>
+          </button>
+        </div>
+
       </div>
     </div>
 
-    <!-- ── Loading ─────────────────────────────────────────────────────────── -->
+    <!-- ── Loading State ─────────────────────────────────────────────────── -->
     @if (isLoading) {
-      <div class="flex justify-center py-20">
-        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+      <div class="flex flex-col items-center justify-center py-24 bg-white rounded-3xl border border-slate-200/80 shadow-xs">
+        <div class="relative w-12 h-12 mb-4">
+          <div class="w-12 h-12 rounded-full border-4 border-slate-200 border-t-[#ff2056] animate-spin"></div>
+        </div>
+        <p class="text-sm font-bold text-slate-800">Cargando inventario de la tienda...</p>
+        <p class="text-xs text-slate-400 mt-1">Sincronizando existencias y variantes del catálogo</p>
       </div>
     }
 
-    <!-- ── Product Groups ─────────────────────────────────────────────────── -->
+    <!-- ── Content / Grouped Product List ────────────────────────────────── -->
     @if (!isLoading) {
       <div class="space-y-4">
+
+        <!-- Empty State -->
         @if (productGroups.length === 0) {
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-20">
-            <svg class="mx-auto h-14 w-14 text-gray-200 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-            </svg>
-            <h3 class="text-base font-semibold text-gray-600 mb-1">Sin registros de inventario</h3>
-            <p class="text-sm text-gray-400 mb-5">Agrega variantes del catálogo para comenzar</p>
-            <button (click)="openAddModal()"
-              class="px-5 py-2 bg-primary text-white text-sm rounded-xl hover:bg-primary/90 transition-colors">
-              Agregar variante
-            </button>
+          <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs text-center py-20 px-4">
+            <div class="w-16 h-16 rounded-2xl bg-[#1d293d]/10 text-[#1d293d] flex items-center justify-center mx-auto mb-4">
+              <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                  d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
+            </div>
+            <h3 class="text-base font-extrabold text-slate-800 mb-1">
+              {{ searchTerm || stockStatusFilter !== 'all' ? 'Sin coincidencias para los filtros aplicados' : 'Sin registros de inventario en esta tienda' }}
+            </h3>
+            <p class="text-xs text-slate-500 max-w-sm mx-auto mb-5">
+              {{ searchTerm || stockStatusFilter !== 'all' ? 'Intenta modificar el término de búsqueda o el filtro de stock para ver resultados.' : 'Comienza agregando variantes del catálogo maestro a esta sucursal.' }}
+            </p>
+            @if (searchTerm || stockStatusFilter !== 'all') {
+              <button (click)="clearSearch(); setStockFilter('all')"
+                class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition">
+                Limpiar filtros
+              </button>
+            } @else {
+              <button (click)="openAddModal()"
+                class="px-5 py-2.5 bg-[#ff2056] hover:bg-[#e01648] text-white rounded-xl text-xs font-bold shadow-sm shadow-[#ff2056]/25 transition">
+                Agregar primera variante
+              </button>
+            }
           </div>
         }
 
+        <!-- Product Accordion Cards -->
         @for (group of productGroups; track group.productId) {
-          <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <div class="bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:border-slate-300 transition-all duration-200 overflow-hidden">
 
-            <!-- Group Header -->
+            <!-- Card Header (Interactive Accordion Trigger) -->
             <div (click)="toggleGroup(group)"
-              class="flex items-center gap-4 px-6 py-4 hover:bg-gray-50/70 transition-colors cursor-pointer select-none">
+              class="flex items-center gap-4 px-5 py-4 hover:bg-slate-50/70 transition-colors cursor-pointer select-none">
 
-              <!-- Imagen -->
-              <div class="flex-shrink-0">
+              <!-- Product Thumbnail -->
+              <div class="relative flex-shrink-0">
                 @if (group.productImage) {
                   <img [src]="group.productImage" [alt]="group.productName"
-                    class="w-14 h-14 rounded-xl object-cover border border-gray-100">
+                    class="w-14 h-14 rounded-xl object-cover border border-slate-200/80 bg-slate-50">
                 } @else {
-                  <div class="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center">
-                    <svg class="w-6 h-6 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div class="w-14 h-14 rounded-xl bg-slate-100 border border-slate-200/80 flex items-center justify-center text-slate-300">
+                    <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
                         d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
@@ -114,777 +373,916 @@
                 }
               </div>
 
-              <!-- Info -->
+              <!-- Product Info -->
               <div class="flex-1 min-w-0">
-                <p class="text-gray-900 font-semibold text-sm leading-tight truncate">{{ group.productName }}</p>
-                <div class="flex items-center gap-2 mt-1 flex-wrap">
+                <div class="flex items-center gap-2 flex-wrap">
+                  <h3 class="text-sm font-bold text-slate-900 leading-snug truncate">{{ group.productName }}</h3>
                   @if (group.productCode) {
-                    <span class="px-2 py-0.5 bg-gray-100 text-gray-500 rounded text-xs font-mono">{{ group.productCode }}</span>
+                    <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded-md text-[10px] font-mono font-bold">
+                      {{ group.productCode }}
+                    </span>
                   }
                   @if (group.productBrand) {
-                    <span class="text-xs text-gray-400">{{ group.productBrand }}</span>
-                    <span class="text-xs text-gray-300">·</span>
+                    <span class="text-xs text-slate-400 font-semibold truncate">{{ group.productBrand }}</span>
                   }
-                  <span class="text-xs text-gray-500">{{ group.rows.length }} var.</span>
-                  <span class="text-xs text-gray-300">·</span>
-                  <span class="text-xs font-semibold text-gray-700">{{ group.totalStock }} uds.</span>
+                </div>
+                <div class="flex items-center gap-3 mt-1.5 text-xs text-slate-500 flex-wrap">
+                  <span class="font-medium flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span>{{ group.rows.length }} {{ group.rows.length === 1 ? 'variante' : 'variantes' }}</span>
+                  </span>
+                  <span class="text-slate-300">·</span>
+                  <span class="font-bold text-slate-800 flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{{ group.totalStock }} unidades totales</span>
+                  </span>
                 </div>
               </div>
 
-              <!-- Color swatches -->
-              <div class="flex items-center gap-1 flex-shrink-0">
+              <!-- Color Swatches Preview -->
+              <div class="hidden sm:flex items-center gap-1 flex-shrink-0 px-2 py-1 bg-slate-50 rounded-xl border border-slate-100">
                 @for (color of getUniqueColors(group).slice(0, 7); track color.hex) {
-                  <div class="w-5 h-5 rounded-full border-2 border-white shadow ring-1 ring-gray-200"
+                  <div class="w-4 h-4 rounded-full border border-white shadow-xs ring-1 ring-slate-200"
                     [style.background-color]="color.hex" [title]="color.name"></div>
                 }
                 @if (getUniqueColors(group).length > 7) {
-                  <span class="text-xs text-gray-400 ml-1">+{{ getUniqueColors(group).length - 7 }}</span>
+                  <span class="text-[10px] font-bold text-slate-500 ml-1">+{{ getUniqueColors(group).length - 7 }}</span>
                 }
               </div>
 
-              <!-- Chevron -->
-              <svg class="w-4 h-4 text-gray-400 flex-shrink-0 transition-transform duration-200"
-                [class.rotate-180]="group.isExpanded" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-              </svg>
+              <!-- Stock Health Status Pill -->
+              <div class="flex-shrink-0 hidden md:block">
+                @if (group.totalStock === 0) {
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Sin stock</span>
+                  </span>
+                } @else {
+                  <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>Stock operativo</span>
+                  </span>
+                }
+              </div>
+
+              <!-- Chevron Indicator -->
+              <div class="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 flex-shrink-0 transition-transform duration-200"
+                [class.rotate-180]="group.isExpanded">
+                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
             </div>
 
-            <!-- Variants table -->
+            <!-- Expanded Variant Table -->
             @if (group.isExpanded) {
-              <div class="border-t border-gray-100">
-                <table class="w-full text-sm">
-                  <thead class="bg-gray-50/80">
-                    <tr>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">SKU</th>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Color</th>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Talla</th>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Stock</th>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Reservado</th>
-                      <th class="px-6 py-3 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">Estado</th>
-                      <th class="px-6 py-3 text-right text-xs font-semibold text-gray-400 uppercase tracking-wider">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody class="divide-y divide-gray-50">
-                    @for (row of group.rows; track row.item._id) {
-                      <tr class="hover:bg-blue-50/20 transition-colors">
-
-                        <!-- SKU -->
-                        <td class="px-6 py-3">
-                          <span class="text-xs font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded-lg">
-                            {{ getVariantSku(row.item) }}
-                          </span>
-                        </td>
-
-                        <!-- Color -->
-                        <td class="px-6 py-3">
-                          <div class="flex items-center gap-2">
-                            <div class="w-4 h-4 rounded-full border border-gray-200 flex-shrink-0"
-                              [style.background-color]="getColorHex(row.item)"></div>
-                            <span class="text-sm text-gray-700">{{ getColorName(row.item) }}</span>
-                          </div>
-                        </td>
-
-                        <!-- Talla -->
-                        <td class="px-6 py-3">
-                          <span class="text-sm text-gray-700">{{ getSizeLabel(row.item) }}</span>
-                        </td>
-
-                        <!-- Stock control — ngModel standalone (no está en [formGroup]) -->
-                        <td class="px-6 py-3">
-                          <div class="flex items-center gap-1">
-                            <button (click)="updateQuantity(row.item, row.item.quantity - 1)"
-                              class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M20 12H4" />
-                              </svg>
-                            </button>
-                            <input [(ngModel)]="row.item.quantity" [ngModelOptions]="{standalone: true}"
-                              (change)="updateQuantity(row.item, row.item.quantity)"
-                              type="number" min="0"
-                              class="w-16 text-center text-sm font-semibold border border-gray-200 rounded-lg py-1.5 focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                            <button (click)="updateQuantity(row.item, row.item.quantity + 1)"
-                              class="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
-                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
-
-                        <!-- Reservado -->
-                        <td class="px-6 py-3">
-                          <span class="text-sm text-gray-400">{{ row.item.reservedQuantity ?? 0 }}</span>
-                        </td>
-
-                        <!-- Estado -->
-                        <td class="px-6 py-3">
-                          @if (row.item.quantity === 0) {
-                            <span class="inline-flex items-center px-2 py-0.5 bg-red-100 text-red-600 rounded-full text-xs font-semibold">Sin stock</span>
-                          } @else if (row.item.quantity <= (row.item.reorderPoint ?? 10)) {
-                            <span class="inline-flex items-center px-2 py-0.5 bg-orange-100 text-orange-600 rounded-full text-xs font-semibold">⚠ Bajo</span>
-                          } @else {
-                            <span class="inline-flex items-center px-2 py-0.5 bg-emerald-100 text-emerald-600 rounded-full text-xs font-semibold">✓ OK</span>
-                          }
-                        </td>
-
-                        <!-- Acciones: Editar y Eliminar -->
-                        <td class="px-6 py-3 text-right">
-                          <div class="flex items-center justify-end gap-1.5">
-                            <button (click)="openEditModal(row.item)" title="Editar stock, reservas y detalles"
-                              class="p-1.5 text-violet-600 hover:text-violet-800 hover:bg-violet-50 rounded-lg transition-colors flex items-center gap-1 font-medium text-xs">
-                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              <span class="hidden sm:inline">Editar</span>
-                            </button>
-                            <button (click)="removeFromInventory(row.item)" title="Eliminar del inventario"
-                              class="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                  d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                              </svg>
-                            </button>
-                          </div>
-                        </td>
+              <div class="border-t border-slate-200/80 bg-slate-50/40">
+                <div class="overflow-x-auto">
+                  <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-100/70 border-b border-slate-200/60 text-slate-500 font-bold uppercase tracking-wider">
+                      <tr>
+                        <th class="px-5 py-3">SKU</th>
+                        <th class="px-5 py-3">Color & Talla</th>
+                        <th class="px-5 py-3">Ubicación Almacén</th>
+                        <th class="px-5 py-3 text-center">Stock Físico</th>
+                        <th class="px-5 py-3 text-center">Reservado</th>
+                        <th class="px-5 py-3">Estado</th>
+                        <th class="px-5 py-3 text-right">Acciones</th>
                       </tr>
-                    }
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100 bg-white">
+                      @for (row of group.rows; track row.item._id) {
+                        <tr class="hover:bg-slate-50/80 transition-colors">
+
+                          <!-- SKU -->
+                          <td class="px-5 py-3.5">
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-md font-mono font-bold text-[11px] border border-slate-200/60">
+                              {{ getVariantSku(row.item) }}
+                            </span>
+                          </td>
+
+                          <!-- Color & Talla -->
+                          <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2.5">
+                              <div class="w-4 h-4 rounded-full border border-white shadow-xs ring-1 ring-slate-300 flex-shrink-0"
+                                [style.background-color]="getColorHex(row.item)" [title]="getColorName(row.item)"></div>
+                              <div>
+                                <p class="font-bold text-slate-800 text-xs">{{ getColorName(row.item) }}</p>
+                                <p class="text-[11px] text-slate-500">Talla: <span class="font-semibold text-slate-700">{{ getSizeLabel(row.item) }}</span></p>
+                              </div>
+                            </div>
+                          </td>
+
+                          <!-- Ubicación Almacén -->
+                          <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-1.5 text-slate-600 font-mono text-[11px]">
+                              <svg class="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                              </svg>
+                              <span>{{ getLocationLabel(row.item) }}</span>
+                            </div>
+                          </td>
+
+                          <!-- Stock Físico con Stepper Inline -->
+                          <td class="px-5 py-3.5">
+                            <div class="flex items-center justify-center gap-1">
+                              <button (click)="updateQuantity(row.item, (row.item.quantity || 0) - 1)"
+                                title="Disminuir stock en 1"
+                                class="w-7 h-7 flex items-center justify-center text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                                </svg>
+                              </button>
+                              <input [(ngModel)]="row.item.quantity" [ngModelOptions]="{standalone: true}"
+                                (change)="updateQuantity(row.item, row.item.quantity)"
+                                type="number" min="0"
+                                class="w-16 text-center text-xs font-bold text-slate-900 border border-slate-200 rounded-lg py-1.5 focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition bg-white">
+                              <button (click)="updateQuantity(row.item, (row.item.quantity || 0) + 1)"
+                                title="Aumentar stock en 1"
+                                class="w-7 h-7 flex items-center justify-center text-slate-600 bg-slate-100 hover:bg-slate-200 active:scale-95 rounded-lg transition">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+
+                          <!-- Reservado -->
+                          <td class="px-5 py-3.5 text-center">
+                            <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200/50">
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                              </svg>
+                              <span>{{ row.item.reservedQuantity || 0 }}</span>
+                            </span>
+                          </td>
+
+                          <!-- Estado de Stock -->
+                          <td class="px-5 py-3.5">
+                            @if ((row.item.quantity || 0) === 0) {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200/60">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                                <span>Agotado</span>
+                              </span>
+                            } @else if ((row.item.quantity || 0) <= (row.item.reorderPoint ?? 5)) {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200/60"
+                                [title]="'Punto de reorden configurado: ' + (row.item.reorderPoint ?? 5)">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span>Stock bajo</span>
+                              </span>
+                            } @else {
+                              <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span>En stock</span>
+                              </span>
+                            }
+                          </td>
+
+                          <!-- Acciones -->
+                          <td class="px-5 py-3.5 text-right">
+                            <div class="flex items-center justify-end gap-1.5">
+                              <button (click)="openEditModal(row.item)" title="Editar inventario y parámetros"
+                                class="p-1.5 text-[#1d293d] hover:text-[#ff2056] hover:bg-[#ff2056]/5 rounded-lg transition-colors flex items-center gap-1 font-semibold text-xs">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                </svg>
+                                <span class="hidden sm:inline">Editar</span>
+                              </button>
+                              <button (click)="removeFromInventory(row.item)" title="Eliminar del inventario"
+                                class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition-colors">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </div>
+                          </td>
+
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
               </div>
             }
+
           </div>
         }
+
       </div>
     }
+
   </div>
 
   <!-- ══════════════════════════════════════════════════════════════════════
-       MODAL: Wizard Interactivo en 3 Pasos (Agregar Variante al Inventario)
+       MODAL: Estudio de Carga de Inventario (Split Studio E-Commerce)
        ══════════════════════════════════════════════════════════════════ -->
   @if (showAddModal) {
-    <div class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.15s_ease-out]"
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-md flex items-center justify-center z-50 p-2 sm:p-4 lg:p-6 transition-opacity animate-[fadeIn_0.15s_ease-out]"
       (click)="closeAddModal()">
-      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-3xl overflow-hidden flex flex-col max-h-[90vh] border border-gray-100"
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-6xl overflow-hidden flex flex-col h-[92vh] max-h-[840px] border border-slate-200"
         (click)="$event.stopPropagation()">
 
-        <!-- ── MODAL HEADER CON STEPPER DE PROGRESO ── -->
-        <div class="px-6 pt-5 pb-4 border-b border-gray-100 bg-gray-50/80">
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm">
-                ➕
-              </div>
-              <div>
-                <h2 class="text-base font-bold text-gray-900 leading-tight">Agregar Producto al Inventario</h2>
-                <p class="text-xs text-gray-500">Tienda: <strong class="text-gray-700">{{ store?.name }}</strong></p>
-              </div>
-            </div>
-            <button (click)="closeAddModal()"
-              class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-200/60 transition-colors">
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+        <!-- ── Top Header ── -->
+        <div class="px-6 py-4 border-b border-slate-200/80 bg-white flex items-center justify-between flex-shrink-0">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-2xl bg-[#1d293d] text-white flex items-center justify-center shadow-md shadow-[#1d293d]/20 flex-shrink-0">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
               </svg>
-            </button>
+            </div>
+            <div>
+              <div class="flex items-center gap-2">
+                <h2 class="text-base sm:text-lg font-black text-slate-900 leading-tight">Carga de Inventario</h2>
+                <span class="px-2 py-0.5 rounded-full bg-[#ff2056]/10 text-[#ff2056] border border-[#ff2056]/20 text-[10px] font-extrabold uppercase tracking-wide">
+                  Estudio por Lotes
+                </span>
+              </div>
+              <p class="text-xs text-slate-500">
+                Sucursal: <strong class="text-slate-800">{{ store?.name }}</strong> · Selecciona productos y asigna existencias de forma ágil
+              </p>
+            </div>
           </div>
 
-          <!-- Stepper Visual -->
-          <div class="flex items-center justify-between max-w-lg mx-auto pt-1">
-            <!-- Step 1: Producto -->
-            <button type="button" (click)="goToModalStep(1)"
-              class="flex items-center gap-2 cursor-pointer group focus:outline-none">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs"
-                [class.bg-violet-600]="modalStep === 1"
-                [class.text-white]="modalStep === 1"
-                [class.bg-emerald-500]="modalStep > 1"
-                [class.text-white]="modalStep > 1">
-                @if (modalStep > 1) {
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                } @else { 1 }
-              </span>
-              <span class="text-xs font-bold transition-colors"
-                [class.text-violet-700]="modalStep === 1"
-                [class.text-emerald-700]="modalStep > 1">
-                1. Producto
-              </span>
-            </button>
+          <div class="flex items-center gap-2">
+            <!-- Mobile Switcher -->
+            <div class="md:hidden flex items-center p-0.5 bg-slate-100 rounded-xl">
+              <button type="button" (click)="activeMobileTab = 'products'"
+                class="px-2.5 py-1 text-xs font-bold rounded-lg transition"
+                [class.bg-white]="activeMobileTab === 'products'"
+                [class.text-slate-900]="activeMobileTab === 'products'"
+                [class.shadow-xs]="activeMobileTab === 'products'"
+                [class.text-slate-500]="activeMobileTab !== 'products'">
+                Catálogo
+              </button>
+              <button type="button" (click)="activeMobileTab = 'variants'"
+                class="px-2.5 py-1 text-xs font-bold rounded-lg transition"
+                [class.bg-white]="activeMobileTab === 'variants'"
+                [class.text-slate-900]="activeMobileTab === 'variants'"
+                [class.shadow-xs]="activeMobileTab === 'variants'"
+                [class.text-slate-500]="activeMobileTab !== 'variants'">
+                Variantes ({{ selectedModalVariantsCount }})
+              </button>
+            </div>
 
-            <div class="flex-1 h-0.5 mx-3 transition-colors"
-              [class.bg-emerald-400]="modalStep > 1"
-              [class.bg-gray-200]="modalStep <= 1"></div>
-
-            <!-- Step 2: Variante -->
-            <button type="button" (click)="goToModalStep(2)" [disabled]="!selectedProductId"
-              class="flex items-center gap-2 group focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs"
-                [class.bg-violet-600]="modalStep === 2"
-                [class.text-white]="modalStep === 2"
-                [class.bg-emerald-500]="modalStep > 2"
-                [class.text-white]="modalStep > 2"
-                [class.bg-gray-100]="modalStep < 2"
-                [class.text-gray-500]="modalStep < 2">
-                @if (modalStep > 2) {
-                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
-                } @else { 2 }
-              </span>
-              <span class="text-xs font-bold transition-colors"
-                [class.text-violet-700]="modalStep === 2"
-                [class.text-emerald-700]="modalStep > 2"
-                [class.text-gray-400]="modalStep < 2">
-                2. Variante
-              </span>
-            </button>
-
-            <div class="flex-1 h-0.5 mx-3 transition-colors"
-              [class.bg-emerald-400]="modalStep > 2"
-              [class.bg-gray-200]="modalStep <= 2"></div>
-
-            <!-- Step 3: Stock y Precios -->
-            <button type="button" (click)="goToModalStep(3)" [disabled]="!addInventoryForm.get('variantId')?.value"
-              class="flex items-center gap-2 group focus:outline-none disabled:opacity-40 disabled:cursor-not-allowed">
-              <span class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold transition-all shadow-xs"
-                [class.bg-violet-600]="modalStep === 3"
-                [class.text-white]="modalStep === 3"
-                [class.bg-gray-100]="modalStep < 3"
-                [class.text-gray-500]="modalStep < 3">
-                3
-              </span>
-              <span class="text-xs font-bold transition-colors"
-                [class.text-violet-700]="modalStep === 3"
-                [class.text-gray-400]="modalStep < 3">
-                3. Stock y Precios
-              </span>
+            <button (click)="closeAddModal()"
+              class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition">
+              <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
             </button>
           </div>
         </div>
 
-        <!-- ── CONTENIDO PRINCIPAL SEGÚN EL PASO ACTIVO ── -->
-        <div class="p-6 overflow-y-auto flex-1">
+        <!-- ── Main 2-Column Studio ── -->
+        <div class="flex-1 flex overflow-hidden">
 
-          <!-- ══════════════════════════════════════════════════════════════
-               PASO 1: Catálogo Visual de Productos
-               ══════════════════════════════════════════════════════════════ -->
-          @if (modalStep === 1) {
-            <div class="space-y-4">
-              <!-- Barra de Búsqueda Inteligente -->
+          <!-- ── Columna Izquierda: Explorador de Productos del Catálogo ── -->
+          <div class="w-full md:w-80 lg:w-96 flex-shrink-0 border-r border-slate-200/80 bg-slate-50/70 flex flex-col h-full overflow-hidden"
+            [class.hidden]="activeMobileTab !== 'products'"
+            [class.flex]="activeMobileTab === 'products'"
+            [class.md:flex]="true">
+
+            <!-- Search Header -->
+            <div class="p-3.5 border-b border-slate-200/80 bg-white">
               <div class="relative">
                 <input [(ngModel)]="modalProductSearch" [ngModelOptions]="{standalone: true}"
-                  type="text" placeholder="Buscar producto por nombre, marca o código..."
-                  class="w-full pl-10 pr-10 py-3 border-2 border-gray-200 focus:border-violet-500 focus:ring-4 focus:ring-violet-100 rounded-2xl text-sm outline-none transition bg-white shadow-xs">
-                <svg class="w-5 h-5 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  type="text" placeholder="Buscar por producto, marca, código..."
+                  class="w-full pl-9 pr-8 py-2.5 border border-slate-200 rounded-xl text-xs sm:text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition bg-slate-50/50 focus:bg-white">
+                <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 @if (modalProductSearch) {
                   <button (click)="modalProductSearch = ''"
-                    class="absolute right-3.5 top-1/2 -translate-y-1/2 w-6 h-6 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200 text-xs">
-                    ✕
+                    class="absolute right-2.5 top-1/2 -translate-y-1/2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-200 text-slate-500 hover:bg-slate-300 text-xs transition">
+                    <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
                   </button>
                 }
               </div>
+              <div class="flex items-center justify-between text-[11px] text-slate-500 mt-2 px-1">
+                <span>Catálogo maestro</span>
+                <span class="font-bold font-mono text-slate-700">{{ filteredModalProducts.length }} disponibles</span>
+              </div>
+            </div>
 
-              <!-- Contador de Resultados -->
-              <div class="flex items-center justify-between text-xs text-gray-500 px-1">
-                <span>Selecciona el producto que deseas ingresar a la tienda:</span>
-                <span class="font-medium font-mono bg-gray-100 px-2 py-0.5 rounded-md">{{ filteredModalProducts.length }} productos</span>
+            <!-- Product List Scrollable -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-2">
+              @for (product of filteredModalProducts; track product._id) {
+                @let availableVars = getAvailableVariantsCount(product);
+                @let isSelected = selectedProductId === product._id;
+                <div (click)="selectProductInStudio(product)"
+                  class="p-3 rounded-2xl border transition-all cursor-pointer flex items-center gap-3 relative group"
+                  [class.bg-white]="!isSelected"
+                  [class.border-slate-200/80]="!isSelected"
+                  [class.hover:border-slate-300]="!isSelected"
+                  [class.hover:bg-white]="!isSelected"
+                  [class.hover:shadow-xs]="!isSelected"
+                  [class.bg-[#fff8f9]]="isSelected"
+                  [class.border-[#ff2056]/40]="isSelected"
+                  [class.ring-1]="isSelected"
+                  [class.ring-[#ff2056]/20]="isSelected"
+                  [class.shadow-xs]="isSelected">
+
+                  <!-- Thumbnail -->
+                  <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200/80 overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    @if (getProductPreviewImage(product)) {
+                      <img [src]="getProductPreviewImage(product)" [alt]="product.name" class="w-full h-full object-cover">
+                    } @else {
+                      <svg class="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  </div>
+
+                  <!-- Info -->
+                  <div class="flex-1 min-w-0">
+                    <div class="flex items-center gap-1.5 mb-0.5">
+                      <span class="px-1.5 py-0.2 bg-slate-100 text-slate-600 rounded text-[9px] font-mono font-bold truncate">
+                        {{ product.code }}
+                      </span>
+                      @if (product.brand) {
+                        <span class="text-[10px] text-slate-400 font-semibold truncate">{{ product.brand }}</span>
+                      }
+                    </div>
+                    <p class="text-xs font-bold text-slate-900 leading-snug truncate group-hover:text-[#ff2056] transition"
+                      [class.text-[#1d293d]]="isSelected">
+                      {{ product.name }}
+                    </p>
+                    <div class="flex items-center justify-between mt-1">
+                      <span class="text-xs font-black text-[#1d293d]">S/ {{ product.basePrice || 0 }}</span>
+                      @if (availableVars > 0) {
+                        <span class="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200/60 flex items-center gap-1">
+                          <span class="w-1 h-1 rounded-full bg-emerald-500"></span>
+                          {{ availableVars }} disp.
+                        </span>
+                      } @else {
+                        <span class="text-[9px] text-slate-400 font-medium">Todas en tienda</span>
+                      }
+                    </div>
+                  </div>
+
+                  <!-- Arrow indicator if selected -->
+                  @if (isSelected) {
+                    <div class="hidden md:flex w-5 h-5 rounded-full bg-[#ff2056] text-white items-center justify-center flex-shrink-0 shadow-xs">
+                      <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                  }
+
+                </div>
+              } @empty {
+                <div class="text-center py-12 px-4">
+                  <svg class="w-10 h-10 mx-auto text-slate-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  <p class="text-xs font-bold text-slate-700">No se encontraron productos</p>
+                  <p class="text-[11px] text-slate-400 mt-0.5">Prueba con otro término de búsqueda</p>
+                </div>
+              }
+            </div>
+
+          </div>
+
+          <!-- ── Columna Derecha: Matriz Interactiva de Variantes ── -->
+          <div class="flex-1 flex flex-col h-full bg-white overflow-hidden"
+            [class.hidden]="activeMobileTab !== 'variants'"
+            [class.flex]="activeMobileTab === 'variants'"
+            [class.md:flex]="true">
+
+            @if (!selectedModalProduct) {
+              <!-- Empty Selection Guidance State -->
+              <div class="flex-1 flex flex-col items-center justify-center p-8 text-center bg-slate-50/40">
+                <div class="w-16 h-16 rounded-3xl bg-[#1d293d]/5 text-[#1d293d] flex items-center justify-center mb-4 shadow-sm">
+                  <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75"
+                      d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                  </svg>
+                </div>
+                <h3 class="text-base font-extrabold text-slate-800 mb-1">Selecciona un producto del catálogo</h3>
+                <p class="text-xs text-slate-500 max-w-sm">
+                  Elige un producto en el panel izquierdo para ver todas sus variantes disponibles, configurar existencias individuales o aplicar cantidades masivas.
+                </p>
+              </div>
+            } @else {
+
+              <!-- Selected Product Bar -->
+              <div class="px-5 py-3.5 border-b border-slate-200/80 bg-gradient-to-r from-[#fff5f7] via-slate-50/80 to-[#f8fafc] flex items-center justify-between flex-wrap gap-3 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                  <div class="w-10 h-10 rounded-xl bg-white border border-slate-200/80 overflow-hidden flex-shrink-0 shadow-xs flex items-center justify-center">
+                    @if (getProductPreviewImage(selectedModalProduct)) {
+                      <img [src]="getProductPreviewImage(selectedModalProduct)" [alt]="selectedModalProduct.name" class="w-full h-full object-cover">
+                    } @else {
+                      <svg class="w-5 h-5 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    }
+                  </div>
+                  <div class="min-w-0">
+                    <div class="flex items-center gap-2">
+                      <span class="px-1.5 py-0.2 bg-[#1d293d]/10 text-[#1d293d] rounded text-[10px] font-mono font-bold">{{ selectedModalProduct.code }}</span>
+                      <span class="text-xs text-slate-400 font-semibold">{{ selectedModalProduct.brand }}</span>
+                    </div>
+                    <p class="text-sm font-extrabold text-slate-900 truncate leading-snug">{{ selectedModalProduct.name }}</p>
+                  </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                  <span class="text-xs font-bold text-slate-500 bg-white px-2.5 py-1 rounded-xl border border-slate-200/80 shadow-xs">
+                    Base: <strong class="text-[#ff2056]">S/ {{ selectedModalProduct.basePrice || 0 }}</strong>
+                  </span>
+                  <span class="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-xl border border-emerald-200/60">
+                    {{ modalVariants.length }} variantes disponibles
+                  </span>
+                </div>
               </div>
 
-              <!-- Grid de Productos -->
-              <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5 max-h-[50vh] overflow-y-auto pr-1">
-                @for (product of filteredModalProducts; track product._id) {
-                  @let availableVars = getAvailableVariantsCount(product);
-                  <div (click)="selectProductInWizard(product)"
-                    class="group relative bg-white border-2 rounded-2xl p-3.5 cursor-pointer transition-all duration-200 hover:border-violet-500 hover:shadow-md hover:-translate-y-0.5 flex flex-col justify-between"
-                    [class.border-violet-600]="selectedProductId === product._id"
-                    [class.bg-violet-50/40]="selectedProductId === product._id"
-                    [class.border-gray-200]="selectedProductId !== product._id">
-
-                    <div>
-                      <!-- Imagen del Producto -->
-                      <div class="w-full h-32 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center overflow-hidden mb-3 group-hover:bg-white transition">
-                        @if (getProductPreviewImage(product)) {
-                          <img [src]="getProductPreviewImage(product)" [alt]="product.name"
-                            class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
-                        } @else {
-                          <svg class="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <!-- Batch Actions Toolbar -->
+              @if (modalVariants.length > 0) {
+                <div class="px-5 py-2.5 border-b border-slate-200/80 bg-slate-50/60 flex items-center justify-between flex-wrap gap-2.5 flex-shrink-0 text-xs">
+                  
+                  <!-- Select All / Deselect All -->
+                  <div class="flex items-center gap-2">
+                    <button type="button" (click)="selectAllVariants(!isAllVariantsSelected)"
+                      class="px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 active:scale-95 transition font-bold text-slate-700 flex items-center gap-1.5 shadow-xs">
+                      <div class="w-3.5 h-3.5 rounded border flex items-center justify-center transition"
+                        [class.bg-[#ff2056]]="isAllVariantsSelected"
+                        [class.border-[#ff2056]]="isAllVariantsSelected"
+                        [class.border-slate-300]="!isAllVariantsSelected">
+                        @if (isAllVariantsSelected) {
+                          <svg class="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
                           </svg>
                         }
                       </div>
-
-                      <!-- Información del Producto -->
-                      <div class="flex items-center gap-1.5 mb-1">
-                        <span class="px-1.5 py-0.5 bg-gray-100 text-gray-600 rounded text-[10px] font-mono font-bold truncate">{{ product.code }}</span>
-                        @if (product.brand) {
-                          <span class="text-[11px] text-gray-400 font-semibold truncate">{{ product.brand }}</span>
-                        }
-                      </div>
-                      <h4 class="text-sm font-bold text-gray-900 leading-snug line-clamp-2 mb-2 group-hover:text-violet-700 transition">
-                        {{ product.name }}
-                      </h4>
-                    </div>
-
-                    <!-- Footer de la Tarjeta con Precio y Disponibilidad -->
-                    <div class="pt-2 border-t border-gray-100 flex items-center justify-between mt-auto">
-                      <span class="text-sm font-extrabold text-violet-700">S/ {{ product.basePrice || 0 }}</span>
-                      @if (availableVars > 0) {
-                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200/60">
-                          <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                          {{ availableVars }} var. disp.
-                        </span>
-                      } @else {
-                        <span class="text-[10px] text-gray-400 font-medium">Todas en tienda</span>
-                      }
-                    </div>
+                      <span>{{ isAllVariantsSelected ? 'Deseleccionar todas' : 'Seleccionar todas (' + modalVariants.length + ')' }}</span>
+                    </button>
                   </div>
-                } @empty {
-                  <div class="col-span-full py-12 text-center text-gray-400">
-                    <svg class="w-12 h-12 mx-auto text-gray-300 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                    <p class="text-sm font-semibold">No se encontraron productos</p>
-                    <p class="text-xs text-gray-400">Intenta con otro término de búsqueda</p>
+
+                  <!-- Fast Batch Stock Setter -->
+                  <div class="flex items-center gap-2">
+                    <span class="text-slate-500 font-medium hidden sm:inline">Stock en lote:</span>
+                    <div class="flex items-center gap-1 bg-white p-1 rounded-xl border border-slate-200/80 shadow-xs">
+                      <input [(ngModel)]="batchQuantity" [ngModelOptions]="{standalone: true}"
+                        type="number" min="1" class="w-12 text-center text-xs font-bold text-slate-900 outline-none">
+                      <button type="button" (click)="applyBatchQuantity()"
+                        class="px-2.5 py-1 bg-[#1d293d] hover:bg-[#2b3a52] active:scale-95 text-white rounded-lg font-bold text-[11px] transition shadow-xs">
+                        Aplicar
+                      </button>
+                    </div>
+
+                    <!-- Batch Location Popover Toggle -->
+                    <button type="button" (click)="showBatchLocation = !showBatchLocation"
+                      class="px-2.5 py-1.5 rounded-xl border font-bold text-[11px] transition flex items-center gap-1"
+                      [class.bg-[#1d293d]/10]="showBatchLocation"
+                      [class.border-[#1d293d]/25]="showBatchLocation"
+                      [class.text-[#1d293d]]="showBatchLocation"
+                      [class.bg-white]="!showBatchLocation"
+                      [class.border-slate-200]="!showBatchLocation"
+                      [class.text-slate-600]="!showBatchLocation">
+                      <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      <span>Ubicación lote</span>
+                    </button>
+                  </div>
+
+                </div>
+
+                <!-- Expandable Batch Location Drawer -->
+                @if (showBatchLocation) {
+                  <div class="px-5 py-3 bg-slate-100/80 border-b border-slate-200/80 flex items-center gap-3 flex-wrap animate-[fadeIn_0.15s_ease-out]">
+                    <span class="text-xs font-bold text-slate-800 flex items-center gap-1">
+                      <span>Ubicación para seleccionadas:</span>
+                    </span>
+                    <input [(ngModel)]="batchAisle" [ngModelOptions]="{standalone: true}" type="text" placeholder="Pasillo (Ej. A)"
+                      class="w-28 px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#ff2056]">
+                    <input [(ngModel)]="batchShelf" [ngModelOptions]="{standalone: true}" type="text" placeholder="Estante (Ej. 3)"
+                      class="w-28 px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#ff2056]">
+                    <input [(ngModel)]="batchBin" [ngModelOptions]="{standalone: true}" type="text" placeholder="Celda (Ej. 12)"
+                      class="w-28 px-2.5 py-1 bg-white border border-slate-300 rounded-lg text-xs outline-none focus:border-[#ff2056]">
+                    <button type="button" (click)="applyBatchLocation()"
+                      class="px-3 py-1 bg-[#1d293d] hover:bg-[#2b3a52] text-white rounded-lg text-xs font-bold transition shadow-xs">
+                      Aplicar al lote
+                    </button>
                   </div>
                 }
-              </div>
-            </div>
-          }
-
-          <!-- ══════════════════════════════════════════════════════════════
-               PASO 2: Selector Visual de Variantes
-               ══════════════════════════════════════════════════════════════ -->
-          @if (modalStep === 2) {
-            <div class="space-y-4">
-              <!-- Banner del Producto Seleccionado -->
-              @if (selectedModalProduct) {
-                <div class="p-3.5 bg-gradient-to-r from-violet-50 to-blue-50/50 border border-violet-200/80 rounded-2xl flex items-center justify-between gap-3 shadow-xs">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-12 h-12 rounded-xl bg-white border border-violet-100 flex-shrink-0 flex items-center justify-center overflow-hidden shadow-xs">
-                      @if (getProductPreviewImage(selectedModalProduct)) {
-                        <img [src]="getProductPreviewImage(selectedModalProduct)" [alt]="selectedModalProduct.name" class="w-full h-full object-cover">
-                      } @else {
-                        <svg class="w-6 h-6 text-violet-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      }
-                    </div>
-                    <div class="min-w-0">
-                      <div class="flex items-center gap-1.5">
-                        <span class="px-1.5 py-0.5 bg-violet-100 text-violet-800 rounded text-[10px] font-mono font-bold">{{ selectedModalProduct.code }}</span>
-                        <span class="text-xs text-gray-500 font-semibold truncate">{{ selectedModalProduct.brand }}</span>
-                      </div>
-                      <p class="text-sm font-bold text-gray-900 truncate">{{ selectedModalProduct.name }}</p>
-                      <p class="text-xs text-violet-700 font-extrabold">Precio base: S/ {{ selectedModalProduct.basePrice || 0 }}</p>
-                    </div>
-                  </div>
-
-                  <button type="button" (click)="goToModalStep(1)"
-                    class="px-3 py-1.5 bg-white border border-violet-200 text-violet-700 hover:bg-violet-50 rounded-xl text-xs font-bold transition flex items-center gap-1 flex-shrink-0">
-                    <span>Cambiar</span>
-                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
-                  </button>
-                </div>
               }
 
-              <!-- Indicador -->
-              <div class="flex items-center justify-between text-xs text-gray-500 px-1">
-                <span>Elige la variante (color y talla) que deseas ingresar:</span>
-                <span class="font-medium font-mono bg-gray-100 px-2 py-0.5 rounded-md">{{ variantsForModal.length }} variantes disponibles</span>
-              </div>
+              <!-- Variant List Container -->
+              <div class="flex-1 overflow-y-auto p-4 space-y-3">
+                @if (modalVariants.length === 0) {
+                  <div class="p-8 text-center bg-slate-50 border border-slate-200/80 rounded-2xl">
+                    <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto mb-2">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                    <h4 class="text-sm font-bold text-slate-800">Todas las variantes ya están registradas</h4>
+                    <p class="text-xs text-slate-500 mt-1">Este producto ya cuenta con todas sus variantes activas en esta tienda.</p>
+                  </div>
+                } @else {
+                  @for (item of modalVariants; track item.variant._id) {
+                    <div class="rounded-2xl border transition-all duration-150 p-4"
+                      [class.border-[#ff2056]/40]="item.selected"
+                      [class.bg-[#fff8f9]]="item.selected"
+                      [class.ring-1]="item.selected"
+                      [class.ring-[#ff2056]/20]="item.selected"
+                      [class.shadow-xs]="item.selected"
+                      [class.border-slate-200]="!item.selected"
+                      [class.bg-white]="!item.selected"
+                      [class.hover:border-slate-300]="!item.selected">
 
-              <!-- Lista / Grid de Variantes -->
-              @if (variantsForModal.length === 0) {
-                <div class="p-8 text-center bg-amber-50/60 border border-amber-200 rounded-2xl">
-                  <svg class="w-10 h-10 text-amber-500 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                  </svg>
-                  <h4 class="text-sm font-bold text-amber-800">Todas las variantes ya están registradas</h4>
-                  <p class="text-xs text-amber-600 mt-1">Este producto ya tiene todas sus variantes en el inventario de esta tienda.</p>
-                  <button type="button" (click)="goToModalStep(1)"
-                    class="mt-4 px-4 py-2 bg-amber-600 text-white rounded-xl text-xs font-bold hover:bg-amber-700 transition">
-                    ← Seleccionar otro producto
-                  </button>
-                </div>
-              } @else {
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[50vh] overflow-y-auto pr-1">
-                  @for (v of variantsForModal; track v._id) {
-                    @let isSelected = addInventoryForm.get('variantId')?.value === v._id;
-                    <div (click)="selectVariantInWizard(v)"
-                      class="p-4 rounded-2xl border-2 cursor-pointer transition-all duration-150 flex items-center justify-between gap-3 group"
-                      [class.border-violet-600]="isSelected"
-                      [class.bg-violet-50/80]="isSelected"
-                      [class.shadow-md]="isSelected"
-                      [class.border-gray-200]="!isSelected"
-                      [class.hover:border-violet-400]="!isSelected"
-                      [class.hover:bg-gray-50]="!isSelected">
+                      <!-- Card Header / Variant Essentials -->
+                      <div class="flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-3 min-w-0">
+                          
+                          <!-- Checkbox -->
+                          <button type="button" (click)="toggleVariantSelection(item)"
+                            class="w-5 h-5 rounded-md border flex items-center justify-center transition flex-shrink-0 cursor-pointer"
+                            [class.bg-[#ff2056]]="item.selected"
+                            [class.border-[#ff2056]]="item.selected"
+                            [class.border-slate-300]="!item.selected"
+                            [class.hover:border-[#ff2056]/60]="!item.selected">
+                            @if (item.selected) {
+                              <svg class="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                            }
+                          </button>
 
-                      <div class="flex items-center gap-3 min-w-0">
-                        <!-- Swatch de Color o Icono -->
-                        @if (v.color) {
-                          <div class="w-9 h-9 rounded-xl border-2 flex items-center justify-center flex-shrink-0 shadow-xs"
-                            [style.background-color]="v.color.hex"
-                            [class.border-white]="isSelected"
-                            [class.border-gray-300]="!isSelected"
-                            [title]="v.color.name">
-                          </div>
-                        }
-
-                        <div class="min-w-0">
-                          <p class="text-xs font-mono text-gray-500 truncate">{{ v.sku }}</p>
-                          <p class="text-sm font-bold text-gray-900 truncate">
-                            {{ v.color?.name ?? 'Sin color' }}
-                            @if (v.size) { · <span class="text-violet-700">Talla {{ v.size.value }}{{ v.size.region ? ' ' + v.size.region : '' }}</span> }
-                          </p>
-                          @if (v.priceAdjustment && v.priceAdjustment !== 0) {
-                            <span class="text-[11px] text-gray-500">Ajuste: {{ v.priceAdjustment > 0 ? '+' : '' }}S/ {{ v.priceAdjustment }}</span>
+                          <!-- Color Swatch -->
+                          @if (item.variant.color) {
+                            <div class="w-7 h-7 rounded-lg border border-white shadow-xs ring-1 ring-slate-200 flex-shrink-0"
+                              [style.background-color]="item.variant.color.hex"
+                              [title]="item.variant.color.name"></div>
                           }
+
+                          <!-- Variant Attributes -->
+                          <div class="min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                              <p class="text-sm font-bold text-slate-900 truncate">
+                                {{ item.variant.color?.name ?? 'Sin color' }}
+                              </p>
+                              @if (item.variant.size) {
+                                <span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-700 text-xs font-extrabold border border-slate-200/60">
+                                  Talla {{ item.variant.size.value }}{{ item.variant.size.region ? ' ' + item.variant.size.region : '' }}
+                                </span>
+                              }
+                              <span class="text-xs font-mono text-slate-500 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-200/60">
+                                {{ item.variant.sku }}
+                              </span>
+                            </div>
+                            @if (item.variant.priceAdjustment && item.variant.priceAdjustment !== 0) {
+                              <p class="text-[11px] text-slate-400 mt-0.5">
+                                Ajuste variante: {{ item.variant.priceAdjustment > 0 ? '+' : '' }}S/ {{ item.variant.priceAdjustment }}
+                              </p>
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Price summary badge -->
+                        <div class="text-right flex-shrink-0">
+                          <span class="text-xs font-black text-slate-900">Costo: S/ {{ item.cost || 0 }}</span>
+                          <p class="text-[10px] text-slate-400">Mayorista: S/ {{ item.wholesalePrice || 0 }}</p>
                         </div>
                       </div>
 
-                      <div class="flex-shrink-0">
-                        @if (isSelected) {
-                          <div class="w-6 h-6 rounded-full bg-violet-600 text-white flex items-center justify-center">
-                            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      <!-- Stepper Row & Location indicator -->
+                      <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between flex-wrap gap-3">
+                        <div class="flex items-center gap-2">
+                          <span class="text-xs font-bold text-slate-700">Stock a ingresar:</span>
+                          <div class="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-0.5 shadow-xs">
+                            <button type="button" (click)="adjustVariantQuantity(item, -1)"
+                              class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-slate-100 active:scale-95 rounded-lg transition font-bold">
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                              </svg>
+                            </button>
+                            <input [(ngModel)]="item.quantity" [ngModelOptions]="{standalone: true}"
+                              type="number" min="1"
+                              class="w-14 text-center font-black text-sm text-slate-900 outline-none">
+                            <button type="button" (click)="adjustVariantQuantity(item, 1)"
+                              class="w-7 h-7 flex items-center justify-center text-slate-600 hover:bg-slate-100 active:scale-95 rounded-lg transition font-bold">
+                              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                              </svg>
+                            </button>
                           </div>
-                        } @else {
-                          <span class="px-2.5 py-1 rounded-xl text-xs font-bold text-violet-700 bg-violet-50 group-hover:bg-violet-600 group-hover:text-white transition">
-                            Elegir ➔
-                          </span>
-                        }
+
+                          <!-- Preset chips -->
+                          <div class="hidden sm:flex items-center gap-1">
+                            @for (val of [5, 10, 20, 50]; track val) {
+                              <button type="button" (click)="setVariantQuantity(item, val)"
+                                class="px-2 py-0.5 rounded-lg text-xs font-bold border transition"
+                                [class.bg-[#ff2056]]="item.quantity === val"
+                                [class.text-white]="item.quantity === val"
+                                [class.border-[#ff2056]]="item.quantity === val"
+                                [class.bg-white]="item.quantity !== val"
+                                [class.text-slate-600]="item.quantity !== val"
+                                [class.border-slate-200]="item.quantity !== val">
+                                {{ val }}
+                              </button>
+                            }
+                          </div>
+                        </div>
+
+                        <!-- Advanced toggle button -->
+                        <button type="button" (click)="toggleVariantExpanded(item)"
+                          class="text-xs font-bold text-[#1d293d] hover:text-[#ff2056] flex items-center gap-1 transition">
+                          <span>{{ item.isExpanded ? 'Ocultar detalles' : 'Opciones avanzadas' }}</span>
+                          <svg class="w-3.5 h-3.5 transition-transform duration-200" [class.rotate-180]="item.isExpanded" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
                       </div>
+
+                      <!-- Collapsible Advanced Options -->
+                      @if (item.isExpanded) {
+                        <div class="mt-3 pt-3 border-t border-slate-100 grid grid-cols-2 sm:grid-cols-4 gap-2.5 animate-[fadeIn_0.15s_ease-out]">
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Costo Unitario (S/)</label>
+                            <input [(ngModel)]="item.cost" [ngModelOptions]="{standalone: true}" type="number" step="0.01"
+                              class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#ff2056]">
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Precio Mayorista (S/)</label>
+                            <input [(ngModel)]="item.wholesalePrice" [ngModelOptions]="{standalone: true}" type="number" step="0.01"
+                              class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#ff2056]">
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Punto Reorden</label>
+                            <input [(ngModel)]="item.reorderPoint" [ngModelOptions]="{standalone: true}" type="number"
+                              class="w-full px-2.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs font-semibold outline-none focus:border-[#ff2056]">
+                          </div>
+                          <div>
+                            <label class="block text-[10px] font-bold text-slate-500 mb-0.5">Pasillo / Estante / Celda</label>
+                            <div class="flex items-center gap-1">
+                              <input [(ngModel)]="item.locationAisle" [ngModelOptions]="{standalone: true}" type="text" placeholder="P"
+                                class="w-1/3 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-center font-mono outline-none focus:border-[#ff2056]" title="Pasillo">
+                              <input [(ngModel)]="item.locationShelf" [ngModelOptions]="{standalone: true}" type="text" placeholder="E"
+                                class="w-1/3 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-center font-mono outline-none focus:border-[#ff2056]" title="Estante">
+                              <input [(ngModel)]="item.locationBin" [ngModelOptions]="{standalone: true}" type="text" placeholder="C"
+                                class="w-1/3 px-1.5 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-center font-mono outline-none focus:border-[#ff2056]" title="Celda">
+                            </div>
+                          </div>
+                        </div>
+                      }
+
                     </div>
                   }
-                </div>
-              }
-            </div>
-          }
-
-          <!-- ══════════════════════════════════════════════════════════════
-               PASO 3: Stock, Precios y Ubicación
-               ══════════════════════════════════════════════════════════════ -->
-          @if (modalStep === 3) {
-            <form [formGroup]="addInventoryForm" (ngSubmit)="onAddInventory()" id="addInventoryInnerForm" class="space-y-4">
-
-              <!-- Tarjeta Resumen de la Variante Elegida -->
-              @if (selectedModalVariant) {
-                <div class="p-3.5 bg-violet-50/80 border border-violet-200 rounded-2xl flex items-center justify-between gap-3">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-8 h-8 rounded-full border-2 border-white shadow-xs flex-shrink-0"
-                      [style.background-color]="selectedModalVariant.color?.hex ?? '#e5e7eb'"></div>
-                    <div class="min-w-0">
-                      <p class="text-xs font-mono text-gray-500">{{ selectedModalVariant.sku }}</p>
-                      <p class="text-sm font-bold text-gray-900 truncate">
-                        {{ selectedModalProduct?.name }} · {{ selectedModalVariant.color?.name }} (Talla {{ selectedModalVariant.size?.value }})
-                      </p>
-                    </div>
-                  </div>
-
-                  <button type="button" (click)="goToModalStep(2)"
-                    class="px-2.5 py-1 bg-white border border-violet-200 text-violet-700 hover:bg-violet-50 rounded-lg text-xs font-semibold transition flex-shrink-0">
-                    Cambiar
-                  </button>
-                </div>
-              }
-
-              <!-- 📦 BLOQUE PRINCIPAL: STOCK INICIAL A INGRESAR -->
-              <div class="p-4 bg-gradient-to-br from-violet-50/70 to-blue-50/50 border-2 border-violet-200 rounded-2xl shadow-xs">
-                <div class="flex items-center justify-between mb-2">
-                  <label class="text-xs font-extrabold text-gray-800 uppercase tracking-wider flex items-center gap-1.5">
-                    <span>📦 Cantidad de Stock Físico a Ingresar</span>
-                    <span class="text-red-500">*</span>
-                  </label>
-                  <span class="text-sm font-extrabold text-violet-800 bg-violet-100/80 px-2.5 py-0.5 rounded-full">
-                    {{ addInventoryForm.get('quantity')?.value || 0 }} unidades
-                  </span>
-                </div>
-
-                <!-- Control de Cantidad Grande e Interactivo -->
-                <div class="flex items-center gap-2 mt-2">
-                  <button type="button" (click)="adjustAddQuantity(-10)"
-                    class="px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs font-extrabold text-gray-700 hover:bg-gray-100 active:scale-95 transition shadow-xs">
-                    -10
-                  </button>
-                  <button type="button" (click)="adjustAddQuantity(-1)"
-                    class="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-xl text-base font-bold text-gray-800 hover:bg-gray-100 active:scale-95 transition shadow-xs">
-                    -
-                  </button>
-                  <input formControlName="quantity" type="number" min="1"
-                    class="flex-1 text-center font-extrabold text-xl py-2 border-2 border-violet-400 rounded-xl focus:ring-4 focus:ring-violet-200 focus:border-violet-600 bg-white outline-none transition">
-                  <button type="button" (click)="adjustAddQuantity(1)"
-                    class="w-10 h-10 flex items-center justify-center bg-white border border-gray-300 rounded-xl text-base font-bold text-gray-800 hover:bg-gray-100 active:scale-95 transition shadow-xs">
-                    +
-                  </button>
-                  <button type="button" (click)="adjustAddQuantity(10)"
-                    class="px-3 py-2.5 bg-white border border-gray-300 rounded-xl text-xs font-extrabold text-gray-700 hover:bg-gray-100 active:scale-95 transition shadow-xs">
-                    +10
-                  </button>
-                </div>
-
-                <!-- Botones de Cantidades Sugeridas -->
-                <div class="flex items-center gap-2 mt-3 pt-2.5 border-t border-violet-200/60">
-                  <span class="text-xs text-gray-600 font-semibold">Atajos:</span>
-                  @for (sug of [5, 10, 20, 50, 100]; track sug) {
-                    <button type="button" (click)="setAddQuantity(sug)"
-                      class="px-2.5 py-1 rounded-xl text-xs font-bold border transition shadow-xs"
-                      [class.bg-violet-600]="addInventoryForm.get('quantity')?.value === sug"
-                      [class.text-white]="addInventoryForm.get('quantity')?.value === sug"
-                      [class.border-violet-600]="addInventoryForm.get('quantity')?.value === sug"
-                      [class.bg-white]="addInventoryForm.get('quantity')?.value !== sug"
-                      [class.text-gray-700]="addInventoryForm.get('quantity')?.value !== sug"
-                      [class.border-gray-300]="addInventoryForm.get('quantity')?.value !== sug">
-                      {{ sug }}
-                    </button>
-                  }
-                </div>
+                }
               </div>
 
-              <!-- Costo y Precio Mayorista -->
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Costo Unitario (S/)
-                    <span class="ml-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-mono">✦ auto</span>
-                  </label>
-                  <input formControlName="cost" type="number" step="0.01" min="0" placeholder="0.00"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">
-                    Precio Mayorista (S/)
-                    <span class="ml-1 px-1.5 py-0.5 bg-blue-50 text-blue-600 rounded text-[10px] font-mono" title="Costo − 10%">✦ −10%</span>
-                  </label>
-                  <input formControlName="wholesalePrice" type="number" step="0.01" min="0" placeholder="0.00"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                </div>
-              </div>
+            }
 
-              <!-- Parámetros de Reorden -->
-              <div class="grid grid-cols-2 gap-3">
-                <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Punto de Reorden (Alerta)</label>
-                  <input formControlName="reorderPoint" type="number" min="0" placeholder="5"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                </div>
-                <div>
-                  <label class="block text-xs font-semibold text-gray-700 mb-1">Cantidad a Reponer</label>
-                  <input formControlName="reorderQuantity" type="number" min="0" placeholder="20"
-                    class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                </div>
-              </div>
-
-              <!-- Ubicación física en Almacén -->
-              <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-                  Ubicación física en Almacén <span class="normal-case font-normal text-gray-400">(opcional)</span>
-                </label>
-                <div class="grid grid-cols-3 gap-2">
-                  <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Pasillo</label>
-                    <input formControlName="locationAisle" type="text" placeholder="A"
-                      class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                  </div>
-                  <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Estante</label>
-                    <input formControlName="locationShelf" type="text" placeholder="3"
-                      class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                  </div>
-                  <div>
-                    <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Celda</label>
-                    <input formControlName="locationBin" type="text" placeholder="12"
-                      class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
-                  </div>
-                </div>
-              </div>
-
-            </form>
-          }
+          </div>
 
         </div>
 
-        <!-- ── MODAL FOOTER CON BOTONES DE NAVEGACIÓN ── -->
-        <div class="flex items-center justify-between gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/70">
-          <div>
-            @if (modalStep > 1) {
-              <button type="button" (click)="goToModalStep(((modalStep - 1) === 1 ? 1 : 2))"
-                class="px-4 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 active:scale-95 transition-all flex items-center gap-1.5 shadow-xs">
-                <span>← Volver</span>
-              </button>
-            } @else {
-              <button type="button" (click)="closeAddModal()"
-                class="px-4 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-xl text-xs font-bold hover:bg-gray-50 active:scale-95 transition-all">
-                Cancelar
-              </button>
-            }
+        <!-- ── Consolidated Bottom Bar ── -->
+        <div class="px-6 py-4 border-t border-slate-200/80 bg-slate-50/80 flex items-center justify-between flex-wrap gap-3 flex-shrink-0">
+          
+          <!-- Summary Metrics -->
+          <div class="flex items-center gap-3 sm:gap-5 flex-wrap">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full"
+                [class.bg-emerald-500]="selectedModalVariantsCount > 0"
+                [class.bg-slate-300]="selectedModalVariantsCount === 0"></span>
+              <span class="text-xs font-black text-slate-900">
+                {{ selectedModalVariantsCount }} {{ selectedModalVariantsCount === 1 ? 'variante seleccionada' : 'variantes seleccionadas' }}
+              </span>
+            </div>
+            <span class="text-slate-300 hidden sm:inline">|</span>
+            <span class="text-xs text-slate-600 font-bold hidden sm:inline">
+              {{ selectedModalVariantsTotalQty }} unidades en total
+            </span>
+            <span class="text-slate-300 hidden sm:inline">|</span>
+            <span class="text-xs text-slate-600 hidden sm:inline">
+              Valor estimado: <strong class="text-[#1d293d]">S/ {{ selectedModalVariantsTotalValuation | number:'1.2-2' }}</strong>
+            </span>
           </div>
 
-          <div class="flex items-center gap-2">
-            @if (modalStep === 1) {
-              <button type="button" (click)="goToModalStep(2)" [disabled]="!selectedProductId"
-                class="px-6 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center gap-2">
-                <span>Siguiente: Elegir Variante</span>
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-              </button>
-            }
+          <!-- Actions -->
+          <div class="flex items-center gap-3">
+            <label class="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 cursor-pointer select-none">
+              <input type="checkbox" [(ngModel)]="keepModalOpenAfterSave" [ngModelOptions]="{standalone: true}"
+                class="rounded text-[#ff2056] focus:ring-[#ff2056]">
+              <span>Mantener abierto tras guardar</span>
+            </label>
 
-            @if (modalStep === 2) {
-              <button type="button" (click)="goToModalStep(3)" [disabled]="!addInventoryForm.get('variantId')?.value"
-                class="px-6 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center gap-2">
-                <span>Siguiente: Stock y Precios</span>
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-              </button>
-            }
+            <button type="button" (click)="closeAddModal()"
+              class="px-4 py-2.5 border border-slate-200 bg-white text-slate-700 rounded-xl text-xs font-bold hover:bg-slate-50 active:scale-95 transition-all">
+              Cancelar
+            </button>
 
-            @if (modalStep === 3) {
-              <button type="submit" form="addInventoryInnerForm"
-                [disabled]="!addInventoryForm.valid || isAddingToInventory"
-                class="px-7 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-violet-600/20 flex items-center gap-2">
-                @if (isAddingToInventory) {
-                  <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                  <span>Ingresando...</span>
-                } @else {
-                  <span>💾 Confirmar e Ingresar al Inventario</span>
-                }
-              </button>
-            }
+            <button type="button" (click)="onAddInventoryBatch()"
+              [disabled]="selectedModalVariantsCount === 0 || isSubmittingBatch"
+              class="px-6 py-2.5 bg-[#ff2056] text-white rounded-xl text-xs font-bold hover:bg-[#e01648] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-md shadow-[#ff2056]/25 flex items-center gap-2">
+              @if (isSubmittingBatch) {
+                <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span>Ingresando al inventario...</span>
+              } @else {
+                <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4" />
+                </svg>
+                <span>Ingresar al Inventario ({{ selectedModalVariantsCount }})</span>
+              }
+            </button>
           </div>
+
         </div>
 
       </div>
     </div>
   }
 
-
   <!-- ══════════════════════════════════════════════════════════════════════
        MODAL: Editar Ítem de Inventario (Stock, Reservas, Costos, Ubicación)
        ══════════════════════════════════════════════════════════════════ -->
   @if (showEditModal && editingItem) {
-    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+    <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 transition-opacity"
       (click)="closeEditModal()">
-      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-[fadeIn_0.15s_ease-out]"
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200"
         (click)="$event.stopPropagation()">
 
         <!-- Modal Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/70">
-          <div>
-            <h2 class="text-base font-bold text-gray-900">Editar Inventario de Variante</h2>
-            <p class="text-xs font-mono text-gray-500 mt-0.5">SKU: {{ getVariantSku(editingItem) }}</p>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50/70">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-xl bg-[#1d293d]/10 text-[#1d293d] flex items-center justify-center">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
+            </div>
+            <div>
+              <h2 class="text-base font-extrabold text-slate-900">Editar Inventario de Variante</h2>
+              <p class="text-xs font-mono text-slate-500 mt-0.5">SKU: {{ getVariantSku(editingItem) }}</p>
+            </div>
           </div>
           <button (click)="closeEditModal()"
-            class="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" />
+            class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        <!-- Tarjeta de Variante en edición -->
+        <!-- Product & Variant Badge -->
         <div class="px-6 pt-4">
-          <div class="p-3 bg-violet-50/80 border border-violet-200 rounded-xl flex items-center gap-3">
-            <div class="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
+          <div class="p-3 bg-slate-50 border border-slate-200 rounded-2xl flex items-center gap-3">
+            <div class="w-6 h-6 rounded-full border border-slate-300 flex-shrink-0 ring-2 ring-white shadow-xs"
               [style.background-color]="getColorHex(editingItem)"></div>
             <div class="flex-1 min-w-0">
-              <p class="text-sm font-semibold text-gray-900 truncate">{{ getProductName(editingItem) }}</p>
-              <p class="text-xs text-gray-500">
-                Color: <strong class="text-gray-700">{{ getColorName(editingItem) }}</strong> · 
-                Talla: <strong class="text-gray-700">{{ getSizeLabel(editingItem) }}</strong>
+              <p class="text-sm font-bold text-slate-900 truncate">{{ getProductName(editingItem) }}</p>
+              <p class="text-xs text-slate-500">
+                Color: <strong class="text-slate-700">{{ getColorName(editingItem) }}</strong> · 
+                Talla: <strong class="text-slate-700">{{ getSizeLabel(editingItem) }}</strong>
               </p>
             </div>
           </div>
         </div>
 
-        <!-- Cuerpo del Formulario de Edición -->
+        <!-- Edit Form -->
         <form [formGroup]="editInventoryForm" (ngSubmit)="onSaveEditInventory()" id="editInventoryFormElement"
           class="px-6 py-4 space-y-4 max-h-[65vh] overflow-y-auto">
 
-          <!-- 1. Stock Físico y Stock Reservado -->
+          <!-- 1. Stock Físico y Reservado -->
           <div class="grid grid-cols-2 gap-3">
-            <!-- Stock Disponible / Físico -->
-            <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-xl">
-              <label class="block text-xs font-bold text-emerald-800 uppercase tracking-wider mb-1.5">
-                📦 Stock Físico
+            <!-- Stock Físico -->
+            <div class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-2xl">
+              <label class="block text-xs font-extrabold text-emerald-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+                <span>Stock Físico</span>
               </label>
               <div class="flex items-center gap-1.5">
                 <button type="button" (click)="adjustEditQuantity('quantity', -1)"
-                  class="w-7 h-7 flex items-center justify-center bg-white border border-emerald-300 text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition">-</button>
+                  class="w-7 h-7 flex items-center justify-center bg-white border border-emerald-300 text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition active:scale-95">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                  </svg>
+                </button>
                 <input formControlName="quantity" type="number" min="0"
-                  class="w-full text-center font-bold text-sm py-1 border border-emerald-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-400 outline-none">
+                  class="w-full text-center font-black text-sm py-1 border border-emerald-300 rounded-lg bg-white focus:ring-2 focus:ring-emerald-400 outline-none">
                 <button type="button" (click)="adjustEditQuantity('quantity', 1)"
-                  class="w-7 h-7 flex items-center justify-center bg-white border border-emerald-300 text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition">+</button>
+                  class="w-7 h-7 flex items-center justify-center bg-white border border-emerald-300 text-emerald-700 rounded-lg font-bold hover:bg-emerald-50 transition active:scale-95">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               </div>
               <div class="flex justify-between mt-1.5">
-                <button type="button" (click)="adjustEditQuantity('quantity', 5)" class="text-[10px] text-emerald-700 font-semibold hover:underline">+5</button>
-                <button type="button" (click)="adjustEditQuantity('quantity', 10)" class="text-[10px] text-emerald-700 font-semibold hover:underline">+10</button>
-                <button type="button" (click)="adjustEditQuantity('quantity', 50)" class="text-[10px] text-emerald-700 font-semibold hover:underline">+50</button>
+                <button type="button" (click)="adjustEditQuantity('quantity', 5)" class="text-[10px] text-emerald-700 font-bold hover:underline">+5</button>
+                <button type="button" (click)="adjustEditQuantity('quantity', 10)" class="text-[10px] text-emerald-700 font-bold hover:underline">+10</button>
+                <button type="button" (click)="adjustEditQuantity('quantity', 50)" class="text-[10px] text-emerald-700 font-bold hover:underline">+50</button>
               </div>
             </div>
 
             <!-- Stock Reservado -->
-            <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-xl">
-              <label class="block text-xs font-bold text-amber-800 uppercase tracking-wider mb-1.5">
-                🔒 Reservado
+            <div class="p-3 bg-amber-50/60 border border-amber-200 rounded-2xl">
+              <label class="block text-xs font-extrabold text-amber-800 uppercase tracking-wider mb-1.5 flex items-center gap-1">
+                <svg class="w-3.5 h-3.5 text-amber-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <span>Reservado</span>
               </label>
               <div class="flex items-center gap-1.5">
                 <button type="button" (click)="adjustEditQuantity('reservedQuantity', -1)"
-                  class="w-7 h-7 flex items-center justify-center bg-white border border-amber-300 text-amber-700 rounded-lg font-bold hover:bg-amber-50 transition">-</button>
+                  class="w-7 h-7 flex items-center justify-center bg-white border border-amber-300 text-amber-700 rounded-lg font-bold hover:bg-amber-50 transition active:scale-95">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M20 12H4" />
+                  </svg>
+                </button>
                 <input formControlName="reservedQuantity" type="number" min="0"
-                  class="w-full text-center font-bold text-sm py-1 border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-400 outline-none">
+                  class="w-full text-center font-black text-sm py-1 border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-400 outline-none">
                 <button type="button" (click)="adjustEditQuantity('reservedQuantity', 1)"
-                  class="w-7 h-7 flex items-center justify-center bg-white border border-amber-300 text-amber-700 rounded-lg font-bold hover:bg-amber-50 transition">+</button>
+                  class="w-7 h-7 flex items-center justify-center bg-white border border-amber-300 text-amber-700 rounded-lg font-bold hover:bg-amber-50 transition active:scale-95">
+                  <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                  </svg>
+                </button>
               </div>
-              <p class="text-[10px] text-amber-600 mt-1.5 text-center">Unidades bloqueadas</p>
+              <p class="text-[10px] text-amber-600 mt-1.5 text-center font-medium">Unidades bloqueadas</p>
             </div>
           </div>
 
           <!-- 2. Costo y Precio Mayorista -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Costo Unitario (S/)</label>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Costo Unitario (S/)</label>
               <input formControlName="cost" type="number" step="0.01" min="0" placeholder="0.00"
-                class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Precio Mayorista (S/)</label>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Precio Mayorista (S/)</label>
               <input formControlName="wholesalePrice" type="number" step="0.01" min="0" placeholder="0.00"
-                class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
             </div>
           </div>
 
           <!-- 3. Parámetros de Reorden -->
           <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Punto de Reorden</label>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Punto de Reorden</label>
               <input formControlName="reorderPoint" type="number" min="0" placeholder="5"
-                class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
             </div>
             <div>
-              <label class="block text-xs font-semibold text-gray-700 mb-1">Cantidad a Reponer</label>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Cantidad a Reponer</label>
               <input formControlName="reorderQuantity" type="number" min="0" placeholder="20"
-                class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                class="w-full px-3.5 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
             </div>
           </div>
 
           <!-- 4. Ubicación en Almacén -->
           <div>
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">
-              Ubicación física en Almacén
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+              </svg>
+              <span>Ubicación física en Almacén</span>
             </label>
             <div class="grid grid-cols-3 gap-2">
               <div>
-                <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Pasillo</label>
-                <input formControlName="locationAisle" type="text" placeholder="A"
-                  class="w-full px-3 py-1.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                <label class="block text-[11px] font-semibold text-slate-500 mb-0.5">Pasillo</label>
+                <input formControlName="locationAisle" type="text" placeholder="Ej. A"
+                  class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Estante</label>
-                <input formControlName="locationShelf" type="text" placeholder="3"
-                  class="w-full px-3 py-1.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                <label class="block text-[11px] font-semibold text-slate-500 mb-0.5">Estante</label>
+                <input formControlName="locationShelf" type="text" placeholder="Ej. 3"
+                  class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
               </div>
               <div>
-                <label class="block text-[11px] font-semibold text-gray-500 mb-0.5">Celda</label>
-                <input formControlName="locationBin" type="text" placeholder="12"
-                  class="w-full px-3 py-1.5 border border-gray-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/30 focus:border-primary outline-none transition">
+                <label class="block text-[11px] font-semibold text-slate-500 mb-0.5">Celda</label>
+                <input formControlName="locationBin" type="text" placeholder="Ej. 12"
+                  class="w-full px-3 py-1.5 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-[#ff2056]/20 focus:border-[#ff2056] outline-none transition">
               </div>
             </div>
           </div>
@@ -892,14 +1290,14 @@
         </form>
 
         <!-- Modal Footer -->
-        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-gray-100 bg-gray-50/50">
+        <div class="flex items-center justify-end gap-3 px-6 py-4 border-t border-slate-100 bg-slate-50/50">
           <button type="button" (click)="closeEditModal()"
-            class="px-5 py-2.5 border border-gray-200 bg-white text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors">
+            class="px-5 py-2.5 border border-slate-200 bg-white text-slate-700 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors">
             Cancelar
           </button>
           <button type="submit" form="editInventoryFormElement"
             [disabled]="!editInventoryForm.valid || isSavingEdit"
-            class="px-6 py-2.5 bg-violet-600 text-white rounded-xl text-sm font-bold hover:bg-violet-700 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm flex items-center gap-2">
+            class="px-6 py-2.5 bg-[#ff2056] text-white rounded-xl text-sm font-bold hover:bg-[#e01648] active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed shadow-sm shadow-[#ff2056]/25 flex items-center gap-2">
             @if (isSavingEdit) {
               <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -907,6 +1305,9 @@
               </svg>
               <span>Guardando...</span>
             } @else {
+              <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
               <span>Guardar Cambios</span>
             }
           </button>

@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, ActivatedRoute } from '@angular/router';
+import { finalize } from 'rxjs';
 import { StoresService } from '../../../core/services/catalog/stores.service';
 import { AuthService }   from '../../../core/services/auth/auth.service';
+import { ToastService }  from '../../../core/services/ui/toast.service';
 import { Store } from '../../../core/interfaces/store.interface';
 import { FormStoreComponent } from './form-store/form-store.component';
 
@@ -17,10 +19,13 @@ import { FormStoreComponent } from './form-store/form-store.component';
 export class StoresComponent implements OnInit {
     stores: Store[] = [];
     filteredStores: Store[] = [];
+    isLoading: boolean = false;
 
-    // Filters
+    // Filters & Views
     searchTerm: string = '';
     statusFilter: 'all' | 'active' | 'inactive' = 'all';
+    typeFilter: 'all' | 'physical' | 'virtual' | 'hybrid' = 'all';
+    viewMode: 'grid' | 'table' = 'grid';
 
     /** true cuando el usuario autenticado tiene rol 'admin' */
     isAdmin = false;
@@ -39,7 +44,7 @@ export class StoresComponent implements OnInit {
     selectedStore: Store | null = null;
     isEditMode: boolean = false;
 
-    // Statistics
+    // Statistics & Omnichannel KPIs
     get totalStores(): number {
         return this.stores.length;
     }
@@ -52,15 +57,41 @@ export class StoresComponent implements OnInit {
         return this.stores.filter(s => !s.isActive).length;
     }
 
+    get pickupStores(): number {
+        return this.stores.filter(s => s.capabilities?.hasPickup).length;
+    }
+
+    get deliveryStores(): number {
+        return this.stores.filter(s => s.capabilities?.hasDelivery).length;
+    }
+
+    get physicalStores(): number {
+        return this.stores.filter(s => s.type === 'physical').length;
+    }
+
+    get virtualStores(): number {
+        return this.stores.filter(s => s.type === 'virtual').length;
+    }
+
+    get hybridStores(): number {
+        return this.stores.filter(s => s.type === 'hybrid').length;
+    }
+
+    get coveredCitiesCount(): number {
+        const cities = this.stores
+            .map(s => s.location?.city?.trim())
+            .filter((c): c is string => !!c);
+        return new Set(cities).size;
+    }
+
     constructor(
         private storesService: StoresService,
         private route:         ActivatedRoute,
-        private authService:   AuthService
+        private authService:   AuthService,
+        private toastService:  ToastService
     ) { }
 
     ngOnInit(): void {
-        // Si el admin llega desde /business/sellers/:id con ?seller=:sellerId,
-        // mostramos solo las tiendas de ese seller.
         this.isAdmin      = this.authService.hasRole('admin');
         this.isSeller     = this.authService.hasRole('seller');
         this.sellerFilter = this.route.snapshot.queryParamMap.get('seller');
@@ -69,56 +100,68 @@ export class StoresComponent implements OnInit {
     }
 
     /**
-     * Carga tiendas según el contexto:
+     * Carga tiendas según el contexto del usuario autenticado:
      * - Con ?seller=:id → carga solo las tiendas del seller filtrado
      * - Sin param       → carga todas las tiendas (vista general admin)
      */
     loadStores(): void {
+        this.isLoading = true;
+
         // 1. Seller autenticado: consulta sus propias tiendas
         if (this.isSeller && !this.isAdmin) {
-            this.storesService.getMyStore().subscribe({
-                next: (stores: Store[]) => {
-                    this.stores = Array.isArray(stores) ? stores : (stores ? [stores] : []);
-                    this.applyFilters();
-                },
-                error: (err) => {
-                    console.warn('No se pudieron cargar tiendas del seller:', err);
-                    this.stores = [];
-                    this.applyFilters();
-                }
-            });
+            this.storesService.getMyStore()
+                .pipe(finalize(() => { this.isLoading = false; }))
+                .subscribe({
+                    next: (stores: Store[]) => {
+                        this.stores = Array.isArray(stores) ? stores : (stores ? [stores] : []);
+                        this.applyFilters();
+                    },
+                    error: (err) => {
+                        console.warn('No se pudieron cargar tiendas del seller:', err);
+                        this.stores = [];
+                        this.applyFilters();
+                        this.toastService.showError('No se pudieron cargar tus tiendas');
+                    }
+                });
             return;
         }
 
         // 2. Admin viendo tiendas de un seller específico (?seller=:id)
         if (this.sellerFilter) {
-            this.storesService.getStoresBySeller(this.sellerFilter).subscribe({
+            this.storesService.getStoresBySeller(this.sellerFilter)
+                .pipe(finalize(() => { this.isLoading = false; }))
+                .subscribe({
+                    next: (stores) => {
+                        this.stores = stores;
+                        this.applyFilters();
+                    },
+                    error: (err) => {
+                        console.error('Error loading stores for seller:', err);
+                        this.stores = [];
+                        this.applyFilters();
+                        this.toastService.showError('Error al cargar tiendas del seller');
+                    }
+                });
+            return;
+        }
+
+        // 3. Admin / Worker general: carga todas las tiendas
+        this.storesService.getAllStores()
+            .pipe(finalize(() => { this.isLoading = false; }))
+            .subscribe({
                 next: (stores) => {
                     this.stores = stores;
                     this.applyFilters();
                 },
                 error: (err) => {
-                    console.error('Error loading stores for seller:', err);
-                    this.stores = [];
-                    this.applyFilters();
+                    console.error('Error loading stores:', err);
+                    this.toastService.showError('Error al cargar tiendas');
                 }
             });
-            return;
-        }
-
-        // 3. Admin / Worker general: carga todas las tiendas
-        this.storesService.getAllStores().subscribe({
-            next: (stores) => {
-                this.stores = stores;
-                this.applyFilters();
-            },
-            error: (err) => console.error('Error loading stores:', err)
-        });
     }
 
     /**
-     * Aplica filtros de búsqueda y estado sobre la lista de tiendas.
-     * Accede a los campos anidados del nuevo schema: location.address, contact.phone/email
+     * Aplica filtros de búsqueda, estado y tipo sobre la lista de tiendas.
      */
     applyFilters(): void {
         let filtered = [...this.stores];
@@ -129,12 +172,17 @@ export class StoresComponent implements OnInit {
             filtered = filtered.filter(s => !s.isActive);
         }
 
+        if (this.typeFilter !== 'all') {
+            filtered = filtered.filter(s => (s.type || 'physical') === this.typeFilter);
+        }
+
         if (this.searchTerm) {
-            const term = this.searchTerm.toLowerCase();
+            const term = this.searchTerm.toLowerCase().trim();
             filtered = filtered.filter(s =>
-                s.name.toLowerCase().includes(term) ||
+                s.name?.toLowerCase().includes(term) ||
                 s.location?.address?.toLowerCase().includes(term) ||
                 s.location?.city?.toLowerCase().includes(term) ||
+                s.location?.state?.toLowerCase().includes(term) ||
                 s.contact?.phone?.includes(term) ||
                 s.contact?.email?.toLowerCase().includes(term) ||
                 s.code?.toLowerCase().includes(term)
@@ -144,44 +192,50 @@ export class StoresComponent implements OnInit {
         this.filteredStores = filtered;
     }
 
-    /**
-     * Open form modal for creating new store
-     */
+    setStatusFilter(status: 'all' | 'active' | 'inactive'): void {
+        this.statusFilter = status;
+        this.applyFilters();
+    }
+
+    setTypeFilter(type: 'all' | 'physical' | 'virtual' | 'hybrid'): void {
+        this.typeFilter = type;
+        this.applyFilters();
+    }
+
+    clearSearch(): void {
+        this.searchTerm = '';
+        this.applyFilters();
+    }
+
+    setViewMode(mode: 'grid' | 'table'): void {
+        this.viewMode = mode;
+    }
+
     openCreateModal(): void {
         this.selectedStore = null;
         this.isEditMode = false;
         this.showFormModal = true;
     }
 
-    /**
-     * Open form modal for editing store
-     */
     openEditModal(store: Store): void {
         this.selectedStore = store;
         this.isEditMode = true;
         this.showFormModal = true;
     }
 
-    /**
-     * Close form modal
-     */
     closeModal(): void {
         this.showFormModal = false;
         this.selectedStore = null;
         this.isEditMode = false;
     }
 
-    /**
-     * Handle store saved (created or updated)
-     */
     onStoreSaved(store: Store): void {
         this.loadStores();
         this.closeModal();
     }
 
     /**
-     * Activa o desactiva una tienda.
-     * Solo envía isActive al PATCH — el resto del objeto no se modifica.
+     * Activa o desactiva una tienda con feedback visual inmediato.
      */
     toggleStoreStatus(store: Store): void {
         const newStatus = !store.isActive;
@@ -193,28 +247,40 @@ export class StoresComponent implements OnInit {
             next: () => {
                 store.isActive = newStatus;
                 this.applyFilters();
+                this.toastService.showSuccess(newStatus ? `"${store.name}" activada` : `"${store.name}" desactivada`);
             },
-            error: (err) => console.error('Error actualizando estado:', err)
+            error: (err) => {
+                console.error('Error actualizando estado:', err);
+                this.toastService.showError('No se pudo cambiar el estado de la tienda');
+            }
         });
     }
 
     /**
-     * Delete store
+     * Eliminación con confirmación estilizada a través de ToastService.
      */
     deleteStore(store: Store): void {
-        const confirmDelete = confirm(`¿Estás seguro de eliminar la tienda "${store.name}"?`);
-        if (confirmDelete) {
-            const req$ = (this.isSeller && !this.isAdmin)
-                ? this.storesService.deleteMyStore(store._id!)
-                : this.storesService.deleteStore(store._id!);
+        this.toastService.showConfirm(
+            `¿Estás seguro de eliminar la tienda "${store.name}"? Esta acción removerá sus inventarios y configuración asociada.`,
+            () => {
+                const req$ = (this.isSeller && !this.isAdmin)
+                    ? this.storesService.deleteMyStore(store._id!)
+                    : this.storesService.deleteStore(store._id!);
 
-            req$.subscribe({
-                next: () => {
-                    this.loadStores();
-                    console.log('✅ Store deleted');
-                },
-                error: (err) => console.error('Error deleting store:', err)
-            });
-        }
+                req$.subscribe({
+                    next: () => {
+                        this.loadStores();
+                        this.toastService.showSuccess('Tienda eliminada exitosamente');
+                    },
+                    error: (err) => {
+                        console.error('Error deleting store:', err);
+                        this.toastService.showError('Error al eliminar la tienda');
+                    }
+                });
+            },
+            undefined,
+            'Sí, eliminar',
+            'Cancelar'
+        );
     }
 }

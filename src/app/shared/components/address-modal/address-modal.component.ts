@@ -18,7 +18,7 @@ import {
   AddressResponse,
   CreateAddressResponse,
 } from '../../../core/interfaces/address.interface';
-import { Location, PERU_LOCATIONS } from '../../../core/constants/peru-locations';
+import { LocationsService, Location } from '../../../core/services/utils/locations.service';
 
 declare const google: any;
 
@@ -61,7 +61,7 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
   marker: any;
 
   // ─── Selects en cascada ──────────────────────────────────────────────────
-  departments: Location[] = PERU_LOCATIONS;
+  departments: Location[] = [];
   provinces: Location[]   = [];
   districts: Location[]   = [];
 
@@ -76,6 +76,7 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     private readonly fb: FormBuilder,
     private readonly addressService: AddressService,
     private readonly toastService: ToastService,
+    private readonly locationsService: LocationsService,
   ) {
     this.addressForm = this.fb.group({
       alias:             ['', [Validators.required, Validators.maxLength(50)]],
@@ -94,6 +95,16 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
       placeId:           [''],
       distanceFromStore: [null],
     });
+
+    // Cargar departamentos desde assets/data/peru-locations.json
+    this.subscriptions.add(
+      this.locationsService.getLocations().subscribe(locations => {
+        this.departments = locations;
+        if (this.editAddress) {
+          this.loadDependentLists(this.editAddress);
+        }
+      })
+    );
   }
 
   // ngOnInit no es necesario; la API key llega como @Input()
@@ -160,7 +171,7 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     // Evitar inyectar el script más de una vez
     if (document.querySelector('script[src*="maps.googleapis.com"]')) return;
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.googleMapsApiKey}`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.googleMapsApiKey}&loading=async`;
     script.async = true;
     script.defer = true;
     script.onload = () => this.renderMap();

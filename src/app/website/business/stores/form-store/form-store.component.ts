@@ -1,6 +1,6 @@
 import {
   Component, EventEmitter, Input, OnChanges, Output,
-  SimpleChanges, OnDestroy, AfterViewInit, ViewChild, ElementRef
+  SimpleChanges, OnDestroy, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -10,12 +10,10 @@ import { StoresService }  from '../../../../core/services/catalog/stores.service
 import { AuthService }    from '../../../../core/services/auth/auth.service';
 import { ToastService }   from '../../../../core/services/ui/toast.service';
 import { ConfigService }  from '../../../../core/services/utils/config.service';
+import { LocationsService, Location as PeruLocation } from '../../../../core/services/utils/locations.service';
 import {
   Store, DayKey, CreateStoreDto, UpdateStoreDto
 } from '../../../../core/interfaces/store.interface';
-import {
-  PERU_LOCATIONS, Location as PeruLocation
-} from '../../../../core/constants/peru-locations';
 
 /** Hack para que TypeScript no se queje de la variable global de Google Maps */
 declare const google: any;
@@ -52,19 +50,22 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
   storeForm!:      FormGroup;
   isSaving         = false;
   googleMapsApiKey = '';
+  mapAuthError     = false;
 
   // ─── Selectores de ubicación (Perú) ─────────────────────────────────────
-  /** Lista completa de departamentos */
-  readonly departments: PeruLocation[] = PERU_LOCATIONS;
+  /** Lista completa de departamentos cargados desde assets/data/peru-locations.json */
+  departments: PeruLocation[] = [];
   /** Provincias del departamento seleccionado */
-  provinces:  PeruLocation[] = [];
+  provinces:   PeruLocation[] = [];
   /** Distritos de la provincia seleccionada */
-  districts:  PeruLocation[] = [];
+  districts:   PeruLocation[] = [];
 
   /** Departamento seleccionado (sincronizado con storeForm.location.state) */
   selectedDept:     PeruLocation | null = null;
   /** Provincia seleccionada (sincronizado con storeForm.location.city) */
   selectedProvince: PeruLocation | null = null;
+  /** Distrito seleccionado */
+  selectedDistrict: PeruLocation | null = null;
 
   /** Instancias internas de Google Maps */
   private map:    any;
@@ -73,14 +74,30 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
   constructor(
-    private readonly fb:            FormBuilder,
-    private readonly storesService: StoresService,
-    private readonly authService:   AuthService,
-    private readonly toastService:  ToastService,
-    private readonly configService: ConfigService,
+    private readonly fb:               FormBuilder,
+    private readonly storesService:    StoresService,
+    private readonly authService:      AuthService,
+    private readonly toastService:     ToastService,
+    private readonly configService:    ConfigService,
+    private readonly locationsService: LocationsService,
+    private readonly cdr:              ChangeDetectorRef,
   ) {
     this.buildForm();
     this.subscribeToCodeGeneration();
+
+    // Cargar departamentos desde el archivo JSON mediante LocationsService
+    this.locationsService.getLocations()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(locations => {
+        this.departments = locations;
+        if (this.selectedStore) {
+          this.syncDependentLocations();
+        }
+        this.cdr.markForCheck();
+      });
+
+    // Obtener clave síncrona si ya está cargada en ConfigService
+    this.googleMapsApiKey = this.configService.getGoogleMapsApiKey();
 
     // Suscribirse a la clave de API de Google Maps desde la configuración global
     this.configService.config$
@@ -88,8 +105,18 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
       .subscribe(config => {
         if (config?.googleMapsApiKey) {
           this.googleMapsApiKey = config.googleMapsApiKey;
+          if (this.mapContainer && !this.map) {
+            this.initMap();
+          }
         }
       });
+
+    // Detectar fallos de autenticación de Google Maps (restricciones de clave, facturación, etc.)
+    (window as any).gm_authFailure = () => {
+      console.warn('Google Maps: Fallo de autenticación en la API Key (gm_authFailure).');
+      this.mapAuthError = true;
+      this.cdr.markForCheck();
+    };
   }
 
   // ─── Ciclo de vida ────────────────────────────────────────────────────────
@@ -192,6 +219,9 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
       },
     });
 
+    // Sincronizar selectores dependientes (provincias y distritos)
+    this.syncDependentLocations();
+
     // Actualizar pin del mapa si ya estaba cargado
     if (this.map && this.marker) {
       const pos = { lat, lng };
@@ -220,6 +250,9 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
    * Si no, carga el script dinámicamente y renderiza al terminar.
    */
   initMap(): void {
+    if (!this.googleMapsApiKey) {
+      this.googleMapsApiKey = this.configService.getGoogleMapsApiKey();
+    }
     if (!this.googleMapsApiKey || !this.mapContainer) return;
 
     if (typeof google !== 'undefined') {
@@ -233,7 +266,7 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
         return;
       }
       const script = document.createElement('script');
-      script.src   = `https://maps.googleapis.com/maps/api/js?key=${this.googleMapsApiKey}`;
+      script.src   = `https://maps.googleapis.com/maps/api/js?key=${this.googleMapsApiKey}&loading=async`;
       script.async = true;
       script.defer = true;
       script.onload = () => this.renderMap();
@@ -383,6 +416,22 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
   // ─── Selectores de ubicación ──────────────────────────────────────────────
 
   /**
+   * Sincroniza las listas desplegables (provincias y distritos) con los valores actuales del formulario.
+   */
+  private syncDependentLocations(): void {
+    const state = this.storeForm.get('location.state')?.value;
+    const city  = this.storeForm.get('location.city')?.value;
+    if (state && this.departments.length) {
+      this.selectedDept = this.departments.find(d => d.name.toLowerCase() === state.toLowerCase() || d.id === state) ?? null;
+      this.provinces    = this.selectedDept?.children ?? [];
+      if (city && this.provinces.length) {
+        this.selectedProvince = this.provinces.find(p => p.name.toLowerCase() === city.toLowerCase() || p.id === city) ?? null;
+        this.districts        = this.selectedProvince?.children ?? [];
+      }
+    }
+  }
+
+  /**
    * Maneja el cambio de departamento.
    * Carga las provincias y resetea los niveles inferiores.
    * @param deptId ID del departamento
@@ -391,6 +440,7 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
     this.selectedDept     = this.departments.find(d => d.id === deptId) ?? null;
     this.provinces        = this.selectedDept?.children ?? [];
     this.selectedProvince = null;
+    this.selectedDistrict = null;
     this.districts        = [];
     const lat = this.selectedDept?.lat ?? -12.046;
     const lng = this.selectedDept?.lng ?? -77.042;
@@ -406,6 +456,7 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
    */
   onProvinceChange(provId: string): void {
     this.selectedProvince = this.provinces.find(p => p.id === provId) ?? null;
+    this.selectedDistrict = null;
     this.districts        = this.selectedProvince?.children ?? [];
     const lat = this.selectedProvince?.lat ?? this.selectedDept?.lat ?? -12.046;
     const lng = this.selectedProvince?.lng ?? this.selectedDept?.lng ?? -77.042;
@@ -420,10 +471,10 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
    * @param distId ID del distrito
    */
   onDistrictChange(distId: string): void {
-    const dist = this.districts.find(d => d.id === distId);
-    if (!dist) return;
-    this.storeForm.get('location')?.patchValue({ lat: dist.lat, lng: dist.lng });
-    this.updateMapCenter(dist.lat, dist.lng);
+    this.selectedDistrict = this.districts.find(d => d.id === distId) ?? null;
+    if (!this.selectedDistrict) return;
+    this.storeForm.get('location')?.patchValue({ lat: this.selectedDistrict.lat, lng: this.selectedDistrict.lng });
+    this.updateMapCenter(this.selectedDistrict.lat, this.selectedDistrict.lng);
   }
 
   /**
@@ -479,6 +530,33 @@ export class FormStoreComponent implements OnChanges, AfterViewInit, OnDestroy {
    */
   getDayGroup(dayKey: DayKey): FormGroup {
     return this.storeForm.get(['businessHours', dayKey]) as FormGroup;
+  }
+
+  /** Establece el tipo de tienda desde los botones segmentados */
+  setStoreType(type: 'physical' | 'virtual' | 'hybrid'): void {
+    this.storeForm.get('type')?.setValue(type);
+    this.storeForm.get('type')?.markAsDirty();
+  }
+
+  /** Alterna el estado habilitado/deshabilitado de un día */
+  toggleDay(dayKey: DayKey): void {
+    const group = this.getDayGroup(dayKey);
+    const curr = group.get('enabled')?.value;
+    group.get('enabled')?.setValue(!curr);
+  }
+
+  /** Copia el horario de lunes a martes, miércoles, jueves y viernes */
+  copyMondayToWeekdays(): void {
+    const monday = this.getDayGroup('monday').value;
+    const weekdays: DayKey[] = ['tuesday', 'wednesday', 'thursday', 'friday'];
+    for (const day of weekdays) {
+      this.getDayGroup(day).patchValue({
+        enabled: monday.enabled,
+        open: monday.open,
+        close: monday.close,
+      });
+    }
+    this.toastService.showInfo('Horario de lunes replicado a días laborables (mar-vie)');
   }
 }
 
