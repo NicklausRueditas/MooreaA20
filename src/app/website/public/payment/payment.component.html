@@ -7,16 +7,16 @@
       <!-- Fila Superior: Botón Volver al Carrito + Contador de Artículos -->
       <div class="flex items-center justify-between mb-6">
         <a [routerLink]="['/basket']"
-          class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-700 hover:text-violet-700 hover:border-violet-300 font-bold text-xs sm:text-sm rounded-2xl transition-all shadow-xs active:scale-95">
-          <svg class="w-4 h-4 text-violet-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-700 hover:text-slate-900 hover:border-slate-300 font-bold text-xs sm:text-sm rounded-2xl transition-all shadow-xs active:scale-95">
+          <svg class="w-4 h-4 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>
-          <span>← Volver al Carrito</span>
+          <span>Volver al Carrito</span>
         </a>
 
         <div class="flex items-center gap-2">
           <span class="text-xs font-bold text-gray-500 hidden sm:inline">Checkout Seguro</span>
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold bg-violet-100 text-violet-800 border border-violet-200/80">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-800 border border-slate-200">
             <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
             </svg>
@@ -26,72 +26,91 @@
       </div>
 
       <!-- Stepper Global del Proceso de Compra (4 Pasos) -->
-      <div class="max-w-3xl mx-auto bg-white/80 backdrop-blur-md p-4 rounded-3xl border border-gray-200/80 shadow-xs">
+      <div class="max-w-3xl mx-auto bg-white/90 backdrop-blur-md p-4 rounded-3xl border border-slate-200/80 shadow-xs">
         <div class="flex items-center justify-between">
           <!-- Paso 1: Carrito (Completado) -->
           <a [routerLink]="['/basket']" class="flex items-center gap-1.5 sm:gap-2 group focus:outline-none">
             <span class="w-7 h-7 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-xs shadow-xs">
-              ✓
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
             </span>
             <span class="text-xs sm:text-sm font-extrabold text-emerald-700 group-hover:underline">1. Carrito</span>
           </a>
 
-          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3" [class.bg-emerald-400]="currentStep() !== 'address'" [class.bg-gray-200]="currentStep() === 'address'"></div>
+          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3 bg-emerald-400"></div>
 
           <!-- Paso 2: Entrega -->
           <button (click)="goToStep('address')" class="flex items-center gap-1.5 sm:gap-2 focus:outline-none" [class.cursor-pointer]="currentStep() !== 'address'">
-            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs"
+            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs transition-colors"
               [class.bg-emerald-500]="currentStep() === 'payment' || currentStep() === 'review'"
               [class.text-white]="currentStep() === 'payment' || currentStep() === 'review'"
-              [class.bg-violet-600]="currentStep() === 'address'"
+              [class.bg-slate-900]="currentStep() === 'address'"
               [class.text-white]="currentStep() === 'address'">
-              {{ (currentStep() === 'payment' || currentStep() === 'review') ? '✓' : '2' }}
+              @if (currentStep() === 'payment' || currentStep() === 'review') {
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              } @else {
+                2
+              }
             </span>
-            <span class="text-xs sm:text-sm font-bold"
+            <span class="text-xs sm:text-sm"
               [class.text-emerald-700]="currentStep() === 'payment' || currentStep() === 'review'"
-              [class.text-violet-700]="currentStep() === 'address'"
+              [class.font-bold]="currentStep() === 'payment' || currentStep() === 'review'"
+              [class.text-slate-900]="currentStep() === 'address'"
               [class.font-black]="currentStep() === 'address'">
               2. Entrega
             </span>
           </button>
 
-          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3" [class.bg-emerald-400]="currentStep() === 'review'" [class.bg-gray-200]="currentStep() !== 'review'"></div>
+          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3" [class.bg-emerald-400]="currentStep() === 'review' || currentStep() === 'payment'" [class.bg-slate-200]="currentStep() === 'address'"></div>
 
           <!-- Paso 3: Pago -->
           <button (click)="canContinueFromAddress && goToStep('payment')" class="flex items-center gap-1.5 sm:gap-2 focus:outline-none" [class.cursor-pointer]="canContinueFromAddress">
-            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs"
+            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs transition-colors"
               [class.bg-emerald-500]="currentStep() === 'review'"
               [class.text-white]="currentStep() === 'review'"
-              [class.bg-violet-600]="currentStep() === 'payment'"
+              [class.bg-slate-900]="currentStep() === 'payment'"
               [class.text-white]="currentStep() === 'payment'"
-              [class.bg-gray-100]="currentStep() === 'address'"
-              [class.text-gray-400]="currentStep() === 'address'">
-              {{ currentStep() === 'review' ? '✓' : '3' }}
+              [class.bg-slate-100]="currentStep() === 'address'"
+              [class.text-slate-400]="currentStep() === 'address'"
+              [class.border]="currentStep() === 'address'"
+              [class.border-slate-200]="currentStep() === 'address'">
+              @if (currentStep() === 'review') {
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              } @else {
+                3
+              }
             </span>
             <span class="text-xs sm:text-sm font-bold"
               [class.text-emerald-700]="currentStep() === 'review'"
-              [class.text-violet-700]="currentStep() === 'payment'"
+              [class.text-slate-900]="currentStep() === 'payment'"
               [class.font-black]="currentStep() === 'payment'"
-              [class.text-gray-400]="currentStep() === 'address'">
+              [class.text-slate-400]="currentStep() === 'address'">
               3. Pago
             </span>
           </button>
 
-          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3 bg-gray-200"></div>
+          <div class="flex-1 h-0.5 mx-1.5 sm:mx-3" [class.bg-emerald-400]="currentStep() === 'review'" [class.bg-slate-200]="currentStep() !== 'review'"></div>
 
           <!-- Paso 4: Confirmación -->
           <div class="flex items-center gap-1.5 sm:gap-2" [class.opacity-50]="currentStep() !== 'review'">
-            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs"
-              [class.bg-violet-600]="currentStep() === 'review'"
+            <span class="w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shadow-xs transition-colors"
+              [class.bg-slate-900]="currentStep() === 'review'"
               [class.text-white]="currentStep() === 'review'"
-              [class.bg-gray-100]="currentStep() !== 'review'"
-              [class.text-gray-400]="currentStep() !== 'review'">
+              [class.bg-slate-100]="currentStep() !== 'review'"
+              [class.text-slate-400]="currentStep() !== 'review'"
+              [class.border]="currentStep() !== 'review'"
+              [class.border-slate-200]="currentStep() !== 'review'">
               4
             </span>
             <span class="text-xs sm:text-sm font-bold"
-              [class.text-violet-700]="currentStep() === 'review'"
+              [class.text-slate-900]="currentStep() === 'review'"
               [class.font-black]="currentStep() === 'review'"
-              [class.text-gray-400]="currentStep() !== 'review'">
+              [class.text-slate-400]="currentStep() !== 'review'">
               4. Confirmar
             </span>
           </div>
@@ -118,8 +137,10 @@
             <div class="p-5 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-2.5">
-                  <div class="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm shadow-xs">
-                    📦
+                  <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold shadow-xs">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                    </svg>
                   </div>
                   <div>
                     <h2 class="text-base font-extrabold text-gray-900 leading-tight">Forma de Entrega por Producto</h2>
@@ -158,7 +179,7 @@
                         </span>
                       }
                       @if (getSizeLabel(item)) {
-                        <span class="text-[11px] font-bold text-violet-700 bg-violet-50 border border-violet-100 px-2 py-0.5 rounded-lg">
+                        <span class="text-[11px] font-bold text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-lg">
                           Talla {{ getSizeLabel(item) }}
                         </span>
                       }
@@ -168,23 +189,29 @@
                 </div>
 
                 <!-- Selector Segmentado Moderno: Delivery vs Recojo -->
-                <div class="grid grid-cols-2 gap-2.5 p-1 bg-gray-100/80 rounded-2xl mb-3">
+                <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl mb-3">
                   <button type="button" (click)="setItemDeliveryMode(item, 'delivery')"
-                    class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all"
+                    class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer"
                     [class.bg-white]="mode === 'delivery'"
-                    [class.text-violet-700]="mode === 'delivery'"
-                    [class.shadow-xs]="mode === 'delivery'"
-                    [class.text-gray-500]="mode !== 'delivery'">
-                    <span>🚚 Delivery a Domicilio</span>
+                    [class.text-slate-900]="mode === 'delivery'"
+                    [class.shadow-sm]="mode === 'delivery'"
+                    [class.text-slate-500]="mode !== 'delivery'">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                    </svg>
+                    <span>Delivery a Domicilio</span>
                   </button>
 
                   <button type="button" (click)="setItemDeliveryMode(item, 'pickup')"
-                    class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all"
+                    class="flex items-center justify-center gap-2 py-2.5 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer"
                     [class.bg-white]="mode === 'pickup'"
-                    [class.text-emerald-700]="mode === 'pickup'"
-                    [class.shadow-xs]="mode === 'pickup'"
-                    [class.text-gray-500]="mode !== 'pickup'">
-                    <span>🏪 Recojo en Tienda</span>
+                    [class.text-slate-900]="mode === 'pickup'"
+                    [class.shadow-sm]="mode === 'pickup'"
+                    [class.text-slate-500]="mode !== 'pickup'">
+                    <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Recojo en Tienda</span>
                   </button>
                 </div>
 
@@ -192,8 +219,11 @@
                 @if (mode === 'pickup') {
                   <div class="mt-3 p-3.5 bg-emerald-50/60 border border-emerald-100 rounded-2xl space-y-3">
                     <div class="flex items-center justify-between">
-                      <span class="text-xs font-extrabold text-emerald-900 flex items-center gap-1.5">
-                        <span>🏪 Tienda Seleccionada para Recojo</span>
+                      <span class="text-xs font-extrabold text-emerald-950 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                        </svg>
+                        <span>Tienda Seleccionada para Recojo</span>
                       </span>
                       <button type="button" (click)="toggleStorePicker(item)"
                         class="text-xs font-bold text-emerald-700 hover:underline">
@@ -215,8 +245,11 @@
                               <p class="font-extrabold text-gray-900 text-xs">{{ store.name }}</p>
                               <p class="text-[11px] text-gray-500 mt-0.5">{{ store.location.address }}</p>
                             </div>
-                            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex-shrink-0">
-                              📍 {{ getStoreDistance(store) }}
+                            <span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md flex-shrink-0 flex items-center gap-1">
+                              <svg class="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                              </svg>
+                              <span>{{ getStoreDistance(store) }}</span>
                             </span>
                           </button>
                         }
@@ -225,7 +258,7 @@
                       <div class="p-3 bg-white rounded-xl border border-emerald-200/80 flex items-center justify-between">
                         <div>
                           <p class="text-xs font-black text-gray-900">{{ store.name }}</p>
-                          <p class="text-[11px] text-gray-500">{{ store.location.address }} &middot; <strong class="text-emerald-700">📍 {{ getStoreDistance(store) }}</strong></p>
+                          <p class="text-[11px] text-gray-500">{{ store.location.address }} &middot; <strong class="text-emerald-700 inline-flex items-center gap-0.5"><svg class="w-3 h-3 inline" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>{{ getStoreDistance(store) }}</strong></p>
                         </div>
                         <span class="text-xs font-extrabold text-emerald-700 bg-emerald-50 px-2 py-1 rounded-lg">
                           ¡Listo para recojo!
@@ -244,8 +277,11 @@
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-5 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white flex items-center justify-between">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shadow-xs">
-                  📍
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold shadow-xs">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
                 </div>
                 <div>
                   <h2 class="text-base font-extrabold text-gray-900 leading-tight">Dirección de Entrega</h2>
@@ -254,7 +290,7 @@
               </div>
 
               <button (click)="showAddressModal = true"
-                class="px-3 py-1.5 bg-violet-50 text-violet-700 hover:bg-violet-100 text-xs font-bold rounded-xl transition flex items-center gap-1">
+                class="px-3 py-1.5 bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1 shadow-xs cursor-pointer">
                 <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                 <span>Nueva Dirección</span>
               </button>
@@ -263,7 +299,7 @@
             <div class="p-5 space-y-3">
               @if (isLoadingAddresses) {
                 <div class="flex justify-center py-6">
-                  <svg class="animate-spin h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24">
+                  <svg class="animate-spin h-6 w-6 text-slate-800" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
@@ -272,7 +308,7 @@
                 <div class="p-6 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
                   <p class="text-xs text-gray-500 font-semibold mb-3">No tienes direcciones registradas</p>
                   <button (click)="showAddressModal = true"
-                    class="px-4 py-2 bg-violet-600 text-white text-xs font-bold rounded-xl hover:bg-violet-700 transition">
+                    class="px-4 py-2 bg-slate-900 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition shadow-xs cursor-pointer">
                     + Registrar Dirección de Entrega
                   </button>
                 </div>
@@ -281,15 +317,16 @@
                   @for (addr of addresses; track addr._id) {
                     <div (click)="selectAddress(addr)"
                       class="p-4 rounded-2xl border-2 cursor-pointer transition-all flex flex-col justify-between"
-                      [class.border-violet-600]="selectedAddress?._id === addr._id"
-                      [class.bg-violet-50/60]="selectedAddress?._id === addr._id"
+                      [class.border-slate-900]="selectedAddress?._id === addr._id"
+                      [class.bg-slate-50/70]="selectedAddress?._id === addr._id"
+                      [class.shadow-xs]="selectedAddress?._id === addr._id"
                       [class.border-gray-200]="selectedAddress?._id !== addr._id"
                       [class.bg-white]="selectedAddress?._id !== addr._id">
                       <div>
                         <div class="flex items-center justify-between mb-1.5">
                           <span class="text-xs font-extrabold text-gray-900">{{ addr.alias }}</span>
                           @if (addr.isDefault) {
-                            <span class="text-[10px] font-bold text-violet-700 bg-violet-100 px-2 py-0.5 rounded-md">Principal</span>
+                            <span class="text-[10px] font-black text-slate-800 bg-slate-100 border border-slate-200 px-2 py-0.5 rounded-md">Principal</span>
                           }
                         </div>
                         <p class="text-xs text-gray-600 leading-relaxed">{{ formatAddressFull(addr) }}</p>
@@ -299,8 +336,13 @@
                       </div>
 
                       <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
-                        <span class="text-[11px] font-bold" [class.text-violet-700]="selectedAddress?._id === addr._id" [class.text-gray-400]="selectedAddress?._id !== addr._id">
-                          {{ selectedAddress?._id === addr._id ? '✓ Seleccionada' : 'Elegir esta dirección' }}
+                        <span class="text-[11px] font-bold flex items-center gap-1" [class.text-slate-900]="selectedAddress?._id === addr._id" [class.text-slate-400]="selectedAddress?._id !== addr._id">
+                          @if (selectedAddress?._id === addr._id) {
+                            <svg class="w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                            <span>Seleccionada</span>
+                          } @else {
+                            <span>Elegir esta dirección</span>
+                          }
                         </span>
                       </div>
                     </div>
@@ -323,7 +365,7 @@
           <!-- Botón Continuar hacia Selección de Pago -->
           <div class="flex justify-end pt-2">
             <button (click)="continueToPayment()" [disabled]="!canContinueFromAddress"
-              class="w-full sm:w-auto px-8 py-4 bg-violet-600 text-white font-extrabold text-sm rounded-2xl hover:bg-violet-700 shadow-lg shadow-violet-600/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+              class="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white font-black text-sm rounded-2xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-98 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
               <span>Continuar al Método de Pago</span>
               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
             </button>
@@ -340,8 +382,10 @@
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="p-5 sm:p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50/80 to-white">
               <div class="flex items-center gap-2.5">
-                <div class="w-8 h-8 rounded-xl bg-violet-100 text-violet-700 flex items-center justify-center font-bold text-sm shadow-xs">
-                  💳
+                <div class="w-8 h-8 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center font-bold shadow-xs">
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                  </svg>
                 </div>
                 <div>
                   <h2 class="text-base font-extrabold text-gray-900 leading-tight">Elige tu Método de Pago</h2>
@@ -353,30 +397,101 @@
             <!-- Opciones de Métodos de Pago -->
             <div class="p-5 space-y-3">
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                @for (pm of [
-                  { id: 'card', emoji: '💳', label: 'Tarjeta de Crédito / Débito', desc: 'Visa, Mastercard, Amex' },
-                  { id: 'yape', emoji: '📱', label: 'Yape / Plin', desc: 'Pago móvil inmediato' },
-                  { id: 'cash', emoji: '💵', label: 'Contraentrega', desc: 'Paga al recibir' }
-                ]; track pm.id) {
-                  <button (click)="paymentMethod.set($any(pm.id))"
-                    class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between"
-                    [class.border-violet-600]="paymentMethod() === pm.id"
-                    [class.bg-violet-50/60]="paymentMethod() === pm.id"
-                    [class.border-gray-200]="paymentMethod() !== pm.id"
-                    [class.bg-white]="paymentMethod() !== pm.id">
-                    <div>
-                      <span class="text-2xl block mb-2">{{ pm.emoji }}</span>
-                      <p class="text-xs font-black text-gray-900">{{ pm.label }}</p>
-                      <p class="text-[11px] text-gray-400 mt-0.5">{{ pm.desc }}</p>
+                <!-- Tarjeta -->
+                <button type="button" (click)="paymentMethod.set('card')"
+                  class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between cursor-pointer"
+                  [class.border-slate-900]="paymentMethod() === 'card'"
+                  [class.bg-slate-50/70]="paymentMethod() === 'card'"
+                  [class.shadow-xs]="paymentMethod() === 'card'"
+                  [class.border-slate-200]="paymentMethod() !== 'card'"
+                  [class.bg-white]="paymentMethod() !== 'card'">
+                  <div>
+                    <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center mb-3">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                      </svg>
                     </div>
+                    <p class="text-xs font-black text-slate-900">Tarjeta Bancaria</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Visa, Mastercard, Amex</p>
+                  </div>
 
-                    <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between">
-                      <span class="text-[10px] font-bold" [class.text-violet-700]="paymentMethod() === pm.id" [class.text-gray-400]="paymentMethod() !== pm.id">
-                        {{ paymentMethod() === pm.id ? '✓ Seleccionado' : 'Seleccionar' }}
-                      </span>
+                  <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10px] font-bold flex items-center gap-1"
+                      [class.text-slate-900]="paymentMethod() === 'card'"
+                      [class.text-slate-400]="paymentMethod() !== 'card'">
+                      @if (paymentMethod() === 'card') {
+                        <svg class="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>Seleccionado</span>
+                      } @else {
+                        <span>Seleccionar</span>
+                      }
+                    </span>
+                  </div>
+                </button>
+
+                <!-- Yape / Plin -->
+                <button type="button" (click)="paymentMethod.set('yape')"
+                  class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between cursor-pointer"
+                  [class.border-slate-900]="paymentMethod() === 'yape'"
+                  [class.bg-slate-50/70]="paymentMethod() === 'yape'"
+                  [class.shadow-xs]="paymentMethod() === 'yape'"
+                  [class.border-slate-200]="paymentMethod() !== 'yape'"
+                  [class.bg-white]="paymentMethod() !== 'yape'">
+                  <div>
+                    <div class="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center mb-3">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                      </svg>
                     </div>
-                  </button>
-                }
+                    <p class="text-xs font-black text-slate-900">Yape / Plin</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Pago móvil inmediato</p>
+                  </div>
+
+                  <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10px] font-bold flex items-center gap-1"
+                      [class.text-slate-900]="paymentMethod() === 'yape'"
+                      [class.text-slate-400]="paymentMethod() !== 'yape'">
+                      @if (paymentMethod() === 'yape') {
+                        <svg class="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>Seleccionado</span>
+                      } @else {
+                        <span>Seleccionar</span>
+                      }
+                    </span>
+                  </div>
+                </button>
+
+                <!-- Contraentrega -->
+                <button type="button" (click)="paymentMethod.set('cash')"
+                  class="p-4 rounded-2xl border-2 text-left transition-all flex flex-col justify-between cursor-pointer"
+                  [class.border-slate-900]="paymentMethod() === 'cash'"
+                  [class.bg-slate-50/70]="paymentMethod() === 'cash'"
+                  [class.shadow-xs]="paymentMethod() === 'cash'"
+                  [class.border-slate-200]="paymentMethod() !== 'cash'"
+                  [class.bg-white]="paymentMethod() !== 'cash'">
+                  <div>
+                    <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
+                      <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                    <p class="text-xs font-black text-slate-900">Contraentrega</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Paga al recibir en efectivo</p>
+                  </div>
+
+                  <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between">
+                    <span class="text-[10px] font-bold flex items-center gap-1"
+                      [class.text-slate-900]="paymentMethod() === 'cash'"
+                      [class.text-slate-400]="paymentMethod() !== 'cash'">
+                      @if (paymentMethod() === 'cash') {
+                        <svg class="w-3 h-3 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                        <span>Seleccionado</span>
+                      } @else {
+                        <span>Seleccionar</span>
+                      }
+                    </span>
+                  </div>
+                </button>
               </div>
             </div>
           </div>
@@ -390,7 +505,7 @@
                   <p class="text-xs text-gray-400">Selecciona la tarjeta con la que deseas pagar</p>
                 </div>
                 <button (click)="showCardModal = true"
-                  class="px-3.5 py-2 bg-violet-50 text-violet-700 hover:bg-violet-100 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-2xs cursor-pointer">
+                  class="px-3.5 py-2 bg-slate-900 text-white hover:bg-slate-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer">
                   <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
                   <span>+ Agregar Tarjeta</span>
                 </button>
@@ -398,22 +513,24 @@
 
               @if (isLoadingCards) {
                 <div class="flex justify-center py-6">
-                  <svg class="animate-spin h-6 w-6 text-violet-600" fill="none" viewBox="0 0 24 24">
+                  <svg class="animate-spin h-6 w-6 text-slate-800" fill="none" viewBox="0 0 24 24">
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                   </svg>
                 </div>
               } @else if (cards.length === 0) {
-                <div class="p-6 text-center bg-violet-50/50 rounded-2xl border-2 border-dashed border-violet-200 space-y-3">
-                  <div class="w-10 h-10 rounded-2xl bg-violet-100 text-violet-700 flex items-center justify-center text-lg mx-auto">
-                    💳
+                <div class="p-6 text-center bg-slate-50 rounded-2xl border-2 border-dashed border-slate-200 space-y-3">
+                  <div class="w-10 h-10 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto">
+                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                    </svg>
                   </div>
                   <div>
-                    <p class="text-xs font-bold text-gray-800">No tienes ninguna tarjeta registrada aún</p>
-                    <p class="text-[11px] text-gray-500 mt-0.5">Para pagar con tarjeta, agrega una tarjeta segura o elige Yape / Contraentrega</p>
+                    <p class="text-xs font-bold text-slate-900">No tienes ninguna tarjeta registrada aún</p>
+                    <p class="text-[11px] text-slate-500 mt-0.5">Para pagar con tarjeta, agrega una tarjeta segura o elige Yape / Contraentrega</p>
                   </div>
                   <button (click)="showCardModal = true"
-                    class="px-5 py-2.5 bg-violet-600 text-white text-xs font-extrabold rounded-xl hover:bg-violet-700 shadow-md shadow-violet-600/20 transition cursor-pointer">
+                    class="px-5 py-2.5 bg-slate-900 text-white text-xs font-black rounded-xl hover:bg-slate-800 shadow-md shadow-slate-900/10 transition cursor-pointer">
                     + Registrar Mi Tarjeta Ahora
                   </button>
                 </div>
@@ -422,21 +539,27 @@
                   @for (card of cards; track card._id) {
                     <div (click)="selectCard(card)"
                       class="p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center gap-3.5"
-                      [class.border-violet-600]="selectedCard?._id === card._id"
-                      [class.bg-violet-50/60]="selectedCard?._id === card._id"
+                      [class.border-slate-900]="selectedCard?._id === card._id"
+                      [class.bg-slate-50/70]="selectedCard?._id === card._id"
                       [class.border-gray-200]="selectedCard?._id !== card._id"
                       [class.bg-white]="selectedCard?._id !== card._id">
-                      <span class="text-2xl">💳</span>
+                      <div class="w-9 h-9 rounded-xl bg-slate-100 text-slate-800 flex items-center justify-center flex-shrink-0">
+                        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                        </svg>
+                      </div>
                       <div class="flex-1 min-w-0">
                         <p class="text-xs font-bold text-gray-900 truncate">{{ card.cardType }} · {{ maskCard(card) }}</p>
                         <p class="text-[11px] text-gray-500 truncate">{{ card.cardHolder }} &middot; Vence {{ card.expirationDate }}</p>
                       </div>
                       <div class="w-5 h-5 rounded-full border-2 flex items-center justify-center"
-                        [class.border-violet-600]="selectedCard?._id === card._id"
-                        [class.bg-violet-600]="selectedCard?._id === card._id"
-                        [class.border-gray-300]="selectedCard?._id !== card._id">
+                        [class.border-slate-900]="selectedCard?._id === card._id"
+                        [class.bg-slate-900]="selectedCard?._id === card._id"
+                        [class.border-slate-300]="selectedCard?._id !== card._id">
                         @if (selectedCard?._id === card._id) {
-                          <span class="text-white text-[10px] font-black">✓</span>
+                          <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+                          </svg>
                         }
                       </div>
                     </div>
@@ -463,14 +586,17 @@
 
             <div class="flex flex-col sm:items-end gap-1">
               <button (click)="continueToReview()" [disabled]="!canContinueFromPayment"
-                class="w-full sm:w-auto px-8 py-4 bg-violet-600 text-white font-extrabold text-sm rounded-2xl hover:bg-violet-700 shadow-lg shadow-violet-600/20 active:scale-95 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
+                class="w-full sm:w-auto px-8 py-4 bg-slate-900 text-white font-black text-sm rounded-2xl hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-98 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer">
                 <span>Continuar a Confirmación</span>
                 <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
               </button>
 
               @if (paymentMethod() === 'card' && !selectedCard) {
-                <span class="text-[11px] font-bold text-amber-600 text-center sm:text-right">
-                  ⚠️ Selecciona o registra una tarjeta para continuar
+                <span class="text-[11px] font-bold text-amber-600 text-center sm:text-right flex items-center justify-center sm:justify-end gap-1">
+                  <svg class="w-3.5 h-3.5 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>Selecciona o registra una tarjeta para continuar</span>
                 </span>
               }
             </div>
@@ -496,12 +622,22 @@
               <div>
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Destino / Entrega</p>
                 @if (selectedAddress) {
-                  <p class="text-sm font-extrabold text-gray-900 mt-0.5">🚚 {{ formatAddressFull(selectedAddress) }}</p>
+                  <p class="text-sm font-extrabold text-gray-900 mt-0.5 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-slate-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+                    </svg>
+                    <span>{{ formatAddressFull(selectedAddress) }}</span>
+                  </p>
                 } @else {
-                  <p class="text-sm font-extrabold text-gray-900 mt-0.5">🏪 Recojo en Tienda Física</p>
+                  <p class="text-sm font-extrabold text-gray-900 mt-0.5 flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-slate-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                    <span>Recojo en Tienda Física</span>
+                  </p>
                 }
               </div>
-              <button (click)="backToAddress()" class="text-xs font-bold text-violet-700 hover:underline">
+              <button (click)="backToAddress()" class="text-xs font-bold text-slate-800 hover:text-slate-900 underline cursor-pointer">
                 Cambiar
               </button>
             </div>
@@ -510,13 +646,20 @@
             <div class="p-4 bg-gray-50 rounded-2xl flex items-center justify-between">
               <div>
                 <p class="text-xs font-bold text-gray-500 uppercase tracking-wider">Forma de Pago</p>
-                <p class="text-sm font-extrabold text-gray-900 mt-0.5">
-                  @if (paymentMethod() === 'card') { 💳 Tarjeta Bancaria ({{ selectedCard ? maskCard(selectedCard) : 'Registrada' }}) }
-                  @else if (paymentMethod() === 'yape') { 📱 Yape / Plin }
-                  @else { 💵 Pago Contraentrega }
+                <p class="text-sm font-extrabold text-gray-900 mt-0.5 flex items-center gap-1.5">
+                  @if (paymentMethod() === 'card') {
+                    <svg class="w-4 h-4 text-slate-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                    <span>Tarjeta Bancaria ({{ selectedCard ? maskCard(selectedCard) : 'Registrada' }})</span>
+                  } @else if (paymentMethod() === 'yape') {
+                    <svg class="w-4 h-4 text-purple-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    <span>Yape / Plin</span>
+                  } @else {
+                    <svg class="w-4 h-4 text-emerald-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <span>Pago Contraentrega en Efectivo</span>
+                  }
                 </p>
               </div>
-              <button (click)="backToPayment()" class="text-xs font-bold text-violet-700 hover:underline">
+              <button (click)="backToPayment()" class="text-xs font-bold text-slate-800 hover:text-slate-900 underline cursor-pointer">
                 Cambiar
               </button>
             </div>
@@ -525,7 +668,7 @@
           <!-- Aceptación de Términos -->
           <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-5">
             <label class="flex items-start gap-3 cursor-pointer">
-              <input type="checkbox" [(ngModel)]="acceptedTerms" class="mt-1 w-4 h-4 accent-violet-600 rounded">
+              <input type="checkbox" [(ngModel)]="acceptedTerms" class="mt-1 w-4 h-4 accent-slate-900 rounded cursor-pointer">
               <span class="text-xs text-gray-600 leading-relaxed">
                 He leído y acepto los <strong class="text-gray-900">Términos del Servicio</strong> y la <strong class="text-gray-900">Política de Envíos y Devoluciones</strong> de Moorea.
               </span>
@@ -551,16 +694,19 @@
                 </p>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                   <button type="button" (click)="goToStep('payment'); orderError = null;"
-                    class="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>🔄 Cambiar / Probar Otra Tarjeta</span>
+                    class="p-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                    <span>Cambiar / Probar Otra Tarjeta</span>
                   </button>
                   <button type="button" (click)="switchPaymentMethodAndConfirm('yape')"
                     class="p-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                    <span>📱 Pagar con Yape</span>
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                    <span>Pagar con Yape</span>
                   </button>
                   <button type="button" (click)="switchPaymentMethodAndConfirm('cash')"
-                    class="p-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2 cursor-pointer">
-                    <span>💵 Pagar Contraentrega en Efectivo</span>
+                    class="p-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2 cursor-pointer">
+                    <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                    <span>Pagar Contraentrega en Efectivo</span>
                   </button>
                 </div>
               </div>
@@ -583,7 +729,12 @@
                 </svg>
                 <span>Procesando Pedido...</span>
               } @else {
-                <span class="notranslate" translate="no">🔒 Pagar y Confirmar Pedido · S/ {{ totalOrder | number:'1.2-2' }}</span>
+                <span class="notranslate flex items-center gap-2" translate="no">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>Pagar y Confirmar Pedido · S/ {{ totalOrder | number:'1.2-2' }}</span>
+                </span>
               }
             </button>
           </div>
@@ -599,7 +750,7 @@
         <div class="bg-white rounded-3xl shadow-xl border border-gray-100 p-6 sm:p-7 sticky top-6 space-y-5">
           <div class="flex items-center justify-between pb-3 border-b border-gray-100">
             <h3 class="text-base font-black text-gray-900">Resumen de Orden</h3>
-            <span class="text-xs font-bold text-violet-700 bg-violet-50 px-2 py-0.5 rounded-lg">{{ totalItemCount }} {{ totalItemCount === 1 ? 'artículo' : 'artículos' }}</span>
+            <span class="text-xs font-black text-slate-800 bg-slate-100 border border-slate-200 px-2.5 py-0.5 rounded-lg font-mono">{{ totalItemCount }} {{ totalItemCount === 1 ? 'artículo' : 'artículos' }}</span>
           </div>
 
           <!-- Items del Carrito -->
@@ -611,7 +762,7 @@
                   @if (thumb) {
                     <img [src]="thumb" [alt]="getProductName(item)" class="w-full h-full object-cover">
                   } @else {
-                    <span class="text-xs text-gray-400">🛍️</span>
+                    <svg class="w-4 h-4 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
                   }
                 </div>
                 <div class="flex-1 min-w-0">
@@ -666,21 +817,27 @@
 
             <!-- Cuotas Sin Interés si califica -->
             @if (installmentInfo) {
-              <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-900 font-bold text-[11px] flex items-center gap-1.5">
-                <span>💳</span>
+              <div class="p-2.5 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-950 font-bold text-[11px] flex items-center gap-2">
+                <svg class="w-4 h-4 text-emerald-700 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                </svg>
                 <span>Hasta <strong>{{ installmentInfo.count }} cuotas sin interés</strong> de S/ {{ installmentInfo.amount | number:'1.2-2' }}</span>
               </div>
             }
           </div>
 
           <!-- Sellos de Confianza -->
-          <div class="pt-4 border-t border-gray-100 space-y-2 text-[11px] text-gray-400">
+          <div class="pt-4 border-t border-slate-100 space-y-2 text-[11px] text-slate-500 font-medium">
             <div class="flex items-center gap-2">
-              <span>🔒</span>
+              <svg class="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
               <span>Pago 100% encriptado con seguridad bancaria</span>
             </div>
             <div class="flex items-center gap-2">
-              <span>⚡</span>
+              <svg class="w-3.5 h-3.5 text-amber-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
               <span>Despacho rápido desde tiendas locales</span>
             </div>
           </div>
@@ -702,14 +859,17 @@
       <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-6 text-white relative">
         <div class="flex items-center justify-between">
           <div class="flex items-center gap-3">
-            <div class="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center font-black text-2xl shadow-sm">
-              💳
+            <div class="w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-sm">
+              <svg class="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+              </svg>
             </div>
             <div>
               <div class="flex items-center gap-2">
                 <h3 class="font-black text-lg tracking-tight">Izipay Checkout</h3>
-                <span class="px-2 py-0.5 text-[10px] font-black bg-white/20 text-white rounded-full uppercase tracking-wider">
-                  🔒 Pago Seguro
+                <span class="px-2 py-0.5 text-[10px] font-black bg-white/20 text-white rounded-full uppercase tracking-wider inline-flex items-center gap-1">
+                  <svg class="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                  <span>Pago Seguro</span>
                 </span>
               </div>
               <p class="text-xs text-rose-100 font-medium">Pasarela Oficial de Pagos Bancarios</p>
@@ -750,7 +910,9 @@
             </div>
             <!-- Contactless + Logo Dinámico -->
             <div class="flex items-center gap-2">
-              <span class="text-xs opacity-70">📡</span>
+              <svg class="w-4 h-4 opacity-75 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8.53 16.11a6 6 0 010-8.22m3.53 11.75a10 10 0 000-15.28m3.54 18.81a14 14 0 000-22.34" />
+              </svg>
               <span class="font-black text-base tracking-wider italic text-white/95 uppercase font-mono">
                 {{ brandLabel }}
               </span>
@@ -801,15 +963,18 @@
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <button type="button" (click)="switchToApprovedCard()"
                   class="p-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                  <span>🔄 Reintentar con Tarjeta Válida</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  <span>Reintentar con Tarjeta Válida</span>
                 </button>
                 <button type="button" (click)="switchPaymentMethodAndConfirm('yape')"
                   class="p-2.5 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs cursor-pointer">
-                  <span>📱 Cambiar a Yape</span>
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
+                  <span>Cambiar a Yape</span>
                 </button>
                 <button type="button" (click)="switchPaymentMethodAndConfirm('cash')"
-                  class="p-2.5 bg-gray-800 hover:bg-gray-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2 cursor-pointer">
-                  <span>💵 Pagar Contraentrega en Efectivo</span>
+                  class="p-2.5 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xs font-black transition flex items-center justify-center gap-1.5 shadow-xs sm:col-span-2 cursor-pointer">
+                  <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
+                  <span>Pagar Contraentrega en Efectivo</span>
                 </button>
               </div>
             </div>
@@ -937,13 +1102,19 @@
             </svg>
             <span>Conectando con Izipay y Banco emisor...</span>
           } @else {
-            <span>🔒 Pagar S/ {{ (izipaySessionData?.amount ?? totalOrder) | number:'1.2-2' }}</span>
+            <span class="flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+              <span>Pagar S/ {{ (izipaySessionData?.amount ?? totalOrder) | number:'1.2-2' }}</span>
+            </span>
           }
         </button>
 
         <!-- Sellos de Seguridad Bancaria -->
         <div class="flex items-center justify-center gap-3 text-[11px] text-slate-400 font-bold pt-2 border-t border-slate-100">
-          <span>🛡️ Cifrado SSL 256-bit</span>
+          <span class="flex items-center gap-1">
+            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+            <span>Cifrado SSL 256-bit</span>
+          </span>
           <span>•</span>
           <span>PCI-DSS Certificado</span>
           <span>•</span>
@@ -956,7 +1127,7 @@
         <details class="pt-2 border-t border-slate-100 group">
           <summary class="text-[11px] font-bold text-slate-400 hover:text-slate-700 cursor-pointer flex items-center justify-between list-none py-1 select-none">
             <span class="flex items-center gap-1.5">
-              <span>🧪</span>
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
               <span>Herramientas de Simulación Sandbox (Desarrollo)</span>
             </span>
             <span class="text-xs transition-transform group-open:rotate-180">▾</span>
@@ -975,7 +1146,15 @@
                   [class.border-slate-200]="cardNumber !== card.number"
                 >
                   <div class="flex items-center gap-2">
-                    <span class="text-sm">{{ card.status === 'approved' ? '✓' : (card.status === 'insufficient_funds' ? '⚠️' : '🚫') }}</span>
+                    <span class="flex items-center justify-center w-5 h-5">
+                      @if (card.status === 'approved') {
+                        <svg class="w-4 h-4 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+                      } @else if (card.status === 'insufficient_funds') {
+                        <svg class="w-4 h-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                      } @else {
+                        <svg class="w-4 h-4 text-rose-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                      }
+                    </span>
                     <div>
                       <span class="font-bold text-slate-800">{{ card.brand }}</span>
                       <span class="text-[10px] font-mono text-slate-500 ml-1">({{ card.number }})</span>

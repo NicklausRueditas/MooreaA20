@@ -96,7 +96,7 @@
         <!-- Tira vertical de Thumbnails (Desktop >= 768px) -->
         @if (combinedGallery.length > 1) {
         <div
-          class="hidden md:flex flex-col gap-3 w-24 xl:w-28 flex-shrink-0 max-h-[640px] overflow-y-auto no-scrollbar py-0.5">
+          class="hidden md:flex flex-col gap-3 w-24 xl:w-28 flex-shrink-0 max-h-[640px] overflow-y-auto no-scrollbar pt-1">
           @for (item of combinedGallery; track $index; let i = $index) {
           <button type="button" (click)="selectImage(item)" (mouseenter)="selectImage(item)"
             class="group relative aspect-[3/4] mx-2 rounded-2xl overflow-hidden border-2 transition-all duration-200 cursor-pointer focus:outline-none"
