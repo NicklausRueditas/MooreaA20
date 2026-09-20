@@ -73,7 +73,7 @@ export interface Product {
     label:           string;
     cost:            number;
     estimatedDays:   number;
-    /** true si las 3 condiciones de delivery gratis se cumplen (dist ≤ 2.5 km, precio ≥ S/200, peso ≤ 3 kg) */
+    /** true si las 3 condiciones de delivery gratis se cumplen (dist ≤ 2.5 km, precio ≥ S/500, peso ≤ 3 kg) */
     isFree?:          boolean;
     /** Recargo en Soles por peso efectivo > 3 kg. S/ 0 si no aplica. */
     weightSurcharge?: number;

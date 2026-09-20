@@ -300,7 +300,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
   /**
    * Cálculo dinámico del costo de envío basado en reglas de negocio de Moorea:
    * 1. Si no hay items con delivery (todos en recojo en tienda) -> S/ 0.00
-   * 2. Si el subtotal es >= S/ 200 -> Envío GRATIS (S/ 0.00)
+   * 2. Si el subtotal es >= S/ 500 -> Envío GRATIS (S/ 0.00)
    * 3. Si es < S/ 200 -> Tarifa según la distancia estimada a la tienda más cercana
    */
   get deliveryCost(): number {
@@ -309,8 +309,8 @@ export class PaymentComponent implements OnInit, OnDestroy {
       return 0;
     }
 
-    // Si el subtotal califica para envío gratis (>= S/ 200)
-    if (this.subtotalAmount >= 200) {
+    // Si el subtotal califica para envío gratis (>= S/ 500)
+    if (this.subtotalAmount >= 500) {
       return 0;
     }
 

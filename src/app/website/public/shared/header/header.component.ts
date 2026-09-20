@@ -39,7 +39,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private subscriptions = new Subscription();
 
   /** Umbral en Soles para acceder a delivery gratuito local */
-  readonly freeDeliveryThreshold = 200;
+  readonly freeDeliveryThreshold = 500;
 
   constructor(
     private sesionService: SesionService,

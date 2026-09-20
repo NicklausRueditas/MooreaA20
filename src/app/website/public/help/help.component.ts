@@ -84,7 +84,7 @@ export class HelpComponent {
       category: 'shipping',
       categoryLabel: 'Envíos y Delivery',
       question: '¿Cómo funciona el Delivery Gratuito y el cálculo de distancia?',
-      answer: 'Moorea calcula automáticamente la distancia entre tu ubicación y la tienda con stock más cercana. El delivery es 100% GRATIS si la distancia es de hasta 2.5 km, tu compra es igual o superior a S/ 200 y el peso del pedido no excede los 3 kg. Para distancias mayores, se aplica una tarifa fija accesible por kilómetro adicional.',
+      answer: 'Moorea calcula automáticamente la distancia entre tu ubicación y la tienda con stock más cercana. El delivery es 100% GRATIS si la distancia es de hasta 2.5 km, tu compra es igual o superior a S/ 500 y el peso del pedido no excede los 3 kg. Para distancias mayores, se aplica una tarifa fija accesible por kilómetro adicional.',
       isOpen: true
     },
     {

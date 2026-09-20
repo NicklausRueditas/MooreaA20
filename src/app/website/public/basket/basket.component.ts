@@ -28,7 +28,7 @@ export class BasketComponent implements OnInit, OnDestroy {
   couponError: string | null = null;
 
   /** Umbral para delivery gratuito en soles */
-  readonly freeDeliveryThreshold = 200;
+  readonly freeDeliveryThreshold = 500;
 
   private destroy$ = new Subject<void>();
 
