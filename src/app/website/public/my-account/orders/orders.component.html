@@ -331,7 +331,7 @@
                     <div class="w-14 h-16 sm:w-16 sm:h-18 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden shrink-0 relative">
                       @if (item.thumbnail) {
                         <img
-                          [src]="item.thumbnail"
+                          [src]="item.thumbnail | cloudinary:'w_200,c_fill,q_auto,f_auto'"
                           [alt]="item.productName"
                           class="w-full h-full object-cover"
                           loading="lazy"

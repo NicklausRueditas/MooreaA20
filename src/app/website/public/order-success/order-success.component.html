@@ -205,10 +205,19 @@
         @for (item of order.items; track item.variantId) {
         <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
           <div class="flex items-center gap-3.5 min-w-0">
-            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center flex-shrink-0">
-              <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-              </svg>
+            <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center flex-shrink-0 relative">
+              @if (item.thumbnail) {
+                <img
+                  [src]="item.thumbnail | cloudinary:'w_160,c_fill,q_auto,f_auto'"
+                  [alt]="item.productName"
+                  class="w-full h-full object-cover"
+                  loading="lazy"
+                />
+              } @else {
+                <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+              }
             </div>
             <div class="min-w-0">
               <p class="font-black text-xs sm:text-sm text-gray-900 truncate">{{ item.productName }}</p>

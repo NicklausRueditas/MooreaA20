@@ -6,6 +6,7 @@ import { catchError, of } from 'rxjs';
 
 import { OrderService } from '../../../../core/services/commerce/order.service';
 import { SolCurrencyPipe } from '../../../../shared/pipes/sol-currency.pipe';
+import { CloudinaryPipe } from '../../../../shared/pipes/cloudinary.pipe';
 import {
   Order,
   OrderStatus,
@@ -20,7 +21,7 @@ export type OrderTab = 'all' | 'in_progress' | 'delivered' | 'cancelled';
 @Component({
   selector: 'app-orders',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, SolCurrencyPipe],
+  imports: [CommonModule, RouterLink, FormsModule, SolCurrencyPipe, CloudinaryPipe],
   templateUrl: './orders.component.html',
   styleUrl: './orders.component.css',
 })

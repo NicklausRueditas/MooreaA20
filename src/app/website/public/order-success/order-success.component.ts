@@ -5,6 +5,7 @@ import { switchMap, catchError, of } from 'rxjs';
 
 import { OrderService } from '../../../core/services/commerce/order.service';
 import { SolCurrencyPipe } from '../../../shared/pipes/sol-currency.pipe';
+import { CloudinaryPipe } from '../../../shared/pipes/cloudinary.pipe';
 import {
   Order,
   OrderStatus,
@@ -16,7 +17,7 @@ import {
 @Component({
   selector: 'app-order-success',
   standalone: true,
-  imports: [CommonModule, RouterLink, SolCurrencyPipe],
+  imports: [CommonModule, RouterLink, SolCurrencyPipe, CloudinaryPipe],
   templateUrl: './order-success.component.html',
 })
 export class OrderSuccessComponent implements OnInit {
