@@ -1,119 +1,235 @@
-<!-- ═══ Modal de Variante ════════════════════════════════════════════════════ -->
-<div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto border border-slate-100/80 flex flex-col">
-    <!-- Header -->
-    <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-md z-10">
-      <div>
-        <h2 class="text-lg font-black text-slate-800 tracking-tight">{{ modalTitle }}</h2>
-        @if (isCloneMode) {
-          <p class="text-xs text-blue-600 font-semibold mt-0.5">🔒 Color bloqueado · Elige talla y ajusta el precio</p>
-        }
+<!-- ═══ MODAL DE VARIANTE (E-COMMERCE LUXURY UI) ════════════════════════════ -->
+<div class="fixed inset-0 bg-slate-950/70 backdrop-blur-md flex items-center justify-center z-50 p-3 sm:p-5 animate-fade-in">
+  <div class="bg-white rounded-3xl shadow-2xl w-full max-w-2xl sm:max-w-3xl max-h-[92vh] flex flex-col border border-slate-100 overflow-hidden">
+    
+    <!-- ── Header E-Commerce ────────────────────────────────────────────────── -->
+    <div class="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white/95 backdrop-blur-md z-20 shrink-0">
+      <div class="space-y-1">
+        <div class="flex items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider"
+                [class.bg-indigo-50]="isEditMode"
+                [class.text-indigo-600]="isEditMode"
+                [class.border]="isEditMode"
+                [class.border-indigo-200]="isEditMode"
+                [class.bg-blue-50]="isCloneMode"
+                [class.text-blue-600]="isCloneMode"
+                [class.border-blue-200]="isCloneMode"
+                [class.bg-emerald-50]="isCreateMode"
+                [class.text-emerald-600]="isCreateMode"
+                [class.border-emerald-200]="isCreateMode">
+            <span class="w-1.5 h-1.5 rounded-full"
+                  [class.bg-indigo-500]="isEditMode"
+                  [class.bg-blue-500]="isCloneMode"
+                  [class.bg-emerald-500]="isCreateMode"></span>
+            {{ isEditMode ? 'Edición de Variante' : isCloneMode ? 'Clonar Variante' : 'Nueva Variante' }}
+          </span>
+
+          @if (product?.code) {
+            <span class="text-[11px] font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+              {{ product?.code }}
+            </span>
+          }
+        </div>
+
+        <h2 class="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-none">
+          {{ modalTitle }}
+        </h2>
       </div>
-      <button type="button" (click)="close()" class="w-8 h-8 flex items-center justify-center rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-all text-xl leading-none">&times;</button>
+
+      <!-- Botón de Cierre Moderno -->
+      <button type="button" (click)="close()"
+              class="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
+              aria-label="Cerrar modal">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
     </div>
 
-    <!-- Form -->
-    <form [formGroup]="variantForm" (ngSubmit)="save()" class="p-6 space-y-6">
-      <!-- SKU -->
-      <div>
-        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">SKU *</label>
-        <input formControlName="sku" type="text" placeholder="BASH-DALLAS-WHT-36" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-mono uppercase focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all shadow-sm" />
-        <p class="text-[10px] text-slate-400 font-semibold mt-1">Identificador único de la variante para control de inventario</p>
+    <!-- ── Formulario con Scroll Interno ────────────────────────────────────── -->
+    <form [formGroup]="variantForm" (ngSubmit)="save()" class="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+
+      <!-- ── SECCIÓN 1: Identificación & SKU ───────────────────────────────── -->
+      <div class="bg-slate-50/70 border border-slate-100 rounded-2xl p-4.5 sm:p-5 space-y-4">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-slate-900 text-white flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-800">Código de Inventario (SKU)</h3>
+              <p class="text-[11px] text-slate-400 font-medium">Identificador único de la variante para logística y ventas</p>
+            </div>
+          </div>
+
+          <!-- Switch Estado Activo -->
+          <label class="inline-flex items-center gap-2.5 cursor-pointer select-none">
+            <span class="text-xs font-bold"
+                  [class.text-emerald-600]="variantForm.get('isActive')!.value"
+                  [class.text-slate-400]="!variantForm.get('isActive')!.value">
+              {{ variantForm.get('isActive')!.value ? 'Activa' : 'Inactiva' }}
+            </span>
+            <div class="relative">
+              <input formControlName="isActive" type="checkbox" class="sr-only peer" />
+              <div class="w-10 h-5.5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:bg-emerald-500 transition-colors"></div>
+              <div class="absolute left-0.5 top-0.5 bg-white w-4.5 h-4.5 rounded-full shadow-sm transition-transform peer-checked:translate-x-4.5"></div>
+            </div>
+          </label>
+        </div>
+
+        <div>
+          <input formControlName="sku" type="text" placeholder="EJ: BASH-DALLAS-WHT-36"
+                 class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold uppercase text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all placeholder:text-slate-300 shadow-2xs" />
+        </div>
       </div>
 
-      <!-- ── Color ─────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm" [class.border-blue-250]="isCloneMode" [class.bg-blue-50/20]="isCloneMode">
-        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5 flex items-center gap-1.5">
-          <span>🎨</span> Color
+      <!-- ── SECCIÓN 2: Color de la Variante ────────────────────────────────── -->
+      <div class="border border-slate-200/80 rounded-2xl p-4.5 sm:p-5 space-y-4.5 bg-white shadow-2xs"
+           [class.bg-blue-50/20]="isCloneMode"
+           [class.border-blue-200]="isCloneMode">
+        
+        <!-- Header de Sección -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100 flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-800">Color & Acabado</h3>
+              <p class="text-[11px] text-slate-400 font-medium">Define el tono visible y la muestra que verán los clientes</p>
+            </div>
+          </div>
+
           @if (isCloneMode) {
-            <span class="text-[10px] font-extrabold text-blue-600 bg-blue-100 px-1.5 py-0.5 rounded-md uppercase">bloqueado</span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-100/70 border border-blue-200 text-blue-700 text-[10px] font-bold">
+              <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+              Color Bloqueado
+            </span>
           }
-        </legend>
+        </div>
 
         @if (!isCloneMode) {
+          <!-- Paleta de Colores Predefinidos -->
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Colores predefinidos</label>
-            <div class="flex flex-wrap gap-2">
+            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Paleta Rápida</span>
+            <div class="flex flex-wrap gap-2 p-2.5 bg-slate-50 border border-slate-150 rounded-xl">
               @for (c of colorOptions; track c.code) {
-                <button type="button" (click)="variantForm.get('colorPreset')!.setValue(c.code)" class="w-8 h-8 rounded-full border-2 transition-all hover:scale-110 active:scale-95 shadow-sm" [style.background-color]="c.hex" [ngClass]="variantForm.get('colorCode')!.value === c.code ? 'border-primary ring-4 ring-primary/20 ring-offset-0 scale-105' : 'border-white'" [title]="c.name"></button>
+                <button type="button"
+                        (click)="variantForm.get('colorPreset')!.setValue(c.code)"
+                        class="w-7 h-7 rounded-full border border-white shadow-2xs transition-all duration-150 hover:scale-115 active:scale-95 cursor-pointer relative"
+                        [style.background-color]="c.hex"
+                        [title]="c.name + ' (' + c.code + ')'">
+                  @if (variantForm.get('colorCode')!.value === c.code) {
+                    <span class="absolute inset-0 rounded-full ring-2 ring-indigo-600 ring-offset-2 ring-offset-white"></span>
+                  }
+                </button>
               }
             </div>
           </div>
+
+          <!-- Campos de Color Personalizado -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+            <div class="sm:col-span-1">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Nombre</label>
+              <input formControlName="colorName" type="text" placeholder="Ej: Azul Marino"
+                     class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Muestra Hex</label>
+              <div class="flex items-center gap-2">
+                <input formControlName="colorHex" type="color"
+                       class="w-10 h-9.5 border border-slate-200 rounded-xl cursor-pointer p-0.5 bg-white shrink-0 shadow-2xs" />
+                <input formControlName="colorHex" type="text" placeholder="#000000"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold uppercase text-slate-700 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Código Corto</label>
+              <input formControlName="colorCode" type="text" placeholder="AZL" maxlength="6"
+                     class="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-sm font-mono font-bold uppercase text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
+            </div>
+          </div>
         } @else {
-          <!-- Vista de color bloqueado en modo clone -->
-          <div class="flex items-center gap-3 p-3 bg-white rounded-xl border border-blue-100 shadow-inner">
-            <div class="w-9 h-9 rounded-xl border border-slate-200 shadow-sm" [style.background-color]="variantForm.getRawValue().colorHex"></div>
+          <!-- Tarjeta de color bloqueado en clonación -->
+          <div class="flex items-center gap-3.5 p-3.5 bg-white rounded-xl border border-blue-100 shadow-2xs">
+            <div class="w-10 h-10 rounded-xl border border-slate-200 shadow-xs shrink-0"
+                 [style.background-color]="variantForm.getRawValue().colorHex"></div>
             <div>
-              <p class="text-sm font-bold text-slate-800">{{ variantForm.getRawValue().colorName }}</p>
-              <p class="text-xs text-slate-400 font-mono mt-0.5">{{ variantForm.getRawValue().colorCode }}</p>
+              <p class="text-sm font-bold text-slate-900">{{ variantForm.getRawValue().colorName }}</p>
+              <div class="flex items-center gap-2 mt-0.5">
+                <span class="text-xs text-slate-400 font-mono font-semibold">{{ variantForm.getRawValue().colorCode }}</span>
+                <span class="text-[10px] text-slate-400">&bull;</span>
+                <span class="text-xs text-slate-400 font-mono">{{ variantForm.getRawValue().colorHex }}</span>
+              </div>
             </div>
           </div>
         }
+      </div>
 
-        @if (!isCloneMode) {
-          <div class="grid grid-cols-3 gap-3">
-            <div class="col-span-2">
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Nombre del color</label>
-              <input formControlName="colorName" type="text" placeholder="Blanco" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
-            </div>
+      <!-- ── SECCIÓN 3: Talla / Medida & Dimensiones ────────────────────────── -->
+      <div class="border border-slate-200/80 rounded-2xl p-4.5 sm:p-5 space-y-4 bg-white shadow-2xs">
+        
+        <!-- Header de Sección -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-amber-50 text-amber-600 border border-amber-100 flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15m11.25 5.25h-4.5m4.5 0v-4.5m0 4.5L15 15m5.25-11.25h-4.5m4.5 0v4.5m0-4.5L15 9" />
+              </svg>
+            </span>
             <div>
-              <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Color</label>
-              <input formControlName="colorHex" type="color" class="w-full h-10 border border-gray-200 rounded-xl cursor-pointer p-0.5 bg-white" />
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-800">Talla & Medida</h3>
+              <p class="text-[11px] text-slate-400 font-medium">Especifica el tamaño del producto para el cliente</p>
             </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Código (corto)</label>
-            <input formControlName="colorCode" type="text" placeholder="WHT" maxlength="6" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm font-mono uppercase focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
-          </div>
-        }
-      </fieldset>
+        </div>
 
-      <!-- ── Talla ──────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm">
-        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5">📏 Talla / Tamaño</legend>
-
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Tipo</label>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tipo de Medida</label>
             <div class="relative">
-              <select formControlName="sizeType" class="appearance-none w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white font-medium text-slate-700">
+              <select formControlName="sizeType"
+                      class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs">
                 @for (t of variantTypeOptions; track t.value) {
                   <option [value]="t.value">{{ t.label }}</option>
                 }
               </select>
-              <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                <svg class="h-4 w-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
             </div>
           </div>
+
           <div>
-            <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Valor</label>
-            <input formControlName="sizeValue" type="text" [placeholder]="currentSizePlaceholder" class="w-full px-3.5 py-2 border border-gray-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Valor de Talla</label>
+            <input formControlName="sizeValue" type="text" [placeholder]="currentSizePlaceholder"
+                   class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs placeholder:font-normal placeholder:text-slate-300" />
           </div>
         </div>
 
+        <!-- Selección Rápida de Tallas (Chips) -->
         @if (currentSizeTallas.length > 0) {
-          <div>
-            <p class="text-[10px] font-extrabold text-slate-400 mb-2 uppercase tracking-wider">Selección rápida</p>
+          <div class="pt-1">
+            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Sugerencias Rápidas</span>
             <div class="flex flex-wrap gap-1.5">
               @for (t of currentSizeTallas; track t) {
                 @let isSelected = variantForm.get('sizeValue')!.value === t;
                 <button type="button" (click)="variantForm.get('sizePreset')!.setValue(t)"
-                        class="px-3 h-8.5 rounded-xl text-xs font-bold border transition-all duration-200 hover:scale-105 active:scale-95"
-                        [class.bg-gradient-to-br]="isSelected"
-                        [class.from-primary]="isSelected"
-                        [class.to-rose-600]="isSelected"
+                        class="px-3 h-8 rounded-lg text-xs font-bold border transition-all duration-150 cursor-pointer active:scale-95"
+                        [class.bg-slate-900]="isSelected"
                         [class.text-white]="isSelected"
-                        [class.border-transparent]="isSelected"
-                        [class.shadow-md]="isSelected"
-                        [class.shadow-primary/15]="isSelected"
+                        [class.border-slate-900]="isSelected"
+                        [class.shadow-sm]="isSelected"
                         [class.bg-white]="!isSelected"
                         [class.text-slate-600]="!isSelected"
                         [class.border-slate-200]="!isSelected"
-                        [class.hover:border-primary/50]="!isSelected"
-                        [class.hover:text-primary]="!isSelected">
+                        [class.hover:border-slate-400]="!isSelected"
+                        [class.hover:text-slate-900]="!isSelected">
                   {{ t }}
                 </button>
               }
@@ -121,237 +237,311 @@
           </div>
         }
 
+        <!-- Dimensiones Físicas (Empaque / Envíos) -->
         @if (currentTypeRequiresDimensions) {
-          <div class="border-t border-slate-100 pt-4 space-y-4 animate-fade-in">
-            <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">📦 Dimensiones físicas (Empaque)</p>
+          <div class="border-t border-slate-100 pt-4 space-y-3.5 animate-fade-in">
+            <div class="flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 7.5l-9-5.25L3 7.5m18 0l-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9" />
+              </svg>
+              <span class="text-[10px] font-extrabold text-slate-500 uppercase tracking-wider">Dimensiones Físicas de Paquete</span>
+            </div>
+
             <div class="grid grid-cols-3 gap-2.5">
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Largo (cm)</label>
-                <input formControlName="dimLength" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+                <input formControlName="dimLength" type="number" min="0" placeholder="0"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Ancho (cm)</label>
-                <input formControlName="dimWidth" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+                <input formControlName="dimWidth" type="number" min="0" placeholder="0"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
               </div>
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Alto (cm)</label>
-                <input formControlName="dimHeight" type="number" min="0" placeholder="0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+                <input formControlName="dimHeight" type="number" min="0" placeholder="0"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
               </div>
             </div>
+
             <div class="grid grid-cols-2 gap-2.5">
               <div>
                 <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Peso</label>
-                <input formControlName="dimWeight" type="number" min="0" step="0.01" placeholder="0.0" class="w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
+                <input formControlName="dimWeight" type="number" min="0" step="0.01" placeholder="0.0"
+                       class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unidad</label>
-                <div class="relative">
-                  <select formControlName="dimWeightUnit" class="appearance-none w-full px-2.5 py-2 border border-gray-200 rounded-xl text-sm focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all bg-white font-semibold">
-                    <option value="kg">kg</option>
-                    <option value="g">g</option>
-                    <option value="lb">lb</option>
-                    <option value="oz">oz</option>
-                  </select>
-                  <div class="absolute inset-y-0 right-0 flex items-center pr-2.5 pointer-events-none">
-                    <svg class="h-4.5 w-4.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        }
-      </fieldset>
-
-      <!-- ── Precio ─────────────────────────────────────────────────────────── -->
-      <div class="space-y-3.5">
-        <div>
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Ajuste de precio (S/)</label>
-          <input formControlName="priceAdjustment" type="number" step="0.01" placeholder="0" class="w-full px-3.5 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold focus:ring-4 focus:ring-primary/10 focus:border-primary focus:outline-none transition-all" />
-          <p class="text-[10px] text-slate-400 mt-1">Suma o resta de dinero con respecto al precio base del producto</p>
-        </div>
-
-        @if ((product?.basePrice ?? 0) > 0) {
-          <div class="relative overflow-hidden rounded-2xl border-2 p-4 bg-gradient-to-br transition-all duration-300"
-               [class.from-emerald-50/40]="(product?.discount ?? 0) > 0"
-               [class.to-emerald-50/80]="(product?.discount ?? 0) > 0"
-               [class.border-emerald-100]="(product?.discount ?? 0) > 0"
-               [class.from-slate-50/40]="!((product?.discount ?? 0) > 0)"
-               [class.to-slate-50/80]="!((product?.discount ?? 0) > 0)"
-               [class.border-slate-100]="!((product?.discount ?? 0) > 0)">
-            <div class="flex justify-between items-center">
-              <div>
-                <p class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider leading-tight">Precio final cliente</p>
-                @if ((product?.discount ?? 0) > 0) {
-                  <span class="inline-flex items-center gap-1 rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-bold text-emerald-800 mt-1.5">
-                    Descuento {{ product!.discount }}%
-                  </span>
-                }
-              </div>
-              <div class="text-right">
-                @if ((product?.discount ?? 0) > 0) {
-                  <p class="text-xs text-slate-400 line-through font-medium">
-                    S/ {{ ((product?.basePrice ?? 0) + (+variantForm.get('priceAdjustment')!.value || 0)).toFixed(2) }}
-                  </p>
-                }
-                <strong class="text-2xl font-black tracking-tight mt-0.5 block"
-                        [class.text-emerald-600]="(product?.discount ?? 0) > 0"
-                        [class.text-slate-800]="!((product?.discount ?? 0) > 0)">
-                  S/ {{ pricePreview.toFixed(2) }}
-                </strong>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Unidad de Peso</label>
+                <select formControlName="dimWeightUnit"
+                        class="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs">
+                  <option value="kg">Kilogramos (kg)</option>
+                  <option value="g">Gramos (g)</option>
+                  <option value="lb">Libras (lb)</option>
+                  <option value="oz">Onzas (oz)</option>
+                </select>
               </div>
             </div>
           </div>
         }
       </div>
 
-      <!-- ── Galería ────────────────────────────────────────────────────────── -->
-      <fieldset class="border border-slate-150 rounded-2xl p-5 space-y-4 shadow-sm">
-        <legend class="text-xs font-black text-slate-700 uppercase tracking-wider px-2.5 bg-white border border-slate-150 rounded-lg py-0.5">🖼️ Galería de imágenes</legend>
+      <!-- ── SECCIÓN 4: Ajuste de Precio & Tarjeta E-Commerce ───────────────── -->
+      <div class="border border-slate-200/80 rounded-2xl p-4.5 sm:p-5 space-y-4 bg-white shadow-2xs">
+        <div class="flex items-center gap-2">
+          <span class="w-7 h-7 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center shrink-0">
+            <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </span>
+          <div>
+            <h3 class="text-xs font-black uppercase tracking-wider text-slate-800">Precio de Venta</h3>
+            <p class="text-[11px] text-slate-400 font-medium">Ajusta el valor final respecto al precio base del catálogo</p>
+          </div>
+        </div>
 
-        <!-- Sección: Imágenes del color (heredadas / locked) -->
-        @if (lockedUrls.length > 0) {
-          <div class="space-y-2.5">
-            <div class="flex items-center justify-between">
-              <span class="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Heredadas de este color</span>
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 border border-blue-100 rounded-lg text-[10px] font-bold uppercase tracking-wider">🔒 Solo lectura</span>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1.5">
+              Ajuste sobre Precio Base (S/)
+            </label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">&plusmn; S/</span>
+              <input formControlName="priceAdjustment" type="number" step="0.01" placeholder="0.00"
+                     class="w-full pl-13 pr-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs" />
             </div>
+            <p class="text-[10px] text-slate-400 font-medium mt-1">Ingresa un valor positivo o negativo para variar el precio</p>
+          </div>
+
+          <!-- Tarjeta de Precio Final de Venta -->
+          @if ((product?.basePrice ?? 0) > 0) {
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 text-white rounded-2xl p-4 shadow-sm border border-slate-700/50 flex flex-col justify-between">
+              <div class="flex items-center justify-between">
+                <span class="text-[10px] font-mono font-bold tracking-wider text-slate-400 uppercase">Precio al Público</span>
+                @if ((product?.discount ?? 0) > 0) {
+                  <span class="px-2 py-0.5 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-md text-[10px] font-bold">
+                    -{{ product!.discount }}% OFF
+                  </span>
+                }
+              </div>
+
+              <div class="mt-2 flex items-baseline justify-between">
+                <span class="text-xs text-slate-400 font-medium">
+                  Base: S/ {{ (product?.basePrice ?? 0).toFixed(2) }}
+                </span>
+                <div class="text-right">
+                  @if ((product?.discount ?? 0) > 0) {
+                    <span class="text-xs text-slate-400 line-through mr-1 font-mono">
+                      S/ {{ ((product?.basePrice ?? 0) + (+variantForm.get('priceAdjustment')!.value || 0)).toFixed(2) }}
+                    </span>
+                  }
+                  <span class="text-2xl font-black tracking-tight text-white">
+                    S/ {{ pricePreview.toFixed(2) }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- ── SECCIÓN 5: Galería de Imágenes E-Commerce ───────────────────────── -->
+      <div class="border border-slate-200/80 rounded-2xl p-4.5 sm:p-5 space-y-4.5 bg-white shadow-2xs">
+        
+        <!-- Header de Sección -->
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-7 h-7 rounded-xl bg-rose-50 text-rose-600 border border-rose-100 flex items-center justify-center shrink-0">
+              <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 15.75l5.159-5.159a2.25 2.25 0 013.182 0l5.159 5.159m-1.5-1.5l1.409-1.409a2.25 2.25 0 013.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 001.5-1.5V6a1.5 1.5 0 00-1.5-1.5H3.75A1.5 1.5 0 002.25 6v12a1.5 1.5 0 001.5 1.5zm10.5-11.25h.008v.008h-.008V8.25zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z" />
+              </svg>
+            </span>
+            <div>
+              <h3 class="text-xs font-black uppercase tracking-wider text-slate-800">Galería de Imágenes</h3>
+              <p class="text-[11px] text-slate-400 font-medium">Fotos correspondientes al color seleccionado</p>
+            </div>
+          </div>
+
+          <span class="text-xs font-mono font-bold text-slate-400 bg-slate-100 px-2.5 py-1 rounded-lg">
+            {{ lockedUrls.length + extraUrls.length }} foto(s)
+          </span>
+        </div>
+
+        <!-- Bloque: Fotos Heredadas de Color (Locked) -->
+        @if (lockedUrls.length > 0) {
+          <div class="p-3.5 bg-blue-50/40 border border-blue-100 rounded-xl space-y-2.5">
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] font-extrabold text-blue-700 uppercase tracking-wider flex items-center gap-1.5">
+                <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+                </svg>
+                Heredadas de este color (Compartidas)
+              </span>
+              <span class="text-[9px] font-bold text-blue-600 bg-blue-100/70 px-2 py-0.5 rounded-md uppercase tracking-wider">Solo Lectura</span>
+            </div>
+
             <div class="flex flex-wrap gap-2.5">
-              @for (img of lockedUrls; track img) {
-                <div class="relative w-18 h-18 rounded-xl overflow-hidden border-2 border-blue-100 shadow-sm">
+              @for (img of lockedUrls; track img; let i = $index) {
+                <div class="relative w-18 h-18 rounded-xl overflow-hidden border border-blue-200/80 shadow-2xs group">
                   <img [src]="img" alt="Imagen del color" class="w-full h-full object-cover" />
-                  <div class="absolute inset-0 bg-slate-900/10 flex items-center justify-center text-xs shadow-inner"></div>
+                  @if (i === 0) {
+                    <span class="absolute bottom-1 left-1 bg-blue-600 text-white text-[8px] font-bold px-1.5 py-0.5 rounded shadow-xs">
+                      Portada
+                    </span>
+                  }
                 </div>
               }
             </div>
-            <p class="text-[10px] text-blue-500 font-medium">💡 Estas fotos se cargaron para este color y son compartidas por todas sus tallas.</p>
+            <p class="text-[10px] text-blue-600/80 font-medium">Estas fotografías se reutilizan en todas las tallas del mismo color.</p>
           </div>
         }
 
-        <!-- Sección: Imágenes adicionales (editables) -->
-        <div class="space-y-3.5">
+        <!-- Bloque: Fotos Editables / Adicionales -->
+        <div class="space-y-3">
           @if (lockedUrls.length > 0) {
-            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Adicionales para esta talla</span>
+            <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Fotos Adicionales para esta Talla</span>
           }
+
           @if (extraUrls.length > 0) {
-            <!-- Grid de imágenes con drag & drop -->
             <div class="flex flex-wrap gap-2.5">
               @for (img of extraUrls; track img; let i = $index) {
-                <div class="relative group w-18 h-18 rounded-xl overflow-hidden border transition-all duration-150 shadow-sm"
-                     [class.border-primary]="imgDragSrcIndex === i"
+                <div class="relative group w-20 h-20 rounded-2xl overflow-hidden border transition-all duration-200 shadow-2xs cursor-grab active:cursor-grabbing"
+                     [class.border-indigo-600]="imgDragSrcIndex === i"
                      [class.opacity-50]="imgDragSrcIndex === i"
-                     [class.border-slate-100]="imgDragSrcIndex !== i"
+                     [class.border-slate-200]="imgDragSrcIndex !== i"
                      draggable="true"
                      (dragstart)="onImgDragStart($event, i)"
                      (dragover)="onImgDragOver($event, i)"
                      (dragend)="onImgDragEnd()">
-                  <img [src]="img" alt="Imagen adicional" class="w-full h-full object-cover" />
-                  <!-- Handle de arrastre (esquina superior izquierda) -->
-                  <div class="absolute top-1 left-1 w-5 h-5 rounded-md bg-slate-900/60 text-white flex items-center justify-center cursor-grab active:cursor-grabbing opacity-0 group-hover:opacity-100 transition-opacity select-none"
-                       title="Arrastrar para reordenar">
-                    <svg class="w-3 h-3" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="9"  cy="5"  r="2"/><circle cx="15" cy="5"  r="2"/>
-                      <circle cx="9"  cy="12" r="2"/><circle cx="15" cy="12" r="2"/>
-                      <circle cx="9"  cy="19" r="2"/><circle cx="15" cy="19" r="2"/>
-                    </svg>
+                  <img [src]="img" alt="Imagen adicional" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                  
+                  <!-- Tag Portada si es la primera y no hay locked -->
+                  @if (i === 0 && lockedUrls.length === 0) {
+                    <span class="absolute top-1.5 left-1.5 bg-slate-900/80 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-md shadow-xs">
+                      Portada
+                    </span>
+                  }
+
+                  <!-- Overlay de acciones al hover -->
+                  <div class="absolute inset-0 bg-slate-950/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5">
+                    <!-- Botón Eliminar con Ícono Moderno -->
+                    <button type="button" (click)="removeExtraImage(i)"
+                            class="w-7 h-7 bg-rose-600 hover:bg-rose-700 text-white rounded-lg flex items-center justify-center transition-all hover:scale-110 active:scale-95 shadow-md cursor-pointer"
+                            title="Eliminar imagen">
+                      <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0" />
+                      </svg>
+                    </button>
                   </div>
-                  <!-- Overlay de eliminar -->
-                  <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                  <button type="button" (click)="removeExtraImage(i)" class="absolute bottom-1 right-1 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full text-xs flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-150 hover:scale-110 shadow">×</button>
                 </div>
               }
             </div>
           } @else if (lockedUrls.length === 0) {
-            <!-- Aviso de imagen requerida -->
-            <div class="text-center py-5 bg-rose-50/60 rounded-xl border border-dashed border-rose-200">
-              <p class="text-xs font-bold text-rose-500">📸 Se requiere al menos una imagen</p>
-              <p class="text-[10px] text-rose-400 mt-0.5">Sube las fotos del producto para poder guardar</p>
+            <!-- Alerta visual moderna de imagen requerida -->
+            <div class="flex items-center gap-3 p-4 bg-rose-50/60 border border-rose-200/80 rounded-2xl">
+              <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <h4 class="text-xs font-bold text-rose-800">Se requiere al menos una imagen</h4>
+                <p class="text-[11px] text-rose-600/80">Sube fotografías del producto para habilitar el guardado de la variante.</p>
+              </div>
             </div>
           }
 
-          <!-- Subir imágenes -->
-          <label class="flex items-center justify-center gap-2 px-4 py-3 border-2 border-dashed border-slate-200 rounded-xl cursor-pointer hover:border-primary hover:bg-primary/5 transition-all duration-200">
+          <!-- Dropzone para Cargar Imágenes -->
+          <label class="flex flex-col items-center justify-center gap-2 p-5 border-2 border-dashed border-slate-200 hover:border-slate-800 hover:bg-slate-50/50 rounded-2xl cursor-pointer transition-all duration-200 group">
             @if (isUploadingVariantImage) {
-              <svg class="animate-spin h-4 w-4 text-primary" fill="none" viewBox="0 0 24 24">
+              <svg class="animate-spin h-6 w-6 text-slate-800" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
               </svg>
-              <span class="text-xs font-bold text-slate-400">Subiendo imágenes...</span>
+              <span class="text-xs font-bold text-slate-600">Subiendo imágenes a Cloudinary...</span>
             } @else {
-              <svg class="h-4.5 w-4.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-              </svg>
-              <span class="text-xs font-bold text-slate-500">
-                + Agregar imágenes
-              </span>
+              <div class="w-10 h-10 rounded-2xl bg-slate-100 group-hover:bg-slate-200/80 text-slate-500 group-hover:text-slate-800 flex items-center justify-center transition-colors">
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.233-2.33 3 3 0 013.758 3.848A3.752 3.752 0 0118 19.5H6.75z" />
+                </svg>
+              </div>
+              <div class="text-center">
+                <span class="text-xs font-bold text-slate-700 block">
+                  Haz clic para subir o arrastra tus fotos aquí
+                </span>
+                <span class="text-[10px] text-slate-400 font-medium">Formatos JPG, PNG o WebP (Hasta 10MB)</span>
+              </div>
             }
             <input type="file" accept="image/*,.jfif" multiple class="hidden" (change)="onGallerySelected($event)" [disabled]="isUploadingVariantImage" />
           </label>
         </div>
 
-        <!-- Toggle compartir (solo si hay extraUrls y hay hermanos) -->
+        <!-- Propagar fotos a variantes hermanas -->
         @if (extraUrls.length > 0 && siblingVariantCount > 0 && !isCloneMode) {
-          <div class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 cursor-pointer hover:bg-slate-50/50 transition-all duration-200" [ngClass]="shareGalleryByColor ? 'border-primary/30 bg-primary/5' : 'border-slate-200'" (click)="shareGalleryByColor = !shareGalleryByColor">
-            <input type="checkbox" [checked]="shareGalleryByColor" (click)="$event.stopPropagation()" (change)="shareGalleryByColor = !shareGalleryByColor" class="w-4 h-4 accent-primary rounded cursor-pointer" />
+          <div class="flex items-center gap-3 p-3.5 rounded-2xl border transition-all duration-200 cursor-pointer select-none"
+               [class.border-indigo-300]="shareGalleryByColor"
+               [class.bg-indigo-50/30]="shareGalleryByColor"
+               [class.border-slate-200]="!shareGalleryByColor"
+               (click)="shareGalleryByColor = !shareGalleryByColor">
+            <input type="checkbox" [checked]="shareGalleryByColor"
+                   (click)="$event.stopPropagation()"
+                   (change)="shareGalleryByColor = !shareGalleryByColor"
+                   class="w-4.5 h-4.5 accent-indigo-600 rounded cursor-pointer" />
             <div class="flex-1">
-              <p class="text-xs font-bold text-slate-800 select-none">📋 Propagar imágenes adicionales al mismo color</p>
-              @if (shareGalleryByColor) {
-                <p class="text-[10px] text-primary font-bold mt-0.5">Se copiará a {{ siblingVariantCount }} variante(s) del mismo color</p>
-              } @else {
-                <p class="text-[10px] text-slate-400 font-semibold mt-0.5">Compartir las imágenes nuevas con todas las tallas de este color</p>
-              }
+              <div class="flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <p class="text-xs font-bold text-slate-800">Propagar fotos a todas las tallas de este color</p>
+              </div>
+              <p class="text-[10px] text-slate-400 font-medium mt-0.5">
+                {{ shareGalleryByColor ? 'Se sincronizará automáticamente con ' + siblingVariantCount + ' variante(s) de color similar' : 'Compartir la galería actualizada con las otras tallas' }}
+              </p>
             </div>
           </div>
         }
-      </fieldset>
-
-      <!-- ── Activo ─────────────────────────────────────────────────────────── -->
-      <div class="flex items-center gap-3 pt-1">
-        <label class="relative inline-flex items-center cursor-pointer">
-          <input formControlName="isActive" type="checkbox" class="sr-only peer" />
-          <div class="w-11 h-6 bg-gray-200 peer-focus:ring-2 peer-focus:ring-primary rounded-full peer peer-checked:bg-primary transition-colors"></div>
-          <div class="absolute left-0.5 top-0.5 bg-white w-5 h-5 rounded-full shadow transition-transform peer-checked:translate-x-5"></div>
-        </label>
-        <span class="text-sm font-bold text-slate-700">Variante activa</span>
       </div>
 
-      <!-- ── Error de guardado (respuesta del backend) ─────────────────── -->
+      <!-- ── Banner de Error del Backend ────────────────────────────────────── -->
       @if (saveError) {
-        <div class="flex items-start gap-3 px-4 py-3.5 bg-red-50 border border-red-200 rounded-2xl animate-fade-in">
-          <div class="flex-shrink-0 w-5 h-5 mt-0.5 text-red-500">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <path fill-rule="evenodd" d="M12 2a10 10 0 100 20A10 10 0 0012 2zm-.75 5.25a.75.75 0 011.5 0v5a.75.75 0 01-1.5 0v-5zm.75 9a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-            </svg>
-          </div>
-          <p class="text-xs font-semibold text-red-700 leading-relaxed">{{ saveError }}</p>
+        <div class="flex items-start gap-3 p-4 bg-rose-50 border border-rose-200 rounded-2xl animate-fade-in">
+          <svg class="w-5 h-5 text-rose-500 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <p class="text-xs font-semibold text-rose-800 leading-relaxed">{{ saveError }}</p>
         </div>
       }
 
-      <!-- ── Acciones ───────────────────────────────────────────────────────── -->
-      <div class="flex gap-3 pt-3">
-        <button type="button" (click)="close()" class="flex-1 px-4 py-3 border border-slate-200 text-slate-600 rounded-xl text-sm font-bold hover:bg-slate-50 transition-all">Cancelar</button>
-        <button type="submit" [disabled]="!canSave || isSaving" class="flex-1 px-4 py-3 bg-gradient-to-r from-primary to-rose-600 text-white rounded-xl text-sm font-bold hover:opacity-95 disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 active:scale-[0.97] shadow-lg shadow-primary/15">
-          @if (isSaving) {
-            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+      <!-- ── Acciones de Guardado (Footer) ──────────────────────────────────── -->
+      <div class="pt-2 flex items-center gap-3">
+        <button type="button" (click)="close()"
+                class="px-5 py-3 border border-slate-200 hover:bg-slate-100/80 text-slate-700 rounded-xl text-xs font-bold transition-all cursor-pointer">
+          Cancelar
+        </button>
+
+        <button type="submit" [disabled]="!canSave || isSaving"
+                class="flex-1 px-6 py-3 bg-gradient-to-r from-slate-900 to-slate-800 hover:from-slate-800 hover:to-slate-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 active:scale-[0.98] shadow-md hover:shadow-lg disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+          @if (isSaving || isUploadingVariantImage) {
+            <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
             </svg>
-          } @else if (isUploadingVariantImage) {
-            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
-              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          } @else {
+            <svg class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
             </svg>
           }
+
           @if (isUploadingVariantImage) {
             Subiendo imágenes...
           } @else if (lockedUrls.length + extraUrls.length === 0) {
-            📸 Agrega al menos una imagen
+            Agrega al menos una imagen
           } @else {
-            {{ isEditMode ? 'Guardar cambios' : isCloneMode ? 'Crear talla clonada' : 'Crear variante' }}
+            {{ isEditMode ? 'Guardar Cambios de Variante' : isCloneMode ? 'Crear Talla Clonada' : 'Crear Variante' }}
           }
         </button>
       </div>
+
     </form>
   </div>
 </div>
