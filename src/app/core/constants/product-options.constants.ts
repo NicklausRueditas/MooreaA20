@@ -402,7 +402,7 @@ export const TALLAS_POR_TIPO: Record<VariantSizeType, string[]> = {
   volume_ml:      TALLAS_VOLUME_ML,
   weight_net:     ['50g', '100g', '250g', '500g', '750g', '1kg', '2kg', '5kg'],
   pages:          [],
-  dimensions:     TALLAS_CLOTHING,  // Para dimensiones se usan tallas de ropa como referencia
+  dimensions:     [],
   one_size:       ['One Size'],
   custom:         [],
 };

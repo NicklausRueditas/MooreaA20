@@ -1,75 +1,223 @@
-<header class="bg-white sticky top-0 z-50 border-b border-gray-200 shadow-xs">
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🏢 MOOREA BUSINESS - HEADER EJECUTIVO E-COMMERCE                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
+<!-- ── 1. BARRA SUPERIOR EJECUTIVA / STATUS STRIP ──────────────────────────── -->
+<aside aria-label="Estado operativo" class="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white text-[11px] py-1.5 px-4 border-b border-slate-800/90 select-none hidden sm:block">
+  <div class="max-w-7xl mx-auto flex items-center justify-between gap-4">
+    
+    <!-- Estado operativo y cloud status -->
+    <div class="flex items-center gap-2.5">
+      <span class="flex h-2 w-2 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      <span class="font-extrabold tracking-wide text-slate-200">Moorea Business Suite</span>
+      <span class="text-slate-600">•</span>
+      <span class="text-slate-400 text-[10px] hidden md:inline">Operaciones en tiempo real · Catálogo, Sedes físicas & Despachos</span>
+    </div>
+
+    <!-- Enlaces directos a catálogo público -->
+    <div class="flex items-center gap-3 text-slate-400">
+      <a
+        routerLink="/store"
+        class="inline-flex items-center gap-1.5 text-slate-300 hover:text-white transition-colors duration-150 font-semibold group cursor-pointer"
+        title="Abrir tienda de cara a los clientes"
+      >
+        <svg class="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+          <path d="M3 6h18"/>
+          <path d="M16 10a4 4 0 0 1-8 0"/>
+        </svg>
+        <span>Ver Catálogo Público</span>
+        <svg class="w-3 h-3 text-slate-500 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+          <polyline points="15 3 21 3 21 9"/>
+          <line x1="10" y1="14" x2="21" y2="3"/>
+        </svg>
+      </a>
+
+      <span class="text-slate-700">|</span>
+
+      <a routerLink="/help" class="hover:text-slate-200 transition-colors text-[10px] flex items-center gap-1">
+        <svg class="w-3 h-3 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+          <path d="M12 17h.01"/>
+        </svg>
+        <span>Ayuda</span>
+      </a>
+    </div>
+  </div>
+</aside>
+
+<!-- ── 2. NAVBAR PRINCIPAL MODERNO (STICKY GLASSMORPHISM) ───────────────────── -->
+<header
+  class="sticky top-0 z-50 transition-all duration-200 business-glass border-b border-slate-200/80"
+  [ngClass]="isScrolled ? 'shadow-sm py-1' : 'py-1.5'"
+>
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="flex h-16 justify-between items-center">
-      
-      <!-- ═══ IZQUIERDA: LOGO CON LA TIPOGRAFÍA BRAND OFICIAL ═════════════════ -->
-      <div class="flex items-center">
-        <a routerLink="/business/products" class="flex items-center group">
-          <span class="font-brand text-3xl sm:text-4xl font-normal animate-shine">Moorea</span>
-          <span class="ml-2 px-2 py-0.5 rounded-full bg-slate-900 text-[9px] sm:text-[10px] font-black text-white uppercase tracking-wider">
-            Business
+    <div class="flex h-16 justify-between items-center gap-4">
+
+      <!-- ═══ SECCIÓN IZQUIERDA: MARCA OFICIAL & INSIGNIA BUSINESS ═════════════ -->
+      <div class="flex items-center gap-3">
+        <a routerLink="/business/products" class="flex items-center group select-none">
+          <span class="font-brand text-3xl sm:text-4xl font-normal text-slate-900 tracking-tight transition-transform group-hover:scale-[1.02] duration-200">
+            Moorea
           </span>
+          <div class="ml-2.5 flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-slate-900 text-white shadow-xs border border-slate-800">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="text-[9px] sm:text-[10px] font-black uppercase tracking-wider">Business</span>
+          </div>
         </a>
       </div>
 
-      <!-- ═══ CENTRO: NAVEGACIÓN COMPACTA CON TAG EXPANDIBLE ══════════════════ -->
-      <nav class="hidden md:flex items-center space-x-1 bg-gray-50/80 rounded-full p-1 border border-gray-200/70 shadow-2xs">
+      <!-- ═══ SECCIÓN CENTRAL: SEGMENTED ISLAND NAVBAR ══════════════════════════ -->
+      <nav class="hidden md:flex items-center bg-slate-100/90 rounded-2xl p-1 border border-slate-200/70 shadow-2xs">
         
-        <!-- Enlaces Principales -->
+        <!-- Enlaces Principales con Iconos SVG Modernos -->
         @for (item of primaryNavItems; track item.route) {
           @if (canAccess(item)) {
             <a
               [routerLink]="item.route"
-              routerLinkActive="bg-white text-slate-900 font-extrabold shadow-sm border border-slate-200/80"
+              routerLinkActive="nav-pill-active"
               [routerLinkActiveOptions]="{ exact: item.exact || false }"
-              class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all duration-200 cursor-pointer whitespace-nowrap"
+              class="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold text-slate-600 hover:text-slate-900 hover:bg-white/60 transition-all duration-200 cursor-pointer whitespace-nowrap select-none group"
             >
-              <span class="text-sm leading-none">{{ item.icon }}</span>
+              <!-- Iconos Vectoriales Ultra-Nítidos -->
+              @switch (item.iconId) {
+                @case ('products') {
+                  <svg class="w-4 h-4 text-slate-500 group-hover:text-indigo-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                    <path d="m3.3 7 8.7 5 8.7-5"/>
+                    <path d="M12 22V12"/>
+                  </svg>
+                }
+                @case ('stores') {
+                  <svg class="w-4 h-4 text-slate-500 group-hover:text-emerald-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                    <path d="M2 7h20"/>
+                  </svg>
+                }
+                @case ('orders') {
+                  <svg class="w-4 h-4 text-slate-500 group-hover:text-blue-600 transition-colors" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                    <path d="M3 6h18"/>
+                    <path d="M16 10a4 4 0 0 1-8 0"/>
+                  </svg>
+                }
+              }
               <span>{{ item.label }}</span>
             </a>
           }
         }
 
-        <!-- Tag Expandible ("Más Módulos ▾") -->
+        <!-- Dropdown Desplegable: "Módulos & Herramientas" -->
         @if (visibleExtraNavItems.length > 0) {
           <div class="relative more-menu-container">
             <button
               type="button"
               (click)="toggleMoreMenu($event)"
-              class="flex items-center gap-1 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap"
+              class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 cursor-pointer whitespace-nowrap select-none"
               [class.bg-white]="isMoreMenuOpen || isAnyExtraItemActive"
               [class.text-slate-900]="isMoreMenuOpen || isAnyExtraItemActive"
               [class.font-extrabold]="isMoreMenuOpen || isAnyExtraItemActive"
-              [class.shadow-sm]="isMoreMenuOpen || isAnyExtraItemActive"
+              [class.shadow-xs]="isMoreMenuOpen || isAnyExtraItemActive"
               [class.border]="isMoreMenuOpen || isAnyExtraItemActive"
-              [class.border-slate-200/80]="isMoreMenuOpen || isAnyExtraItemActive"
+              [class.border-slate-200]="isMoreMenuOpen || isAnyExtraItemActive"
               [class.text-slate-600]="!isMoreMenuOpen && !isAnyExtraItemActive"
               [class.hover:text-slate-900]="!isMoreMenuOpen && !isAnyExtraItemActive"
+              [class.hover:bg-white/60]="!isMoreMenuOpen && !isAnyExtraItemActive"
             >
-              <span>✨ Módulos</span>
-              <svg class="h-3 w-3 text-slate-400 transition-transform duration-200" [class.rotate-180]="isMoreMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+              <!-- Icono Bento Grid -->
+              <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="7" height="7" x="3" y="3" rx="2"/>
+                <rect width="7" height="7" x="14" y="3" rx="2"/>
+                <rect width="7" height="7" x="14" y="14" rx="2"/>
+                <rect width="7" height="7" x="3" y="14" rx="2"/>
+              </svg>
+              <span>Módulos</span>
+              @if (isAnyExtraItemActive) {
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-900"></span>
+              }
+              <svg
+                class="h-3.5 w-3.5 text-slate-400 transition-transform duration-200"
+                [class.rotate-180]="isMoreMenuOpen"
+                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+              >
+                <path d="m6 9 6 6 6-6"/>
               </svg>
             </button>
 
-            <!-- Dropdown del Tag Expandible -->
+            <!-- Dropdown Menú con Estilo Glassmorphism -->
             @if (isMoreMenuOpen) {
-              <div class="absolute left-1/2 -translate-x-1/2 mt-2 w-64 rounded-3xl bg-white shadow-2xl border border-slate-100 p-2 space-y-1 animate-fade-in z-50">
-                <div class="px-3 py-2 border-b border-slate-100">
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Herramientas Adicionales</p>
+              <div class="absolute left-1/2 -translate-x-1/2 mt-2 w-80 rounded-3xl bg-white/95 backdrop-blur-xl shadow-executive border border-slate-200/80 p-2.5 space-y-1 animate-dropdown z-50">
+                <div class="px-3 py-2 border-b border-slate-100 flex items-center justify-between">
+                  <span class="text-[10px] font-black text-slate-400 uppercase tracking-wider">Módulos del Sistema</span>
+                  <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                    {{ visibleExtraNavItems.length }} disponibles
+                  </span>
                 </div>
 
                 @for (extra of visibleExtraNavItems; track extra.route) {
                   <a
                     [routerLink]="extra.route"
                     (click)="isMoreMenuOpen = false"
-                    routerLinkActive="bg-slate-50 text-slate-900 font-black"
-                    class="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-50 transition-colors cursor-pointer group"
+                    routerLinkActive="bg-slate-50 text-slate-950 font-black border border-slate-200/80"
+                    class="flex items-start gap-3 p-2.5 rounded-2xl hover:bg-slate-50 transition-all duration-150 cursor-pointer group"
                   >
-                    <span class="text-lg p-1.5 rounded-xl bg-slate-100 group-hover:scale-105 transition-transform">{{ extra.icon }}</span>
-                    <div>
-                      <p class="text-xs font-bold text-slate-800">{{ extra.label }}</p>
-                      <p class="text-[10px] text-slate-400 leading-tight mt-0.5">{{ extra.description }}</p>
+                    <!-- Contenedor de Icono con Color Curado -->
+                    <div class="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-all shadow-2xs group-hover:scale-105"
+                         [ngClass]="{
+                           'bg-rose-50 text-rose-600 border border-rose-100 group-hover:bg-rose-600 group-hover:text-white': extra.iconId === 'sellers',
+                           'bg-indigo-50 text-indigo-600 border border-indigo-100 group-hover:bg-indigo-600 group-hover:text-white': extra.iconId === 'users',
+                           'bg-amber-50 text-amber-600 border border-amber-100 group-hover:bg-amber-600 group-hover:text-white': extra.iconId === 'scanner',
+                           'bg-violet-50 text-violet-600 border border-violet-100 group-hover:bg-violet-600 group-hover:text-white': extra.iconId === 'profile'
+                         }">
+                      @switch (extra.iconId) {
+                        @case ('sellers') {
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                            <circle cx="9" cy="7" r="4"/>
+                            <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                          </svg>
+                        }
+                        @case ('users') {
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                            <path d="m9 12 2 2 4-4"/>
+                          </svg>
+                        }
+                        @case ('scanner') {
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                            <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                            <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                            <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                            <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+                            <rect x="14" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+                            <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor"/>
+                            <path d="M14 14h3v3h-3z" fill="currentColor"/>
+                          </svg>
+                        }
+                        @case ('profile') {
+                          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                          </svg>
+                        }
+                      }
+                    </div>
+
+                    <div class="flex-1 min-w-0">
+                      <div class="flex items-center justify-between">
+                        <p class="text-xs font-bold text-slate-800 group-hover:text-slate-950 truncate">{{ extra.label }}</p>
+                        <span class="text-slate-300 group-hover:text-slate-600 group-hover:translate-x-0.5 transition-all text-xs">&rarr;</span>
+                      </div>
+                      <p class="text-[10px] text-slate-400 leading-tight mt-0.5 line-clamp-1">{{ extra.description }}</p>
                     </div>
                   </a>
                 }
@@ -80,23 +228,51 @@
 
       </nav>
 
-      <!-- ═══ DERECHA: ACCIONES LATERALES ALINEADAS CON HOME ═════════════════ -->
-      <div class="flex items-center space-x-3">
-        
-        <!-- Botón Volver a la Tienda Pública -->
+      <!-- ═══ SECCIÓN DERECHA: ACCIONES RÁPIDAS & PERFIL DE USUARIO ════════════ -->
+      <div class="flex items-center space-x-2.5 sm:space-x-3">
+
+        <!-- Acceso directo: Escanear Retiro QR (Desktop) -->
         <a
-          routerLink="/store"
-          class="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold transition-all hover:scale-102 active:scale-98 cursor-pointer border border-slate-200/70 shadow-2xs whitespace-nowrap"
-          title="Ir al catálogo público de compras"
+          routerLink="/business/pickup-scanner"
+          class="hidden xl:inline-flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-50 hover:bg-slate-100 text-slate-700 text-xs font-bold border border-slate-200/80 shadow-2xs hover:scale-102 active:scale-98 transition-all cursor-pointer whitespace-nowrap"
+          title="Abrir lector de QR para entrega física"
         >
-          <span>🛍️</span>
-          <span>Tienda</span>
-          <span class="text-[10px] text-slate-400">&rarr;</span>
+          <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+            <rect x="14" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+            <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor"/>
+          </svg>
+          <span>Escanear QR</span>
         </a>
 
-        <!-- Badge de Rol Activo -->
-        <div class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full border text-xs font-black tracking-wide shadow-2xs whitespace-nowrap {{ roleBadge.classes }}">
-          <span>{{ roleBadge.icon }}</span>
+        <!-- Badge de Rol Activo con Icono SVG Vectorial -->
+        <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-xs font-black tracking-wide shadow-2xs whitespace-nowrap select-none {{ roleBadge.classes }}">
+          @if (isAdmin) {
+            <svg class="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 4 3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/>
+            </svg>
+          } @else if (isSeller) {
+            <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+            </svg>
+          } @else if (isWorker) {
+            <svg class="w-3.5 h-3.5 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 18a1 1 0 0 0 1 1h18a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v2z"/>
+              <path d="M10 10V5a2 2 0 0 1 2-2h0a2 2 0 0 1 2 2v5"/>
+              <path d="M4 15v-3a8 8 0 0 1 16 0v3"/>
+            </svg>
+          } @else {
+            <svg class="w-3.5 h-3.5 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="8" r="5"/>
+              <path d="M20 21a8 8 0 1 0-16 0"/>
+            </svg>
+          }
           <span>{{ roleBadge.label }}</span>
         </div>
 
@@ -105,10 +281,10 @@
           <button
             type="button"
             (click)="toggleUserMenu($event)"
-            class="flex items-center gap-2 p-1 sm:pr-2 rounded-full hover:bg-gray-100 transition-all border border-transparent hover:border-slate-200 cursor-pointer"
+            class="flex items-center gap-2 p-1 sm:pr-2.5 rounded-full hover:bg-slate-100/80 transition-all border border-transparent hover:border-slate-200 cursor-pointer select-none"
           >
             @if (currentUser?.profilePicture) {
-              <img [src]="currentUser!.profilePicture" alt="Avatar" class="h-8 w-8 rounded-full object-cover shadow-xs ring-1 ring-slate-200" />
+              <img [src]="currentUser!.profilePicture" alt="Avatar" class="h-8 w-8 rounded-full object-cover shadow-xs ring-1 ring-slate-300" />
             } @else {
               <div class="h-8 w-8 rounded-full bg-gradient-to-tr from-slate-900 to-slate-700 text-white font-black text-xs flex items-center justify-center shadow-xs">
                 {{ currentUser?.displayName?.charAt(0)?.toUpperCase() || 'U' }}
@@ -117,37 +293,45 @@
             <span class="hidden sm:inline text-xs font-extrabold text-slate-800 max-w-[110px] truncate">
               {{ currentUser?.displayName || 'Mi Cuenta' }}
             </span>
-            <svg class="hidden sm:inline h-3.5 w-3.5 text-slate-400 transition-transform" [class.rotate-180]="isUserMenuOpen" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+            <svg
+              class="hidden sm:inline h-3.5 w-3.5 text-slate-400 transition-transform duration-200"
+              [class.rotate-180]="isUserMenuOpen"
+              viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            >
+              <path d="m6 9 6 6 6-6"/>
             </svg>
           </button>
 
-          <!-- Dropdown Card -->
+          <!-- Dropdown Card de Usuario -->
           @if (isUserMenuOpen) {
-            <div class="absolute right-0 mt-2 w-72 rounded-3xl bg-white shadow-2xl border border-slate-100 p-2.5 space-y-2 animate-fade-in z-50">
+            <div class="absolute right-0 mt-2 w-72 rounded-3xl bg-white shadow-executive border border-slate-200/80 p-2.5 space-y-2 animate-dropdown z-50">
               
-              <!-- User Header Card -->
-              <div class="p-3 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-sm">
-                <div class="flex items-center justify-between">
-                  <span class="text-[10px] font-black uppercase tracking-wider text-slate-300">Sesión Activa</span>
-                  <span class="px-2 py-0.5 rounded-full bg-white/20 text-[10px] font-black text-white">
-                    {{ roleBadge.icon }} {{ roleBadge.label }}
+              <!-- User Header Card con Gradiente Ejecutivo -->
+              <div class="p-3.5 rounded-2xl bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 text-white shadow-sm relative overflow-hidden">
+                <div class="absolute -right-6 -bottom-6 w-20 h-20 bg-indigo-500/10 rounded-full blur-xl"></div>
+                <div class="flex items-center justify-between relative z-10">
+                  <span class="text-[9px] font-black uppercase tracking-widest text-slate-300">Sesión Activa</span>
+                  <span class="px-2 py-0.5 rounded-full bg-white/15 text-[10px] font-black text-white backdrop-blur-xs">
+                    {{ roleBadge.label }}
                   </span>
                 </div>
-                <p class="text-sm font-black text-white truncate mt-1">{{ currentUser?.displayName || 'Usuario Moorea' }}</p>
-                <p class="text-[10px] text-slate-300 truncate font-mono">{{ currentUser?.email || 'Sin correo' }}</p>
+                <p class="text-sm font-black text-white truncate mt-1.5 relative z-10">{{ currentUser?.displayName || 'Usuario Moorea' }}</p>
+                <p class="text-[10px] text-slate-300 truncate font-mono relative z-10">{{ currentUser?.email || 'Sin correo' }}</p>
               </div>
 
-              <!-- Links de Navegación -->
-              <div class="space-y-1 pt-1">
+              <!-- Links de Navegación del Usuario -->
+              <div class="space-y-0.5 pt-1">
                 @if (isAdmin || isSeller || isWorker) {
                   <a
                     routerLink="/business/profile"
                     (click)="isUserMenuOpen = false"
-                    class="flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                    class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
                   >
                     <span class="flex items-center gap-2.5">
-                      <span>{{ isAdmin ? '👑' : (isSeller ? '🏪' : '👷') }}</span>
+                      <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                      </svg>
                       <span>{{ profileMenuLabel }}</span>
                     </span>
                     <span class="text-slate-400 text-xs">&rarr;</span>
@@ -157,10 +341,13 @@
                 <a
                   routerLink="/my-account/profile"
                   (click)="isUserMenuOpen = false"
-                  class="flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                  class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <span class="flex items-center gap-2.5">
-                    <span>👤</span>
+                    <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="8" r="5"/>
+                      <path d="M20 21a8 8 0 1 0-16 0"/>
+                    </svg>
                     <span>Mi Cuenta Personal</span>
                   </span>
                   <span class="text-slate-400 text-xs">&rarr;</span>
@@ -169,42 +356,57 @@
                 <a
                   routerLink="/store"
                   (click)="isUserMenuOpen = false"
-                  class="flex items-center justify-between px-3 py-2 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
+                  class="flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-colors"
                 >
                   <span class="flex items-center gap-2.5">
-                    <span>🛒</span>
+                    <svg class="w-4 h-4 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                      <path d="M3 6h18"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
                     <span>Catálogo Público</span>
                   </span>
                   <span class="text-slate-400 text-xs">&rarr;</span>
                 </a>
               </div>
 
+              <!-- Cerrar Sesión -->
               <div class="pt-1.5 border-t border-slate-100">
                 <button
                   type="button"
                   (click)="logout()"
-                  class="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-2xl text-xs font-black text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
+                  class="w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-left"
                 >
-                  <span>🚪</span>
-                  <span>Cerrar Sesión</span>
+                  <span class="flex items-center gap-2.5">
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                      <polyline points="16 17 21 12 16 7"/>
+                      <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    <span>Cerrar Sesión</span>
+                  </span>
+                  <span class="text-rose-400 text-xs">&rarr;</span>
                 </button>
               </div>
             </div>
           }
         </div>
 
-        <!-- Botón Menú Móvil / Tablet (Hamburger) -->
+        <!-- Botón Menú Móvil (Hamburger Moderno) -->
         <button
           type="button"
           (click)="toggleMobileMenu()"
-          class="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+          class="md:hidden p-2 rounded-xl text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           title="Abrir menú"
         >
-          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             @if (isMobileMenuOpen) {
-              <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              <line x1="18" y1="6" x2="6" y2="18"/>
+              <line x1="6" y1="6" x2="18" y2="18"/>
             } @else {
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+              <line x1="4" y1="12" x2="20" y2="12"/>
+              <line x1="4" y1="6" x2="20" y2="6"/>
+              <line x1="4" y1="18" x2="20" y2="18"/>
             }
           </svg>
         </button>
@@ -214,29 +416,29 @@
     </div>
   </div>
 
-  <!-- ═══ MENÚ MÓVIL (DRAWER) ═══════════════════════════════════════════════ -->
+  <!-- ═══ MENÚ MÓVIL (DRAWER MODERNO CON BLUR) ═══════════════════════════════ -->
   @if (isMobileMenuOpen) {
-    <div class="md:hidden border-t border-slate-200 bg-white px-4 pt-3 pb-6 space-y-4 shadow-2xl animate-fade-in">
+    <div class="md:hidden border-t border-slate-200/80 bg-white/98 backdrop-blur-xl px-4 pt-3 pb-6 space-y-4 shadow-executive animate-dropdown">
       
       <!-- Mobile Profile Card -->
-      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 to-slate-800 text-white shadow-sm">
-        <div class="flex items-center gap-2.5">
-          <div class="h-9 w-9 rounded-full bg-white/20 text-white font-black text-xs flex items-center justify-center">
+      <div class="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-indigo-950 text-white shadow-sm">
+        <div class="flex items-center gap-3">
+          <div class="h-9 w-9 rounded-full bg-white/15 text-white font-black text-xs flex items-center justify-center">
             {{ currentUser?.displayName?.charAt(0)?.toUpperCase() || 'U' }}
           </div>
-          <div>
-            <p class="text-xs font-black text-white">{{ currentUser?.displayName || 'Usuario' }}</p>
-            <p class="text-[10px] text-slate-300 font-mono">{{ currentUser?.email }}</p>
+          <div class="min-w-0">
+            <p class="text-xs font-black text-white truncate">{{ currentUser?.displayName || 'Usuario' }}</p>
+            <p class="text-[10px] text-slate-300 font-mono truncate">{{ currentUser?.email }}</p>
           </div>
         </div>
-        <div class="px-2.5 py-1 rounded-full text-[10px] font-black bg-white/20 text-white">
-          {{ roleBadge.icon }} {{ roleBadge.label }}
+        <div class="px-2.5 py-1 rounded-full text-[10px] font-black bg-white/20 text-white shrink-0">
+          {{ roleBadge.label }}
         </div>
       </div>
 
       <!-- Mobile Navigation Links -->
       <div class="space-y-1">
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">Principal</p>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2">Gestión Principal</p>
         @for (item of primaryNavItems; track item.route) {
           @if (canAccess(item)) {
             <a
@@ -244,15 +446,41 @@
               (click)="closeMobileMenu()"
               routerLinkActive="bg-slate-900 text-white font-bold"
               [routerLinkActiveOptions]="{ exact: item.exact || false }"
-              class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
+              class="flex items-center justify-between px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
             >
-              <span class="text-base">{{ item.icon }}</span>
-              <span>{{ item.label }}</span>
+              <div class="flex items-center gap-3">
+                @switch (item.iconId) {
+                  @case ('products') {
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                      <path d="m3.3 7 8.7 5 8.7-5"/>
+                      <path d="M12 22V12"/>
+                    </svg>
+                  }
+                  @case ('stores') {
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                      <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                      <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                      <path d="M2 7h20"/>
+                    </svg>
+                  }
+                  @case ('orders') {
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                      <path d="M3 6h18"/>
+                      <path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                  }
+                }
+                <span>{{ item.label }}</span>
+              </div>
+              <span class="text-[10px] text-slate-400 font-semibold">{{ item.badge }}</span>
             </a>
           }
         }
 
-        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 pt-2">Módulos</p>
+        <p class="text-[10px] font-black text-slate-400 uppercase tracking-wider px-2 pt-2">Módulos Especiales</p>
         @for (item of visibleExtraNavItems; track item.route) {
           <a
             [routerLink]="item.route"
@@ -261,31 +489,73 @@
             [routerLinkActiveOptions]="{ exact: item.exact || false }"
             class="flex items-center gap-3 px-3.5 py-2.5 rounded-2xl text-xs font-bold text-slate-700 hover:bg-slate-100 transition-all"
           >
-            <span class="text-base">{{ item.icon }}</span>
+            @switch (item.iconId) {
+              @case ('sellers') {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+                  <circle cx="9" cy="7" r="4"/>
+                  <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+              }
+              @case ('users') {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/>
+                  <path d="m9 12 2 2 4-4"/>
+                </svg>
+              }
+              @case ('scanner') {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                  <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                  <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                  <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                  <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+                  <rect x="14" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+                  <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor"/>
+                </svg>
+              }
+              @case ('profile') {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="3"/>
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                </svg>
+              }
+            }
             <span>{{ item.label }}</span>
           </a>
         }
       </div>
 
-      <!-- Quick Action Buttons -->
+      <!-- Quick Action Buttons Móvil -->
       <div class="pt-3 border-t border-slate-100 flex flex-col gap-2">
-        @if (isAdmin || isSeller || isWorker) {
-          <a
-            routerLink="/business/profile"
-            (click)="closeMobileMenu()"
-            class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-bold"
-          >
-            <span>{{ isAdmin ? '👑' : (isSeller ? '🏪' : '👷') }}</span>
-            <span>{{ profileMenuLabel }}</span>
-          </a>
-        }
+        <a
+          routerLink="/business/pickup-scanner"
+          (click)="closeMobileMenu()"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-amber-50 text-amber-800 text-xs font-bold border border-amber-200/80"
+        >
+          <svg class="w-4 h-4 text-amber-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+            <rect x="14" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+            <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor"/>
+          </svg>
+          <span>Escanear Retiro QR</span>
+        </a>
 
         <a
           routerLink="/store"
           (click)="closeMobileMenu()"
-          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 text-slate-700 text-xs font-bold"
+          class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-slate-100 text-slate-800 text-xs font-bold"
         >
-          <span>🛒</span>
+          <svg class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
           <span>Ir a la Tienda Pública</span>
         </a>
 
@@ -294,7 +564,11 @@
           (click)="logout()"
           class="w-full flex items-center justify-center gap-2 py-2.5 rounded-2xl bg-rose-50 text-rose-600 text-xs font-bold cursor-pointer"
         >
-          <span>🚪</span>
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
           <span>Cerrar Sesión</span>
         </button>
       </div>

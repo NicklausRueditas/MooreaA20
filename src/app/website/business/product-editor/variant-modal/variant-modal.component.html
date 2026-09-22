@@ -206,14 +206,25 @@
           </div>
 
           <div>
-            <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">Valor de Talla</label>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block text-[11px] font-bold text-slate-500 uppercase tracking-wider">Valor de Talla</label>
+              @if (currentTypeRequiresDimensions) {
+                <span class="text-[10px] font-semibold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
+                  Autocalculado
+                </span>
+              }
+            </div>
             <input formControlName="sizeValue" type="text" [placeholder]="currentSizePlaceholder"
+                   [readonly]="currentTypeRequiresDimensions"
+                   [class.bg-slate-50]="currentTypeRequiresDimensions"
+                   [class.cursor-not-allowed]="currentTypeRequiresDimensions"
+                   [class.text-slate-600]="currentTypeRequiresDimensions"
                    class="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-800 focus:ring-4 focus:ring-slate-900/10 focus:border-slate-800 focus:outline-none transition-all shadow-2xs placeholder:font-normal placeholder:text-slate-300" />
           </div>
         </div>
 
-        <!-- Selección Rápida de Tallas (Chips) -->
-        @if (currentSizeTallas.length > 0) {
+        <!-- Selección Rápida de Tallas (Chips) - Ocultar si requiere dimensiones -->
+        @if (currentSizeTallas.length > 0 && !currentTypeRequiresDimensions) {
           <div class="pt-1">
             <span class="block text-[10px] font-extrabold text-slate-400 uppercase tracking-wider mb-2">Sugerencias Rápidas</span>
             <div class="flex flex-wrap gap-1.5">

@@ -217,6 +217,40 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
     });
 
     this.variantForm.get('sizeValue')?.valueChanges.subscribe(() => this.suggestSku());
+
+    // Sincronizar dimensiones hacia sizeValue en tiempo real
+    this.variantForm.get('dimLength')?.valueChanges.subscribe(() => this.syncDimensionsToSizeValue());
+    this.variantForm.get('dimWidth')?.valueChanges.subscribe(() => this.syncDimensionsToSizeValue());
+    this.variantForm.get('dimHeight')?.valueChanges.subscribe(() => this.syncDimensionsToSizeValue());
+
+    // Al cambiar tipo de medida, recalcular si requiere dimensiones
+    this.variantForm.get('sizeType')?.valueChanges.subscribe(type => {
+      const requiresDims = VARIANT_TYPE_OPTIONS.find(t => t.value === type)?.requiresDimensions ?? false;
+      if (requiresDims) {
+        this.syncDimensionsToSizeValue();
+      }
+      this.suggestSku();
+    });
+  }
+
+  /**
+   * Sincroniza automáticamente el campo sizeValue a partir de dimLength, dimWidth y dimHeight
+   * cuando el tipo de medida actual requiere dimensiones (ej: 'dimensions').
+   */
+  private syncDimensionsToSizeValue(): void {
+    if (!this.currentTypeRequiresDimensions) return;
+    const l = this.variantForm.get('dimLength')?.value;
+    const w = this.variantForm.get('dimWidth')?.value;
+    const h = this.variantForm.get('dimHeight')?.value;
+    if (l != null || w != null || h != null) {
+      const pL = (l != null && l !== '') ? l : 0;
+      const pW = (w != null && w !== '') ? w : 0;
+      const pH = (h != null && h !== '') ? h : 0;
+      if (l || w || h) {
+        this.variantForm.get('sizeValue')?.setValue(`${pL}×${pW}×${pH} cm`, { emitEvent: false });
+        this.suggestSku();
+      }
+    }
   }
 
   /**
@@ -247,22 +281,59 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
       this.lockedUrls = []; // en edición todas las fotos son editables
       this.extraUrls  = this.editingVariant.gallery ? [...this.editingVariant.gallery] : [];
 
+      const dims = this.editingVariant.dimensions;
+      let len = dims?.length ?? null;
+      let wid = dims?.width ?? null;
+      let hgt = dims?.height ?? null;
+      let wt = (typeof dims?.weight === 'object' && dims.weight !== null)
+        ? (dims.weight as any).value ?? null
+        : (typeof dims?.weight === 'number' ? dims.weight : null);
+      let wtUnit = (typeof dims?.weight === 'object' && dims.weight !== null)
+        ? (dims.weight as any).unit ?? 'kg'
+        : 'kg';
+
+      // Fallback: si no tenía dimensions estructurado pero sizeValue tiene formato ej: "54x56x82 cm" o "54×56×82"
+      if ((len == null && wid == null && hgt == null) && this.editingVariant.size?.value) {
+        const parsed = this.editingVariant.size.value.match(/(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)\s*[x×X]\s*(\d+(?:\.\d+)?)/);
+        if (parsed) {
+          len = Number(parsed[1]);
+          wid = Number(parsed[2]);
+          hgt = Number(parsed[3]);
+        }
+      }
+
       this.variantForm.patchValue({
-        sku:            this.editingVariant.sku,
-        colorName:      this.editingVariant.color?.name ?? '',
-        colorHex:       this.editingVariant.color?.hex  ?? '#000000',
-        colorCode:      this.editingVariant.color?.code ?? '',
-        sizeType:       this.editingVariant.size?.type  ?? 'footwear',
-        sizeValue:      this.editingVariant.size?.value ?? '',
+        sku:             this.editingVariant.sku,
+        colorName:       this.editingVariant.color?.name ?? '',
+        colorHex:        this.editingVariant.color?.hex  ?? '#000000',
+        colorCode:       this.editingVariant.color?.code ?? '',
+        sizeType:        this.editingVariant.size?.type  ?? 'footwear',
+        sizeValue:       this.editingVariant.size?.value ?? '',
         priceAdjustment: this.editingVariant.priceAdjustment ?? 0,
-        isActive:       this.editingVariant.isActive ?? true,
+        isActive:        this.editingVariant.isActive ?? true,
+        dimLength:       len,
+        dimWidth:        wid,
+        dimHeight:       hgt,
+        dimWeight:       wt,
+        dimWeightUnit:   wtUnit,
       });
 
     } else if (this.cloneSource) {
       // ── CLONE MODE ───────────────────────────────────────────────────────
       this.lockedUrls = this.cloneSource.gallery ? [...this.cloneSource.gallery] : [];
 
-      this.variantForm.reset({ colorHex: '#000000', sizeType: 'footwear', priceAdjustment: 0, isActive: true });
+      const cloneDims = this.cloneSource.dimensions;
+      let cLen = cloneDims?.length ?? null;
+      let cWid = cloneDims?.width ?? null;
+      let cHgt = cloneDims?.height ?? null;
+      let cWt = (typeof cloneDims?.weight === 'object' && cloneDims.weight !== null)
+        ? (cloneDims.weight as any).value ?? null
+        : (typeof cloneDims?.weight === 'number' ? cloneDims.weight : null);
+      let cWtUnit = (typeof cloneDims?.weight === 'object' && cloneDims.weight !== null)
+        ? (cloneDims.weight as any).unit ?? 'kg'
+        : 'kg';
+
+      this.variantForm.reset({ colorHex: '#000000', sizeType: 'footwear', priceAdjustment: 0, isActive: true, dimWeightUnit: 'kg' });
       this.variantForm.patchValue({
         colorName:       this.cloneSource.color?.name  ?? '',
         colorHex:        this.cloneSource.color?.hex   ?? '#000000',
@@ -271,8 +342,13 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
         priceAdjustment: this.cloneSource.priceAdjustment ?? 0,
         isActive:        true,
         // SKU y talla en blanco para que el trabajador los complete
-        sku:      this.product ? `${this.product.code}-` : '',
-        sizeValue: '',
+        sku:             this.product ? `${this.product.code}-` : '',
+        sizeValue:       '',
+        dimLength:       cLen,
+        dimWidth:        cWid,
+        dimHeight:       cHgt,
+        dimWeight:       cWt,
+        dimWeightUnit:   cWtUnit,
       });
 
       // Bloquear campos de color (no se pueden cambiar al clonar)
@@ -284,7 +360,13 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
     } else {
       // ── CREATE MODE ──────────────────────────────────────────────────────
       this.variantForm.enable();
-      this.variantForm.reset({ colorHex: '#000000', sizeType: 'footwear', priceAdjustment: 0, isActive: true });
+      this.variantForm.reset({
+        colorHex: '#000000',
+        sizeType: 'footwear',
+        priceAdjustment: 0,
+        isActive: true,
+        dimWeightUnit: 'kg',
+      });
       if (this.product) {
         this.variantForm.get('sku')?.setValue(`${this.product.code}-`);
       }
@@ -336,19 +418,24 @@ export class VariantModalComponent implements OnInit, OnDestroy, OnChanges {
 
     if (requiresDims) {
       const dims: Record<string, unknown> = {};
-      if (fv.dimLength) dims['length'] = fv.dimLength;
-      if (fv.dimWidth)  dims['width']  = fv.dimWidth;
-      if (fv.dimHeight) dims['height'] = fv.dimHeight;
-      if (fv.dimWeight) dims['weight'] = { value: fv.dimWeight, unit: fv.dimWeightUnit ?? 'kg' };
+      if (fv.dimLength != null && fv.dimLength !== '') dims['length'] = Number(fv.dimLength);
+      if (fv.dimWidth  != null && fv.dimWidth !== '')  dims['width']  = Number(fv.dimWidth);
+      if (fv.dimHeight != null && fv.dimHeight !== '') dims['height'] = Number(fv.dimHeight);
+      dims['dimensionUnit'] = 'cm';
+      if (fv.dimWeight != null && fv.dimWeight !== '') {
+        dims['weight'] = { value: Number(fv.dimWeight), unit: fv.dimWeightUnit ?? 'kg' };
+      }
+
+      const pL = dims['length'] ?? 0;
+      const pW = dims['width']  ?? 0;
+      const pH = dims['height'] ?? 0;
 
       dto.size = {
         type:  sizeType,
-        value: fv.sizeValue?.trim() || Object.values(dims).join('x') || 'DIMS',
+        value: fv.sizeValue?.trim() || `${pL}×${pW}×${pH} cm`,
       };
       if (Object.keys(dims).length > 0) {
         (dto as any).dimensions = dims;
-      } else {
-        dto.size.value = fv.sizeValue?.trim() || 'STD';
       }
     } else if (fv.sizeValue?.trim()) {
       dto.size = { type: sizeType, value: fv.sizeValue.trim() };
