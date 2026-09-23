@@ -1,343 +1,719 @@
-<div class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🏢 MOOREA BUSINESS - GESTIÓN EJECUTIVA DE PEDIDOS                            -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
 
-  <!-- Header -->
-  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<main class="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6">
+
+  <!-- ── 1. ENCABEZADO PRINCIPAL & ACCIONES RÁPIDAS ──────────────────────────── -->
+  <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
     <div>
-      <div class="flex items-center gap-2">
-        <span class="text-2xl">📋</span>
-        <h1 class="text-2xl font-bold text-gray-900">Gestión de Pedidos</h1>
-        <span class="text-sm font-semibold bg-gray-100 text-gray-700 rounded-full px-2.5 py-0.5">
-          {{ filteredOrders.length }}
-        </span>
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center shadow-xs">
+          <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+            <path d="M3 6h18"/>
+            <path d="M16 10a4 4 0 0 1-8 0"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2.5">
+            <h1 class="text-2xl font-black text-slate-900 tracking-tight">Gestión de Pedidos</h1>
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-black bg-slate-100 text-slate-700 border border-slate-200">
+              {{ filteredOrders.length }}
+            </span>
+          </div>
+          <p class="text-xs sm:text-sm text-slate-500 mt-0.5">
+            Monitoreo en tiempo real del ciclo de ventas, despacho logístico y validación de retiros en sucursal.
+          </p>
+        </div>
       </div>
-      <p class="text-sm text-gray-500 mt-1">
-        Monitorea el ciclo de vida de los pedidos y verifica las entregas en sucursal y a domicilio.
-      </p>
     </div>
 
-    <!-- Acciones rápidas del header -->
-    <div class="flex items-center gap-3">
+    <!-- Acciones Rápidas -->
+    <div class="flex items-center gap-2.5 self-start md:self-auto">
       <a
         routerLink="/business/pickup-scanner"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold hover:bg-purple-100 transition active:scale-95 shadow-2xs"
+        class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200/80 text-xs font-bold transition-all shadow-2xs hover:scale-102 active:scale-98 cursor-pointer"
+        title="Abrir lector de cámara para escanear QR de retiro"
       >
-        <span>📷</span>
-        <span>Escáner QR de Retiros</span>
+        <svg class="w-4 h-4 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+          <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+          <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+          <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+          <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+          <rect x="14" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+          <rect x="7" y="14" width="3" height="3" rx="0.5" fill="currentColor"/>
+        </svg>
+        <span>Escanear QR Retiro</span>
       </a>
 
       <button
+        type="button"
         (click)="loadOrders()"
         [disabled]="isLoading"
-        class="inline-flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 transition active:scale-95 shadow-2xs disabled:opacity-50"
+        class="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-all active:scale-98 shadow-2xs disabled:opacity-50 cursor-pointer"
+        title="Recargar listado de órdenes"
       >
-        <svg class="w-3.5 h-3.5" [class.animate-spin]="isLoading" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        <svg class="w-4 h-4 text-slate-500" [class.animate-spin]="isLoading" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+          <path d="M16 21h5v-5"/>
         </svg>
-        <span>Actualizar</span>
+        <span class="hidden sm:inline">Actualizar</span>
       </button>
     </div>
-  </div>
+  </header>
 
-  <!-- Barra de Filtros y Búsqueda -->
-  <div class="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4 bg-white p-4 rounded-3xl border border-gray-200/80 shadow-xs">
+  <!-- ── 2. RESUMEN DE MÉTRICAS OPERATIVAS (KPIS) ────────────────────────────── -->
+  <section aria-label="Métricas de pedidos" class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
     
-    <!-- Filtros de estado -->
-    <div class="flex flex-wrap gap-1.5 overflow-x-auto pb-1 sm:pb-0">
+    <!-- Total Pedidos -->
+    <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Total Pedidos</p>
+        <p class="text-2xl font-black text-slate-900 mt-0.5">{{ kpiTotal }}</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Órdenes registradas</p>
+      </div>
+      <div class="w-11 h-11 rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-700">
+        <svg class="w-5 h-5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="8" height="4" x="8" y="2" rx="1" ry="1"/>
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <path d="m9 14 2 2 4-4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Por Preparar (Paid) -->
+    <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-1.5">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Por Preparar</p>
+          @if (kpiPaid > 0) {
+            <span class="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+          }
+        </div>
+        <p class="text-2xl font-black text-amber-600 mt-0.5">{{ kpiPaid }}</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Pendientes de picking</p>
+      </div>
+      <div class="w-11 h-11 rounded-2xl bg-amber-50 border border-amber-100 flex items-center justify-center text-amber-700">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- En Operación / Ruta -->
+    <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">En Operación</p>
+        <p class="text-2xl font-black text-indigo-600 mt-0.5">{{ kpiInProcess }}</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">En tienda o despacho</p>
+      </div>
+      <div class="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+          <path d="M15 18H9"/>
+          <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+          <circle cx="7" cy="18" r="2"/>
+          <circle cx="17" cy="18" r="2"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Entregados y Facturación -->
+    <div class="p-4 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between">
+      <div>
+        <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400">Entregados</p>
+        <p class="text-2xl font-black text-emerald-600 mt-0.5">{{ kpiDelivered }}</p>
+        <p class="text-[10px] text-slate-500 mt-0.5">Cobrado: {{ kpiRevenue | solCurrency }}</p>
+      </div>
+      <div class="w-11 h-11 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-700">
+        <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+          <polyline points="22 4 12 14.01 9 11.01"/>
+        </svg>
+      </div>
+    </div>
+
+  </section>
+
+  <!-- ── 3. BARRA DE FILTROS SEGMENTADOS Y BÚSQUEDA ────────────────────────── -->
+  <section class="bg-white p-4 sm:p-5 rounded-3xl border border-slate-200/80 shadow-xs space-y-4">
+    
+    <!-- Filtros de Estado (Píldoras Segmentadas con Contador) -->
+    <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-1 sm:pb-0">
+      
+      <!-- Todos -->
       <button
+        type="button"
         (click)="setFilter('all')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-        [class.bg-gray-900]="activeFilter === 'all'"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
+        [class.bg-slate-900]="activeFilter === 'all'"
         [class.text-white]="activeFilter === 'all'"
-        [class.bg-gray-100]="activeFilter !== 'all'"
-        [class.text-gray-600]="activeFilter !== 'all'"
+        [class.shadow-xs]="activeFilter === 'all'"
+        [class.bg-slate-100]="activeFilter !== 'all'"
+        [class.text-slate-600]="activeFilter !== 'all'"
+        [class.hover:bg-slate-200]="activeFilter !== 'all'"
       >
-        Todos
+        <span>Todos</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'all'" [class.bg-slate-200]="activeFilter !== 'all'">
+          {{ statusCounts.all }}
+        </span>
       </button>
+
+      <!-- Pagados -->
       <button
+        type="button"
         (click)="setFilter('paid')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
         [class.bg-emerald-600]="activeFilter === 'paid'"
         [class.text-white]="activeFilter === 'paid'"
+        [class.shadow-xs]="activeFilter === 'paid'"
         [class.bg-emerald-50]="activeFilter !== 'paid'"
         [class.text-emerald-700]="activeFilter !== 'paid'"
+        [class.hover:bg-emerald-100]="activeFilter !== 'paid'"
       >
-        Pagados
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+        <span>Pagados</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'paid'" [class.bg-emerald-100]="activeFilter !== 'paid'">
+          {{ statusCounts.paid }}
+        </span>
       </button>
+
+      <!-- En preparación -->
       <button
+        type="button"
         (click)="setFilter('preparing')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-        [class.bg-orange-500]="activeFilter === 'preparing'"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
+        [class.bg-amber-500]="activeFilter === 'preparing'"
         [class.text-white]="activeFilter === 'preparing'"
-        [class.bg-orange-50]="activeFilter !== 'preparing'"
-        [class.text-orange-700]="activeFilter !== 'preparing'"
+        [class.shadow-xs]="activeFilter === 'preparing'"
+        [class.bg-amber-50]="activeFilter !== 'preparing'"
+        [class.text-amber-800]="activeFilter !== 'preparing'"
+        [class.hover:bg-amber-100]="activeFilter !== 'preparing'"
       >
-        En preparación
+        <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+        <span>En preparación</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'preparing'" [class.bg-amber-100]="activeFilter !== 'preparing'">
+          {{ statusCounts.preparing }}
+        </span>
       </button>
+
+      <!-- Listo para retiro -->
       <button
+        type="button"
         (click)="setFilter('ready_for_pickup')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
         [class.bg-purple-600]="activeFilter === 'ready_for_pickup'"
         [class.text-white]="activeFilter === 'ready_for_pickup'"
+        [class.shadow-xs]="activeFilter === 'ready_for_pickup'"
         [class.bg-purple-50]="activeFilter !== 'ready_for_pickup'"
         [class.text-purple-700]="activeFilter !== 'ready_for_pickup'"
+        [class.hover:bg-purple-100]="activeFilter !== 'ready_for_pickup'"
       >
-        Listo para retiro
+        <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+        <span>Listo para retiro</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'ready_for_pickup'" [class.bg-purple-100]="activeFilter !== 'ready_for_pickup'">
+          {{ statusCounts.ready_for_pickup }}
+        </span>
       </button>
+
+      <!-- En camino -->
       <button
+        type="button"
         (click)="setFilter('shipped')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
         [class.bg-blue-600]="activeFilter === 'shipped'"
         [class.text-white]="activeFilter === 'shipped'"
+        [class.shadow-xs]="activeFilter === 'shipped'"
         [class.bg-blue-50]="activeFilter !== 'shipped'"
         [class.text-blue-700]="activeFilter !== 'shipped'"
+        [class.hover:bg-blue-100]="activeFilter !== 'shipped'"
       >
-        En camino
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+        <span>En camino</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'shipped'" [class.bg-blue-100]="activeFilter !== 'shipped'">
+          {{ statusCounts.shipped }}
+        </span>
       </button>
+
+      <!-- Entregados -->
       <button
+        type="button"
         (click)="setFilter('delivered')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
-        [class.bg-gray-700]="activeFilter === 'delivered'"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
+        [class.bg-slate-700]="activeFilter === 'delivered'"
         [class.text-white]="activeFilter === 'delivered'"
-        [class.bg-gray-100]="activeFilter !== 'delivered'"
-        [class.text-gray-600]="activeFilter !== 'delivered'"
+        [class.shadow-xs]="activeFilter === 'delivered'"
+        [class.bg-slate-100]="activeFilter !== 'delivered'"
+        [class.text-slate-700]="activeFilter !== 'delivered'"
+        [class.hover:bg-slate-200]="activeFilter !== 'delivered'"
       >
-        Entregados
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+        <span>Entregados</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'delivered'" [class.bg-slate-200]="activeFilter !== 'delivered'">
+          {{ statusCounts.delivered }}
+        </span>
       </button>
+
+      <!-- Cancelados -->
       <button
+        type="button"
         (click)="setFilter('cancelled')"
-        class="px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0"
         [class.bg-rose-600]="activeFilter === 'cancelled'"
         [class.text-white]="activeFilter === 'cancelled'"
+        [class.shadow-xs]="activeFilter === 'cancelled'"
         [class.bg-rose-50]="activeFilter !== 'cancelled'"
         [class.text-rose-700]="activeFilter !== 'cancelled'"
+        [class.hover:bg-rose-100]="activeFilter !== 'cancelled'"
       >
-        🚫 Rechazados / Cancelados
+        <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+        <span>Cancelados</span>
+        <span class="px-1.5 py-0.2 rounded-full text-[10px] font-black" [class.bg-white_20]="activeFilter === 'cancelled'" [class.bg-rose-100]="activeFilter !== 'cancelled'">
+          {{ statusCounts.cancelled }}
+        </span>
       </button>
+
     </div>
 
-    <!-- Buscador -->
-    <div class="relative min-w-[240px] sm:w-72">
-      <input
-        type="text"
-        [(ngModel)]="searchQuery"
-        (ngModelChange)="onSearchChange()"
-        placeholder="Buscar orden, código o cliente..."
-        class="w-full pl-9 pr-3 py-1.5 text-xs bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition"
-      />
-      <span class="absolute left-3 top-2 text-gray-400 text-xs">🔍</span>
-      @if (searchQuery) {
-        <button
-          (click)="searchQuery = ''; onSearchChange()"
-          class="absolute right-2.5 top-1.5 text-gray-400 hover:text-gray-600 text-xs font-bold"
-        >
-          ✕
-        </button>
+    <!-- Controles Secundarios: Búsqueda, Modalidad y Ordenamiento -->
+    <div class="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+      
+      <!-- Buscador -->
+      <div class="relative flex-1 max-w-lg">
+        <input
+          type="text"
+          [(ngModel)]="searchQuery"
+          (ngModelChange)="onSearchChange()"
+          placeholder="Buscar por boleta, código de retiro, cliente, email o teléfono..."
+          class="w-full pl-9 pr-8 py-2 text-xs bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-900/10 focus:border-slate-400 transition"
+        />
+        <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        @if (searchQuery) {
+          <button
+            type="button"
+            (click)="searchQuery = ''; onSearchChange()"
+            class="absolute right-2.5 top-2 text-slate-400 hover:text-slate-700 text-xs font-bold p-0.5 rounded-full hover:bg-slate-200 cursor-pointer"
+            title="Limpiar búsqueda"
+          >
+            ✕
+          </button>
+        }
+      </div>
+
+      <!-- Filtro por Modalidad (Pickup vs Delivery) & Ordenamiento -->
+      <div class="flex items-center gap-2.5 flex-wrap sm:flex-nowrap">
+        
+        <!-- Segmented Control de Modalidad -->
+        <div class="inline-flex p-1 bg-slate-100 rounded-2xl border border-slate-200/80 text-[11px] font-bold">
+          <button
+            type="button"
+            (click)="setFulfillmentFilter('all')"
+            class="px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            [class.bg-white]="activeFulfillment === 'all'"
+            [class.text-slate-900]="activeFulfillment === 'all'"
+            [class.shadow-2xs]="activeFulfillment === 'all'"
+            [class.text-slate-500]="activeFulfillment !== 'all'"
+          >
+            Todas
+          </button>
+          <button
+            type="button"
+            (click)="setFulfillmentFilter('pickup')"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            [class.bg-white]="activeFulfillment === 'pickup'"
+            [class.text-purple-700]="activeFulfillment === 'pickup'"
+            [class.shadow-2xs]="activeFulfillment === 'pickup'"
+            [class.text-slate-500]="activeFulfillment !== 'pickup'"
+          >
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+            </svg>
+            <span>Retiro</span>
+          </button>
+          <button
+            type="button"
+            (click)="setFulfillmentFilter('delivery')"
+            class="inline-flex items-center gap-1 px-2.5 py-1 rounded-xl transition-all cursor-pointer"
+            [class.bg-white]="activeFulfillment === 'delivery'"
+            [class.text-blue-700]="activeFulfillment === 'delivery'"
+            [class.shadow-2xs]="activeFulfillment === 'delivery'"
+            [class.text-slate-500]="activeFulfillment !== 'delivery'"
+          >
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+              <path d="M15 18H9"/>
+              <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+              <circle cx="7" cy="18" r="2"/>
+              <circle cx="17" cy="18" r="2"/>
+            </svg>
+            <span>Delivery</span>
+          </button>
+        </div>
+
+        <!-- Criterio de Ordenamiento -->
+        <div class="relative">
+          <select
+            [(ngModel)]="sortBy"
+            (ngModelChange)="setSortBy(sortBy)"
+            class="text-xs bg-slate-50 border border-slate-200 rounded-2xl py-1.5 pl-3 pr-8 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-slate-900/10 cursor-pointer"
+          >
+            <option value="newest">Más recientes primero</option>
+            <option value="oldest">Más antiguos primero</option>
+            <option value="amount_desc">Mayor monto (S/)</option>
+            <option value="amount_asc">Menor monto (S/)</option>
+          </select>
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+  <!-- ── 4. ESTADO DE CARGA (SHIMMER SKELETONS) ──────────────────────────────── -->
+  @if (isLoading) {
+    <div class="space-y-3">
+      @for (item of [1, 2, 3, 4, 5]; track item) {
+        <div class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3.5 flex-1">
+            <div class="w-10 h-10 rounded-2xl skeleton-shimmer shrink-0"></div>
+            <div class="space-y-1.5 flex-1">
+              <div class="h-4 w-32 skeleton-shimmer rounded-md"></div>
+              <div class="h-3 w-48 skeleton-shimmer rounded-md"></div>
+            </div>
+          </div>
+          <div class="h-6 w-20 skeleton-shimmer rounded-full hidden sm:block"></div>
+          <div class="h-6 w-24 skeleton-shimmer rounded-md hidden md:block"></div>
+          <div class="h-8 w-28 skeleton-shimmer rounded-xl shrink-0"></div>
+        </div>
       }
     </div>
+  }
 
-  </div>
+  <!-- ── 5. ESTADO VACÍO (SIN RESULTADOS) ────────────────────────────────────── -->
+  @else if (filteredOrders.length === 0) {
+    <div class="text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-xs p-6 space-y-4">
+      <div class="w-16 h-16 mx-auto rounded-3xl bg-slate-100 flex items-center justify-center text-slate-400">
+        <svg class="w-8 h-8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+          <path d="m3.3 7 8.7 5 8.7-5"/>
+          <path d="M12 22V12"/>
+        </svg>
+      </div>
+      <div>
+        <h3 class="text-base font-black text-slate-900">No se encontraron pedidos</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-sm mx-auto">
+          No hay órdenes que coincidan con el filtro de estado seleccionado o el término de búsqueda.
+        </p>
+      </div>
+      @if (activeFilter !== 'all' || activeFulfillment !== 'all' || searchQuery) {
+        <div>
+          <button
+            type="button"
+            (click)="setFilter('all'); setFulfillmentFilter('all'); searchQuery = ''; applyFilterAndSearch()"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition active:scale-95 cursor-pointer shadow-xs"
+          >
+            <span>Restablecer todos los filtros</span>
+          </button>
+        </div>
+      }
+    </div>
+  }
 
-  <!-- Contenido -->
-  @if (isLoading) {
-    <div class="flex items-center justify-center py-20">
-      <div class="w-8 h-8 border-4 border-gray-200 border-t-gray-900 rounded-full animate-spin"></div>
-    </div>
-  } @else if (filteredOrders.length === 0) {
-    <div class="text-center py-20 bg-white rounded-3xl border border-gray-200 shadow-xs">
-      <span class="text-4xl">📭</span>
-      <h3 class="mt-3 text-base font-bold text-gray-900">No se encontraron pedidos</h3>
-      <p class="text-xs text-gray-400 mt-1 max-w-sm mx-auto">
-        No hay registros que coincidan con los filtros seleccionados o el término de búsqueda.
-      </p>
-    </div>
-  } @else {
-    <!-- Tabla de Pedidos -->
-    <div class="bg-white rounded-3xl border border-gray-200/80 shadow-xs overflow-hidden">
+  <!-- ── 6. VISTA DESKTOP: TABLA EJECUTIVA DE ALTA DENSIDAD ───────────────────── -->
+  @else {
+    <section class="hidden lg:block bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden">
       <div class="overflow-x-auto">
         <table class="w-full text-xs">
-          <thead class="bg-gray-50/80 border-b border-gray-200 text-gray-500 font-bold uppercase tracking-wider text-[11px]">
+          
+          <thead class="bg-slate-50/90 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider text-[11px]">
             <tr>
-              <th class="text-left px-5 py-3.5">Comprobante / Fecha</th>
-              <th class="text-left px-4 py-3.5">Cliente</th>
-              <th class="text-left px-4 py-3.5">Productos</th>
+              <th class="text-left px-5 py-3.5">Comprobante / Registro</th>
+              <th class="text-left px-4 py-3.5">Cliente Destinatario</th>
+              <th class="text-left px-4 py-3.5">Artículos & Total</th>
               <th class="text-left px-4 py-3.5">Modalidad</th>
-              <th class="text-left px-4 py-3.5">Estado</th>
-              <th class="text-left px-4 py-3.5">Total</th>
-              <th class="text-right px-5 py-3.5">Acciones de Proceso</th>
+              <th class="text-left px-4 py-3.5">Estado Operativo</th>
+              <th class="text-right px-5 py-3.5">Acciones de Despacho</th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+
+          <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
             @for (order of filteredOrders; track order._id) {
-              <tr class="hover:bg-gray-50/60 transition-colors">
+              <tr class="hover:bg-slate-50/70 transition-colors group">
                 
-                <!-- Comprobante / Fecha -->
+                <!-- Comprobante / Registro -->
                 <td class="px-5 py-4">
-                  <p class="font-black text-gray-900 text-sm">{{ order.invoiceNumber }}</p>
-                  <p class="text-[11px] text-gray-400 mt-0.5">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                  <div class="flex items-center gap-1.5">
+                    <span class="font-mono font-black text-slate-900 text-sm tracking-tight">{{ order.invoiceNumber }}</span>
+                    <button
+                      type="button"
+                      (click)="copyToClipboard(order.invoiceNumber, 'invoice', order._id)"
+                      class="text-slate-400 hover:text-slate-700 p-1 rounded-md hover:bg-slate-200/60 transition cursor-pointer"
+                      [title]="copiedInvoiceId === order._id ? '¡Copiado!' : 'Copiar comprobante'"
+                    >
+                      @if (copiedInvoiceId === order._id) {
+                        <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      } @else {
+                        <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                          <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                        </svg>
+                      }
+                    </button>
+                  </div>
+                  
+                  <p class="text-[11px] text-slate-400 mt-0.5 flex items-center gap-1">
+                    <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <circle cx="12" cy="12" r="10"/>
+                      <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    <span>{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                  </p>
+
+                  <!-- Código de Retiro -->
                   @if (order.pickupCode) {
-                    <span class="inline-block mt-1 font-mono text-[10px] font-bold px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
-                      {{ order.pickupCode }}
-                    </span>
+                    <div class="mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-lg bg-purple-50 border border-purple-200/80 text-purple-800">
+                      <span class="text-[9px] font-bold uppercase tracking-wider text-purple-600">Retiro:</span>
+                      <span class="font-mono text-[10px] font-black tracking-widest">{{ order.pickupCode }}</span>
+                      <button
+                        type="button"
+                        (click)="copyToClipboard(order.pickupCode, 'code', order._id)"
+                        class="text-purple-400 hover:text-purple-900 p-0.5 rounded cursor-pointer"
+                        title="Copiar código de retiro"
+                      >
+                        @if (copiedCodeId === order._id) {
+                          <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12"/>
+                          </svg>
+                        } @else {
+                          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                            <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                          </svg>
+                        }
+                      </button>
+                    </div>
                   }
                 </td>
 
-                <!-- Cliente -->
+                <!-- Cliente Destinatario -->
                 <td class="px-4 py-4">
-                  <div class="space-y-1">
-                    <p class="font-bold text-gray-900 text-sm leading-tight flex items-center gap-1.5">
-                      <span>👤</span>
-                      <span>{{ getClientName(order) }}</span>
-                    </p>
-                    @if (getClientEmail(order)) {
-                      <p class="text-[11px] text-gray-500 font-mono flex items-center gap-1">
-                        <span>✉️</span>
-                        <span>{{ getClientEmail(order) }}</span>
-                      </p>
-                    }
-                    <div class="flex items-center gap-1.5 pt-0.5 flex-wrap">
-                      @if (getClientDni(order)) {
-                        <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.5 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
-                          🪪 DNI: {{ getClientDni(order) }}
-                        </span>
+                  <div class="flex items-start gap-2.5">
+                    <div class="w-8 h-8 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                      {{ order.clientInitials }}
+                    </div>
+                    <div class="min-w-0">
+                      <p class="font-bold text-slate-900 text-sm leading-tight truncate">{{ order.clientName }}</p>
+                      @if (order.clientEmail) {
+                        <p class="text-[11px] text-slate-400 font-mono truncate mt-0.5">{{ order.clientEmail }}</p>
                       }
-                      @if (getClientPhone(order)) {
-                        <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-emerald-50 text-emerald-700 border border-emerald-200">
-                          📞 {{ getClientPhone(order) }}
-                        </span>
-                      }
+                      <div class="flex items-center gap-1.5 pt-1 flex-wrap">
+                        @if (order.clientDni) {
+                          <span class="inline-flex items-center gap-1 text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                            DNI {{ order.clientDni }}
+                          </span>
+                        }
+                        @if (order.clientPhone) {
+                          <span class="inline-flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                            {{ order.clientPhone }}
+                          </span>
+                        }
+                        @if (order.whatsAppLink) {
+                          <a
+                            [href]="order.whatsAppLink"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="inline-flex items-center gap-0.5 text-[10px] font-bold text-emerald-600 hover:text-emerald-700 hover:underline"
+                            title="Escribir por WhatsApp"
+                          >
+                            <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                            </svg>
+                            <span>WhatsApp</span>
+                          </a>
+                        }
+                      </div>
                     </div>
                   </div>
                 </td>
 
-                <!-- Items -->
+                <!-- Artículos & Total -->
                 <td class="px-4 py-4">
-                  <span class="font-bold text-gray-900">{{ totalItems(order) }}</span>
-                  <span class="text-gray-400"> artículo(s)</span>
-                </td>
-
-                <!-- Modalidad / Tipo -->
-                <td class="px-4 py-4">
-                  @if (isPickupOrder(order)) {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                      <span>🏪</span>
-                      <span>Retiro en Tienda</span>
-                    </span>
-                  } @else {
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
-                      <span>🚚</span>
-                      <span>Delivery</span>
-                    </span>
-                  }
-                </td>
-
-                <!-- Estado -->
-                <td class="px-4 py-4">
-                  <span
-                    class="inline-block px-3 py-1 rounded-full text-[11px] font-bold border"
-                    [ngClass]="statusColors[order.status]"
-                  >
-                    {{ statusLabels[order.status] }}
-                  </span>
-                  @if (order.status === 'cancelled' || order.paymentStatus === 'failed') {
-                    <p class="text-[10px] text-rose-600 font-semibold mt-1 max-w-[150px] truncate" [title]="order.cancelReason || 'Rechazado por pasarela/banco'">
-                      ⚠️ {{ order.cancelReason || 'Pago rechazado' }}
+                  <div class="space-y-1">
+                    <p class="font-black text-slate-900 text-sm">
+                      {{ order.orderTotal | solCurrency }}
                     </p>
+                    <span class="inline-flex items-center gap-1 text-[11px] text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md font-semibold">
+                      <svg class="w-3 h-3 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                      </svg>
+                      <span>{{ order.totalItemsCount }} artículo{{ order.totalItemsCount > 1 ? 's' : '' }}</span>
+                    </span>
+                  </div>
+                </td>
+
+                <!-- Modalidad -->
+                <td class="px-4 py-4">
+                  @if (order.isPickup) {
+                    <div class="space-y-0.5">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                        <svg class="w-3.5 h-3.5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                          <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                          <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                        </svg>
+                        <span>Retiro en Tienda</span>
+                      </span>
+                      <p class="text-[10px] text-slate-400 truncate max-w-[130px]">{{ order.storeName }}</p>
+                    </div>
+                  } @else {
+                    <div class="space-y-0.5">
+                      <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                          <path d="M15 18H9"/>
+                          <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                          <circle cx="7" cy="18" r="2"/>
+                          <circle cx="17" cy="18" r="2"/>
+                        </svg>
+                        <span>Delivery</span>
+                      </span>
+                      <p class="text-[10px] text-slate-400 truncate max-w-[130px]">Domicilio</p>
+                    </div>
                   }
                 </td>
 
-                <!-- Total -->
+                <!-- Estado Operativo -->
                 <td class="px-4 py-4">
-                  <span class="font-black text-gray-900 text-sm">{{ getOrderTotal(order) | solCurrency }}</span>
+                  <div class="space-y-1">
+                    <span
+                      class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border"
+                      [ngClass]="order.statusColorClass"
+                    >
+                      @if (order.status === 'paid' || order.status === 'preparing') {
+                        <span class="w-1.5 h-1.5 rounded-full bg-current pulse-glow"></span>
+                      }
+                      <span>{{ order.statusLabel }}</span>
+                    </span>
+
+                    @if (order.status === 'cancelled' || order.paymentStatus === 'failed') {
+                      <p class="text-[10px] text-rose-600 font-semibold max-w-[150px] truncate" [title]="order.cancelReason || 'Pago rechazado o anulado'">
+                        {{ order.cancelReason || 'Pago rechazado' }}
+                      </p>
+                    }
+                  </div>
                 </td>
 
-                <!-- Acciones Guiadas y Seguras (Navegan al Detalle para Confirmación Rigurosa) -->
+                <!-- Acciones de Despacho -->
                 <td class="px-5 py-4 text-right">
                   <div class="flex items-center justify-end gap-2">
                     
-                    <!-- Estado: PAID -> Preparar (Navega al detalle de picking) -->
+                    <!-- Estado: PAID -> Preparar (Navega a picking) -->
                     @if (order.status === 'paid') {
-                      <a
-                        [routerLink]="['/business/orders', order._id]"
-                        class="px-3.5 py-1.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-orange-700 font-bold border border-orange-200 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs"
+                      <button
+                        type="button"
+                        (click)="goToPrepareOrder(order)"
+                        class="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200/80 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
                         title="Iniciar preparación y ver hoja de picking"
                       >
-                        <span>🍳</span>
+                        <svg class="w-3.5 h-3.5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                          <path d="M12 22V12"/>
+                        </svg>
                         <span>Preparar</span>
-                      </a>
+                      </button>
                     }
 
-                    <!-- Estado: PREPARING -> Listo para retiro (Pickup) -->
-                    @if (order.status === 'preparing' && isPickupOrder(order)) {
-                      <a
-                        [routerLink]="['/business/orders', order._id]"
-                        class="px-3.5 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-700 font-bold border border-purple-200 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs"
-                        title="Ver detalle para marcar listo en tienda"
+                    <!-- Estado: PREPARING + Pickup -> Retiro -->
+                    @if (order.status === 'preparing' && order.isPickup) {
+                      <button
+                        type="button"
+                        (click)="goToPrepareOrder(order)"
+                        class="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold border border-purple-200/80 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
+                        title="Marcar listo en tienda"
                       >
-                        <span>📍</span>
-                        <span>Gestionar Retiro</span>
-                      </a>
+                        <svg class="w-3.5 h-3.5 text-purple-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+                          <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span>Retiro</span>
+                      </button>
                     }
 
-                    <!-- Estado: PREPARING -> Despachar (Delivery) -->
-                    @if (order.status === 'preparing' && !isPickupOrder(order)) {
-                      <a
-                        [routerLink]="['/business/orders', order._id]"
-                        class="px-3.5 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-bold border border-blue-200 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs"
-                        title="Ver detalle para despachar pedido"
+                    <!-- Estado: PREPARING + Delivery -> Despacho -->
+                    @if (order.status === 'preparing' && !order.isPickup) {
+                      <button
+                        type="button"
+                        (click)="goToPrepareOrder(order)"
+                        class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-800 font-bold border border-blue-200/80 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
+                        title="Despachar pedido a domicilio"
                       >
-                        <span>🚚</span>
-                        <span>Gestionar Envío</span>
-                      </a>
+                        <svg class="w-3.5 h-3.5 text-blue-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                          <path d="M15 18H9"/>
+                          <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                          <circle cx="7" cy="18" r="2"/>
+                          <circle cx="17" cy="18" r="2"/>
+                        </svg>
+                        <span>Despacho</span>
+                      </button>
                     }
 
-                    <!-- Estado: READY_FOR_PICKUP -> Entregar con Código de Retiro -->
-                    @if (order.status === 'ready_for_pickup' && isPickupOrder(order)) {
-                      <a
-                        [routerLink]="['/business/orders', order._id]"
-                        class="px-3.5 py-1.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-sm shadow-purple-600/20 transition active:scale-95 flex items-center gap-1.5"
-                        title="Validar código de retiro y entregar en tienda"
+                    <!-- Estado: READY_FOR_PICKUP -> Validar Retiro -->
+                    @if (order.status === 'ready_for_pickup' && order.isPickup) {
+                      <button
+                        type="button"
+                        (click)="openPickupModal(order)"
+                        class="px-3 py-1.5 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold border border-purple-200/80 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
+                        title="Validar código de retiro y entregar al cliente"
                       >
-                        <span>🔍</span>
-                        <span>Entregar con Código</span>
-                      </a>
+                        <svg class="w-3.5 h-3.5 text-purple-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <circle cx="11" cy="11" r="8"/>
+                          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <span>Validar</span>
+                      </button>
                     }
 
-                    <!-- Estado: SHIPPED -> Confirmar Entrega en Domicilio -->
-                    @if (order.status === 'shipped' && !isPickupOrder(order)) {
-                      <a
-                        [routerLink]="['/business/orders', order._id]"
-                        class="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm shadow-emerald-600/20 transition active:scale-95 flex items-center gap-1.5"
-                        title="Confirmar recepción y entrega a domicilio"
+                    <!-- Estado: SHIPPED -> Confirmar Entrega -->
+                    @if (order.status === 'shipped' && !order.isPickup) {
+                      <button
+                        type="button"
+                        (click)="openDeliveryModal(order)"
+                        class="px-3 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold border border-emerald-200/80 transition active:scale-95 flex items-center gap-1.5 text-xs shadow-2xs cursor-pointer"
+                        title="Confirmar entrega de repartidor a domicilio"
                       >
-                        <span>📦</span>
-                        <span>Confirmar Entrega</span>
-                      </a>
+                        <svg class="w-3.5 h-3.5 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                          <path d="m5 12 5 5L20 7"/>
+                        </svg>
+                        <span>Confirmar</span>
+                      </button>
                     }
 
-                    <!-- Ver Detalle / Hoja de Despacho (Siempre disponible) -->
+                    <!-- Ver Detalle General -->
                     <a
                       [routerLink]="['/business/orders', order._id]"
-                      class="px-3 py-1.5 rounded-xl bg-white hover:bg-gray-50 text-gray-700 font-bold border border-gray-200 transition active:scale-95 flex items-center gap-1 text-xs"
-                      title="Ver detalle completo, productos y comprobante"
+                      class="px-3 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold border border-slate-200/80 transition active:scale-95 flex items-center gap-1 text-xs shadow-2xs cursor-pointer"
+                      title="Ver detalle completo de productos y comprobante"
                     >
-                      <span>👁️</span>
-                      <span class="hidden sm:inline">Detalle</span>
+                      <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <span>Detalle</span>
                     </a>
-
-                    <!-- Estado: DELIVERED -> Entregado completado -->
-                    @if (order.status === 'delivered') {
-                      <span class="inline-flex items-center gap-1 text-[11px] text-emerald-700 font-bold px-2 py-1 bg-emerald-50 rounded-lg border border-emerald-200">
-                        <span>✓</span>
-                        <span>Completado</span>
-                      </span>
-                    }
-
-                    <!-- Estado: CANCELLED -->
-                    @if (order.status === 'cancelled') {
-                      <span class="inline-flex items-center gap-1 text-[11px] text-gray-400 italic">
-                        Cancelado
-                      </span>
-                    }
 
                   </div>
                 </td>
@@ -347,84 +723,276 @@
           </tbody>
         </table>
       </div>
-    </div>
+    </section>
+
+    <!-- ── 7. VISTA MOBILE / TABLET: TARJETAS EJECUTIVAS RESPONSIVAS ───────────── -->
+    <section class="block lg:hidden space-y-3.5">
+      @for (order of filteredOrders; track order._id) {
+        <article class="p-4 sm:p-5 rounded-3xl bg-white border border-slate-200/80 shadow-xs space-y-3.5">
+          
+          <!-- Encabezado de la Tarjeta Móvil -->
+          <div class="flex items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div class="flex items-center gap-1.5">
+                <span class="font-mono font-black text-slate-900 text-sm">{{ order.invoiceNumber }}</span>
+                <button
+                  type="button"
+                  (click)="copyToClipboard(order.invoiceNumber, 'invoice', order._id)"
+                  class="text-slate-400 hover:text-slate-700 p-0.5 rounded cursor-pointer"
+                  title="Copiar comprobante"
+                >
+                  @if (copiedInvoiceId === order._id) {
+                    <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                    </svg>
+                  }
+                </button>
+              </div>
+              <p class="text-[10px] text-slate-400">{{ order.createdAt | date:'dd/MM/yyyy HH:mm' }}</p>
+            </div>
+
+            <!-- Estado Operativo Badge -->
+            <span
+              class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border"
+              [ngClass]="order.statusColorClass"
+            >
+              @if (order.status === 'paid' || order.status === 'preparing') {
+                <span class="w-1.5 h-1.5 rounded-full bg-current pulse-glow"></span>
+              }
+              <span>{{ order.statusLabel }}</span>
+            </span>
+          </div>
+
+          <!-- Cliente e Información de Contacto -->
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-full bg-slate-900 text-white font-black text-xs flex items-center justify-center shrink-0">
+              {{ order.clientInitials }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <p class="font-bold text-slate-900 text-xs sm:text-sm truncate">{{ order.clientName }}</p>
+              @if (order.clientEmail) {
+                <p class="text-[10px] text-slate-400 font-mono truncate">{{ order.clientEmail }}</p>
+              }
+              <div class="flex items-center gap-1.5 pt-1 flex-wrap">
+                @if (order.clientDni) {
+                  <span class="text-[10px] font-mono font-bold px-1.5 py-0.2 rounded-md bg-purple-50 text-purple-700 border border-purple-200">
+                    DNI {{ order.clientDni }}
+                  </span>
+                }
+                @if (order.clientPhone) {
+                  <span class="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200">
+                    {{ order.clientPhone }}
+                  </span>
+                }
+                @if (order.whatsAppLink) {
+                  <a
+                    [href]="order.whatsAppLink"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="text-[10px] font-bold text-emerald-600 hover:underline flex items-center gap-0.5"
+                  >
+                    <span>WhatsApp</span>
+                  </a>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Modalidad y Totales -->
+          <div class="p-3 rounded-2xl bg-slate-50 border border-slate-200/70 flex items-center justify-between text-xs">
+            <div>
+              @if (order.isPickup) {
+                <span class="inline-flex items-center gap-1 font-bold text-purple-700">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                  </svg>
+                  <span>Retiro en Tienda</span>
+                </span>
+                <p class="text-[10px] text-slate-400 truncate mt-0.5">{{ order.storeName }}</p>
+              } @else {
+                <span class="inline-flex items-center gap-1 font-bold text-blue-700">
+                  <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                    <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                  </svg>
+                  <span>Delivery a Domicilio</span>
+                </span>
+              }
+            </div>
+
+            <div class="text-right">
+              <p class="font-black text-slate-900 text-sm">{{ order.orderTotal | solCurrency }}</p>
+              <p class="text-[10px] text-slate-400">{{ order.totalItemsCount }} artículo{{ order.totalItemsCount > 1 ? 's' : '' }}</p>
+            </div>
+          </div>
+
+          <!-- Código de Retiro Móvil Destacado -->
+          @if (order.pickupCode) {
+            <div class="flex items-center justify-between p-2.5 rounded-2xl bg-purple-50/80 border border-purple-200">
+              <div class="flex items-center gap-2">
+                <span class="text-[10px] font-bold text-purple-700 uppercase tracking-wider">Código de Retiro:</span>
+                <span class="font-mono text-xs font-black text-purple-900 tracking-widest">{{ order.pickupCode }}</span>
+              </div>
+              <button
+                type="button"
+                (click)="copyToClipboard(order.pickupCode, 'code', order._id)"
+                class="text-xs font-bold text-purple-700 hover:text-purple-950 px-2 py-0.5 rounded-lg bg-white border border-purple-200"
+              >
+                {{ copiedCodeId === order._id ? 'Copiado' : 'Copiar' }}
+              </button>
+            </div>
+          }
+
+          <!-- Botones de Acción Móviles -->
+          <div class="pt-1 flex items-center gap-2">
+            @if (order.status === 'paid') {
+              <button
+                type="button"
+                (click)="goToPrepareOrder(order)"
+                class="flex-1 py-2 px-3 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold text-xs border border-amber-200/80 transition active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                  <path d="M12 22V12"/>
+                </svg>
+                <span>Preparar</span>
+              </button>
+            }
+
+            @if (order.status === 'ready_for_pickup' && order.isPickup) {
+              <button
+                type="button"
+                (click)="openPickupModal(order)"
+                class="flex-1 py-2 px-3 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-800 font-bold text-xs border border-purple-200/80 transition active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5 text-purple-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <span>Validar</span>
+              </button>
+            }
+
+            @if (order.status === 'shipped' && !order.isPickup) {
+              <button
+                type="button"
+                (click)="openDeliveryModal(order)"
+                class="flex-1 py-2 px-3 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200/80 transition active:scale-95 flex items-center justify-center gap-1.5 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12 5 5L20 7"/>
+                </svg>
+                <span>Confirmar</span>
+              </button>
+            }
+
+            <a
+              [routerLink]="['/business/orders', order._id]"
+              class="px-3.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-slate-700 font-bold text-xs border border-slate-200/80 transition flex items-center justify-center gap-1.5 text-center shadow-2xs"
+            >
+              <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              <span>Detalle</span>
+            </a>
+          </div>
+
+        </article>
+      }
+    </section>
   }
 
-</div>
+</main>
 
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
-<!-- MODAL: VERIFICACIÓN OBLIGATORIA DE RETIRO EN TIENDA (PICKUP)                 -->
+<!-- MODAL: VERIFICACIÓN DE RETIRO EN TIENDA (PICKUP)                            -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 @if (isPickupModalOpen && selectedPickupOrder) {
-  <div class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-gray-100 animate-fade-in space-y-6">
+  <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 animate-modal-enter space-y-6">
       
       <!-- Encabezado del Modal -->
-      <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-xl">
-            🏪
+          <div class="w-12 h-12 rounded-2xl bg-purple-50 border border-purple-100 flex items-center justify-center text-purple-600 shadow-2xs">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+            </svg>
           </div>
           <div>
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-purple-100 text-purple-800">
-              Verificación de Retiro
+              Validación de Retiro
             </span>
-            <h3 class="text-base font-black text-gray-900 mt-1">
+            <h3 class="text-base font-black text-slate-900 mt-1">
               Orden {{ selectedPickupOrder.invoiceNumber }}
             </h3>
           </div>
         </div>
         <button
+          type="button"
           (click)="closePickupModal()"
-          class="text-gray-400 hover:text-gray-600 p-1 font-bold text-base cursor-pointer"
+          class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition cursor-pointer"
+          title="Cerrar ventana"
         >
-          ✕
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
       </div>
 
       <!-- Resumen del Pedido -->
-      <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200/80 space-y-2 text-xs">
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
         <div class="flex justify-between items-start">
-          <span class="text-gray-500">Cliente Destinatario:</span>
+          <span class="text-slate-500">Cliente Destinatario:</span>
           <div class="text-right">
-            <span class="font-bold text-gray-900 block">{{ getClientName(selectedPickupOrder) }}</span>
-            <span class="text-[11px] text-gray-400 font-mono">{{ getClientEmail(selectedPickupOrder) }}</span>
-            @if (getClientDni(selectedPickupOrder)) {
-              <span class="text-[10px] font-mono font-bold text-purple-700 block mt-0.5">🪪 DNI: {{ getClientDni(selectedPickupOrder) }}</span>
-            }
-            @if (getClientPhone(selectedPickupOrder)) {
-              <span class="text-[10px] text-emerald-700 font-bold block">📞 {{ getClientPhone(selectedPickupOrder) }}</span>
+            <span class="font-bold text-slate-900 block">{{ selectedPickupOrder.clientName }}</span>
+            <span class="text-[11px] text-slate-400 font-mono">{{ selectedPickupOrder.clientEmail }}</span>
+            @if (selectedPickupOrder.clientDni) {
+              <span class="text-[10px] font-mono font-bold text-purple-700 block mt-0.5">DNI {{ selectedPickupOrder.clientDni }}</span>
             }
           </div>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-500">Artículos a entregar:</span>
-          <span class="font-bold text-gray-900">{{ totalItems(selectedPickupOrder) }} producto(s)</span>
+          <span class="text-slate-500">Artículos a entregar:</span>
+          <span class="font-bold text-slate-900">{{ selectedPickupOrder.totalItemsCount }} producto(s)</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-500">Total de la Orden:</span>
-          <span class="font-black text-gray-900">{{ getOrderTotal(selectedPickupOrder) | solCurrency }}</span>
+          <span class="text-slate-500">Total de la Orden:</span>
+          <span class="font-black text-slate-900">{{ selectedPickupOrder.orderTotal | solCurrency }}</span>
         </div>
-        <div class="flex justify-between pt-1 border-t border-gray-200">
-          <span class="text-gray-500">Sucursal:</span>
-          <span class="font-bold text-purple-700">{{ selectedPickupOrder.store?.name || 'Tienda Principal' }}</span>
+        <div class="flex justify-between pt-1 border-t border-slate-200">
+          <span class="text-slate-500">Sucursal:</span>
+          <span class="font-bold text-purple-700">{{ selectedPickupOrder.storeName }}</span>
         </div>
       </div>
 
       <!-- Instrucciones de Seguridad -->
       <div class="bg-purple-50/70 p-3.5 rounded-2xl border border-purple-200 text-xs text-purple-900 space-y-1">
         <p class="font-bold flex items-center gap-1.5">
-          <span>🔒</span>
-          <span>Validación de seguridad obligatoria</span>
+          <svg class="w-4 h-4 text-purple-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+          <span>Validación obligatoria de retiro</span>
         </p>
         <p class="text-[11px] text-purple-700 leading-relaxed">
-          Solicita al cliente su <strong>código de retiro</strong> (enviado a su correo y visible en "Mis Pedidos") o escanea su <strong>código QR</strong>.
+          Pide al cliente su <strong>código alfanumérico</strong> o usa el botón inferior para escanear directamente su <strong>código QR</strong> con la cámara.
         </p>
       </div>
 
       <!-- Input de Código -->
       <div class="space-y-2">
-        <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
+        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
           Ingresa el Código de Retiro *
         </label>
         <div class="relative">
@@ -433,13 +1001,17 @@
             [(ngModel)]="verificationCodeInput"
             (keyup.enter)="confirmPickupByCode()"
             placeholder="Ejemplo: PKP-8F3X2K"
-            class="w-full px-4 py-3 bg-gray-50 border-2 border-purple-200 focus:border-purple-600 focus:bg-white rounded-2xl text-center font-mono text-base font-black tracking-widest uppercase outline-none transition"
+            class="w-full px-4 py-3 bg-slate-50 border-2 border-purple-200 focus:border-purple-600 focus:bg-white rounded-2xl text-center font-mono text-base font-black tracking-widest uppercase outline-none transition"
           />
         </div>
 
         @if (pickupVerificationError) {
           <p class="text-xs font-bold text-rose-600 flex items-center gap-1 mt-1">
-            <span>⚠️</span>
+            <svg class="w-4 h-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
             <span>{{ pickupVerificationError }}</span>
           </p>
         }
@@ -448,6 +1020,7 @@
       <!-- Acciones del Modal -->
       <div class="space-y-3 pt-2">
         <button
+          type="button"
           (click)="confirmPickupByCode()"
           [disabled]="!verificationCodeInput.trim() || isVerifyingPickup"
           class="w-full py-3 rounded-2xl bg-purple-600 hover:bg-purple-700 active:scale-95 text-white font-black text-xs transition shadow-lg shadow-purple-600/20 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
@@ -456,7 +1029,9 @@
             <div class="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             <span>Validando código...</span>
           } @else {
-            <span>✓</span>
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
             <span>Validar y Confirmar Entrega</span>
           }
         </button>
@@ -464,9 +1039,15 @@
         <button
           type="button"
           (click)="goToScanner()"
-          class="w-full py-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
+          class="w-full py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition flex items-center justify-center gap-2 cursor-pointer"
         >
-          <span>📷</span>
+          <svg class="w-4 h-4 text-slate-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+            <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+            <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+            <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+            <rect x="7" y="7" width="3" height="3" rx="0.5" fill="currentColor"/>
+          </svg>
           <span>Abrir Escáner de Cámara QR en Pantalla Completa</span>
         </button>
       </div>
@@ -479,56 +1060,64 @@
 <!-- MODAL: CONFIRMACIÓN DE ENTREGA A DOMICILIO (DELIVERY)                       -->
 <!-- ═══════════════════════════════════════════════════════════════════════════ -->
 @if (isDeliveryModalOpen && selectedDeliveryOrder) {
-  <div class="fixed inset-0 z-50 bg-gray-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-gray-100 animate-fade-in space-y-6">
+  <div class="fixed inset-0 z-50 bg-slate-950/60 backdrop-blur-md flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 animate-modal-enter space-y-6">
       
-      <div class="flex items-start justify-between border-b border-gray-100 pb-4">
+      <div class="flex items-start justify-between border-b border-slate-100 pb-4">
         <div class="flex items-center gap-3">
-          <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-xl">
-            📦
+          <div class="w-12 h-12 rounded-2xl bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 shadow-2xs">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+              <path d="M15 18H9"/>
+              <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+              <circle cx="7" cy="18" r="2"/>
+              <circle cx="17" cy="18" r="2"/>
+            </svg>
           </div>
           <div>
             <span class="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
               Confirmar Recepción
             </span>
-            <h3 class="text-base font-black text-gray-900 mt-1">
+            <h3 class="text-base font-black text-slate-900 mt-1">
               Orden {{ selectedDeliveryOrder.invoiceNumber }}
             </h3>
           </div>
         </div>
         <button
+          type="button"
           (click)="closeDeliveryModal()"
-          class="text-gray-400 hover:text-gray-600 p-1 font-bold text-base cursor-pointer"
+          class="text-slate-400 hover:text-slate-700 p-1.5 rounded-xl hover:bg-slate-100 transition cursor-pointer"
+          title="Cerrar ventana"
         >
-          ✕
+          <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
         </button>
       </div>
 
-      <div class="bg-gray-50 p-4 rounded-2xl border border-gray-200/80 space-y-2 text-xs">
+      <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
         <div class="flex justify-between items-start">
-          <span class="text-gray-500">Destinatario:</span>
+          <span class="text-slate-500">Destinatario:</span>
           <div class="text-right">
-            <span class="font-bold text-gray-900 block">{{ getClientName(selectedDeliveryOrder) }}</span>
-            <span class="text-[11px] text-gray-400 font-mono">{{ getClientEmail(selectedDeliveryOrder) }}</span>
-            @if (getClientDni(selectedDeliveryOrder)) {
-              <span class="text-[10px] font-mono font-bold text-purple-700 block mt-0.5">🪪 DNI: {{ getClientDni(selectedDeliveryOrder) }}</span>
-            }
-            @if (getClientPhone(selectedDeliveryOrder)) {
-              <span class="text-[10px] text-emerald-700 font-bold block">📞 {{ getClientPhone(selectedDeliveryOrder) }}</span>
+            <span class="font-bold text-slate-900 block">{{ selectedDeliveryOrder.clientName }}</span>
+            <span class="text-[11px] text-slate-400 font-mono">{{ selectedDeliveryOrder.clientEmail }}</span>
+            @if (selectedDeliveryOrder.clientPhone) {
+              <span class="text-[10px] text-emerald-700 font-bold block mt-0.5">{{ selectedDeliveryOrder.clientPhone }}</span>
             }
           </div>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-500">Artículos:</span>
-          <span class="font-bold text-gray-900">{{ totalItems(selectedDeliveryOrder) }} producto(s)</span>
+          <span class="text-slate-500">Artículos:</span>
+          <span class="font-bold text-slate-900">{{ selectedDeliveryOrder.totalItemsCount }} producto(s)</span>
         </div>
         <div class="flex justify-between">
-          <span class="text-gray-500">Total Cobrado:</span>
-          <span class="font-black text-gray-900">{{ getOrderTotal(selectedDeliveryOrder) | solCurrency }}</span>
+          <span class="text-slate-500">Total Cobrado:</span>
+          <span class="font-black text-slate-900">{{ selectedDeliveryOrder.orderTotal | solCurrency }}</span>
         </div>
       </div>
 
-      <p class="text-xs text-gray-600 leading-relaxed text-center">
+      <p class="text-xs text-slate-600 leading-relaxed text-center">
         ¿Confirmas que el repartidor entregó satisfactoriamente el pedido en la dirección de destino del cliente?
       </p>
 
@@ -536,7 +1125,7 @@
         <button
           type="button"
           (click)="closeDeliveryModal()"
-          class="flex-1 py-2.5 rounded-2xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs transition"
+          class="flex-1 py-2.5 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
         >
           Cancelar
         </button>
@@ -544,7 +1133,7 @@
           type="button"
           (click)="confirmDelivery()"
           [disabled]="isConfirmingDelivery"
-          class="flex-1 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+          class="flex-1 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition active:scale-95 disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20 cursor-pointer"
         >
           @if (isConfirmingDelivery) {
             <div class="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>

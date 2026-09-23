@@ -1,3 +1,51 @@
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 🏢 MOOREA BUSINESS - ORDER DETAIL & PICKING STYLES                         */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Modal Enter Micro-Animation */
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-modal-enter {
+  animation: modalEnter 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Subtle Pulsing for Active State Indicators */
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.15);
+  }
+}
+
+.pulse-glow {
+  animation: pulseGlow 2s ease-in-out infinite;
+}
+
+/* Custom Scrollbars */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 🖨️ REGLAS DE IMPRESIÓN FORMAL                                              */
+/* ═══════════════════════════════════════════════════════════════════════════ */
 @media print {
   /* Ocultar elementos no imprimibles de la aplicación */
   app-business-header,
@@ -27,7 +75,7 @@
   }
 
   .print-page {
-    border: 1px solid #e5e7eb !important;
+    border: 1px solid #e2e8f0 !important;
     border-radius: 0 !important;
     box-shadow: none !important;
   }

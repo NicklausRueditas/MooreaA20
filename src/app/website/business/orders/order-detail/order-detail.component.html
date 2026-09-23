@@ -1,226 +1,382 @@
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- 🏢 MOOREA BUSINESS - DETALLE DE PEDIDO & HOJA DE DESPACHO                   -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+
 <div class="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto space-y-6 print-container">
 
-  <!-- Botón Volver y Barra de Acciones Superior -->
+  <!-- ── 1. BARRA DE NAVEGACIÓN Y ACCIONES SUPERIORES ────────────────────────── -->
   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 no-print">
+    
+    <!-- Volver y Breadcrumb -->
     <div class="flex items-center gap-3">
       <a
         routerLink="/business/orders"
-        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 transition shadow-2xs"
+        class="inline-flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-all active:scale-98 shadow-2xs cursor-pointer"
+        title="Regresar a la lista de pedidos"
       >
-        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m15 18-6-6 6-6"/>
         </svg>
         <span>Volver a Pedidos</span>
       </a>
 
-      <span class="text-xs text-gray-400">/</span>
-      <span class="text-xs font-bold text-gray-500">Hoja de Preparación y Despacho</span>
+      <span class="text-slate-300">/</span>
+      <span class="text-xs font-bold text-slate-500">Hoja de Preparación y Despacho</span>
     </div>
 
     <!-- Botones de Impresión y PDF -->
     <div class="flex items-center gap-2.5">
       <button
+        type="button"
         (click)="printOrder()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-gray-200 text-xs font-bold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition active:scale-95 shadow-2xs"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-all active:scale-95 shadow-2xs cursor-pointer"
+        title="Imprimir hoja de picking"
       >
-        <span>🖨️</span>
+        <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+          <rect width="12" height="8" x="6" y="14"/>
+        </svg>
         <span>Imprimir Hoja</span>
       </button>
 
       <button
+        type="button"
         (click)="downloadPdf()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-purple-50 text-purple-700 border border-purple-200 text-xs font-bold hover:bg-purple-100 transition active:scale-95 shadow-2xs"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 text-white border border-slate-800 text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-2xs cursor-pointer"
+        title="Descargar comprobante en formato PDF"
       >
-        <span>📥</span>
+        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
         <span>Descargar PDF</span>
       </button>
     </div>
+
   </div>
 
-  <!-- Estado de Carga -->
+  <!-- ── 2. ESTADO DE CARGA / ERROR ──────────────────────────────────────────── -->
   @if (isLoading) {
     <div class="space-y-4 py-12">
-      <div class="h-24 bg-gray-100 rounded-3xl animate-pulse"></div>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div class="h-48 bg-gray-100 rounded-3xl animate-pulse"></div>
-        <div class="h-48 bg-gray-100 rounded-3xl animate-pulse"></div>
+      <div class="h-28 bg-slate-100 rounded-3xl skeleton-shimmer"></div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="h-48 bg-slate-100 rounded-3xl skeleton-shimmer"></div>
+        <div class="h-48 bg-slate-100 rounded-3xl skeleton-shimmer"></div>
+        <div class="h-48 bg-slate-100 rounded-3xl skeleton-shimmer"></div>
       </div>
-      <div class="h-64 bg-gray-100 rounded-3xl animate-pulse"></div>
+      <div class="h-64 bg-slate-100 rounded-3xl skeleton-shimmer"></div>
     </div>
   } @else if (loadError) {
-    <!-- Estado de Error -->
-    <div class="text-center py-16 bg-rose-50/50 rounded-3xl border border-rose-100 p-8 space-y-4">
-      <div class="w-14 h-14 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto text-2xl font-bold">
-        ✕
+    <div class="text-center py-16 bg-white rounded-3xl border border-rose-200/80 p-8 space-y-4 shadow-xs">
+      <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mx-auto shadow-2xs">
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
       </div>
-      <h3 class="text-base font-black text-gray-900">{{ loadError }}</h3>
-      <p class="text-xs text-gray-500 max-w-md mx-auto">
+      <h3 class="text-base font-black text-slate-900">{{ loadError }}</h3>
+      <p class="text-xs text-slate-500 max-w-md mx-auto">
         El pedido solicitado no existe o no cuentas con los permisos necesarios para visualizarlo.
       </p>
       <a
         routerLink="/business/orders"
-        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-gray-900 text-white text-xs font-bold hover:bg-gray-800 transition"
+        class="inline-flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-slate-900 text-white text-xs font-bold hover:bg-slate-800 transition shadow-xs"
       >
-        Volver al listado
+        <span>Volver al listado</span>
       </a>
     </div>
   } @else if (order) {
     
-    <!-- CONTENEDOR PRINCIPAL DE LA ORDEN (Imprimible) -->
-    <div class="bg-white rounded-3xl border border-gray-200 shadow-xs overflow-hidden print-page">
+    <!-- ── 3. CONTENEDOR PRINCIPAL DE LA ORDEN (Imprimible) ────────────────────── -->
+    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-xs overflow-hidden print-page">
 
       <!-- Encabezado de la Orden -->
-      <div class="p-6 sm:p-8 border-b border-gray-100 bg-gradient-to-r from-gray-50/50 via-white to-purple-50/20">
+      <div class="p-6 sm:p-8 border-b border-slate-100 bg-gradient-to-r from-slate-50/70 via-white to-rose-50/20">
         <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           
-          <div class="space-y-2">
+          <div class="space-y-2.5">
             <div class="flex items-center gap-3 flex-wrap">
-              <span class="text-3xl">📋</span>
-              <h1 class="text-2xl font-black text-gray-900 tracking-tight flex items-center gap-2">
-                <span>{{ order.invoiceNumber }}</span>
+              <div class="w-10 h-10 rounded-2xl bg-slate-900 border border-slate-800 text-white flex items-center justify-center shadow-xs">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/>
+                  <path d="M3 6h18"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+
+              <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+                <span class="font-mono">{{ order.invoiceNumber }}</span>
                 <button
-                  (click)="copyToClipboard(order.invoiceNumber, 'Comprobante')"
-                  title="Copiar código de factura"
-                  class="text-gray-400 hover:text-gray-600 text-xs no-print cursor-pointer"
+                  type="button"
+                  (click)="copyToClipboard(order.invoiceNumber, 'invoice')"
+                  title="Copiar comprobante"
+                  class="text-slate-400 hover:text-slate-700 p-1 rounded-md hover:bg-slate-200/60 transition no-print cursor-pointer"
                 >
-                  📋
+                  @if (copiedInvoice) {
+                    <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                  } @else {
+                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/>
+                      <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                    </svg>
+                  }
                 </button>
               </h1>
 
               <!-- Badge de Estado -->
               <span
-                class="px-3 py-1 rounded-full text-xs font-black border"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border"
                 [ngClass]="statusColors[order.status]"
               >
-                {{ statusLabels[order.status] }}
+                @if (order.status === 'paid' || order.status === 'preparing') {
+                  <span class="w-1.5 h-1.5 rounded-full bg-current pulse-glow"></span>
+                }
+                <span>{{ statusLabels[order.status] }}</span>
               </span>
 
               <!-- Badge de Modalidad -->
               @if (isPickup()) {
-                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-50 text-purple-700 border border-purple-200 flex items-center gap-1.5">
-                  <span>🏪</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                  <svg class="w-3.5 h-3.5 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                    <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                    <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                  </svg>
                   <span>Retiro en Tienda</span>
                 </span>
               } @else {
-                <span class="px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200 flex items-center gap-1.5">
-                  <span>🚚</span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                  <svg class="w-3.5 h-3.5 text-blue-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                    <path d="M15 18H9"/>
+                    <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                    <circle cx="7" cy="18" r="2"/>
+                    <circle cx="17" cy="18" r="2"/>
+                  </svg>
                   <span>Envío a Domicilio</span>
                 </span>
               }
             </div>
 
-            <p class="text-xs text-gray-500 font-medium">
-              Emitido el <strong>{{ order.createdAt | date:'dd MMMM yyyy, HH:mm' }}</strong>
+            <p class="text-xs text-slate-500 font-medium flex items-center gap-1.5 flex-wrap">
+              <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <polyline points="12 6 12 12 16 14"/>
+              </svg>
+              <span>Emitido el <strong>{{ order.createdAt | date:'dd MMMM yyyy, HH:mm' }}</strong></span>
               @if (order.groupOrderId) {
-                · <span class="text-purple-600 font-mono text-[11px]">Compra agrupada: {{ order.groupOrderId }}</span>
+                <span>·</span>
+                <span class="text-rose-700 font-mono text-[11px] font-bold">Compra agrupada: {{ order.groupOrderId }}</span>
               }
             </p>
           </div>
 
           <!-- Acciones Operativas de Cambio de Estado (Oculto al Imprimir) -->
           <div class="flex items-center gap-2.5 flex-wrap no-print">
+            
+            <!-- PAID -> Iniciar Preparación -->
             @if (order.status === 'paid') {
               <button
+                type="button"
                 (click)="openConfirmModal('preparing')"
                 [disabled]="isUpdatingStatus"
-                class="px-4 py-2.5 rounded-2xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs transition active:scale-95 flex items-center gap-2 shadow-lg shadow-orange-600/20 disabled:opacity-50 cursor-pointer"
+                class="px-4 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-800 font-bold border border-amber-200/80 transition-all active:scale-95 flex items-center gap-2 text-xs shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                <span>🍳</span>
+                <svg class="w-4 h-4 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                  <path d="M12 22V12"/>
+                </svg>
                 <span>Iniciar Preparación / Picking</span>
               </button>
-            } @else if (order.status === 'preparing') {
-              @if (isPickup()) {
-                <button
-                  (click)="openConfirmModal('ready_for_pickup')"
-                  [disabled]="isUpdatingStatus"
-                  class="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition active:scale-95 flex items-center gap-2 shadow-lg shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
-                >
-                  <span>🏪</span>
-                  <span>Marcar Listo para Retiro</span>
-                </button>
-              } @else {
-                <button
-                  (click)="openConfirmModal('shipped')"
-                  [disabled]="isUpdatingStatus"
-                  class="px-4 py-2.5 rounded-2xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs transition active:scale-95 flex items-center gap-2 shadow-lg shadow-blue-600/20 disabled:opacity-50 cursor-pointer"
-                >
-                  <span>🚚</span>
-                  <span>Despachar / En Camino</span>
-                </button>
-              }
-            } @else if (order.status === 'ready_for_pickup') {
+            }
+            
+            <!-- PREPARING + Pickup -> Listo para Retiro -->
+            @else if (order.status === 'preparing' && isPickup()) {
               <button
+                type="button"
+                (click)="openConfirmModal('ready_for_pickup')"
+                [disabled]="isUpdatingStatus"
+                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold border border-slate-800 transition-all active:scale-95 flex items-center gap-2 text-xs shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                  <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                </svg>
+                <span>Marcar Listo para Retiro</span>
+                <span
+                  class="ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold"
+                  [ngClass]="areAllItemsChecked() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'"
+                  [title]="areAllItemsChecked() ? 'Picking 100% verificado' : 'Picking incompleto'"
+                >
+                  {{ checkedItemsCount() }}/{{ (order.items || []).length }}
+                </span>
+              </button>
+            }
+
+            <!-- PREPARING + Delivery -> Despachar / En Camino -->
+            @else if (order.status === 'preparing' && !isPickup()) {
+              <button
+                type="button"
+                (click)="openConfirmModal('shipped')"
+                [disabled]="isUpdatingStatus"
+                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold border border-slate-800 transition-all active:scale-95 flex items-center gap-2 text-xs shadow-2xs cursor-pointer disabled:opacity-50"
+              >
+                <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                  <path d="M15 18H9"/>
+                  <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                  <circle cx="7" cy="18" r="2"/>
+                  <circle cx="17" cy="18" r="2"/>
+                </svg>
+                <span>Despachar / En Camino</span>
+                <span
+                  class="ml-1 px-1.5 py-0.5 rounded-md text-[10px] font-mono font-bold"
+                  [ngClass]="areAllItemsChecked() ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-amber-500/20 text-amber-300 border border-amber-500/30'"
+                  [title]="areAllItemsChecked() ? 'Picking 100% verificado' : 'Picking incompleto'"
+                >
+                  {{ checkedItemsCount() }}/{{ (order.items || []).length }}
+                </span>
+              </button>
+            }
+
+            <!-- READY_FOR_PICKUP -> Validar Código y Entregar -->
+            @else if (order.status === 'ready_for_pickup') {
+              <button
+                type="button"
                 (click)="openConfirmModal('pickup_deliver')"
                 [disabled]="isUpdatingStatus"
-                class="px-4 py-2.5 rounded-2xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs transition active:scale-95 flex items-center gap-2 shadow-lg shadow-purple-600/20 disabled:opacity-50 cursor-pointer"
+                class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-black text-white font-bold border border-slate-800 transition-all active:scale-95 flex items-center gap-2 text-xs shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                <span>🔑</span>
+                <svg class="w-4 h-4 text-slate-300" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="11" cy="11" r="8"/>
+                  <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
                 <span>Validar Código y Entregar</span>
               </button>
-            } @else if (order.status === 'shipped') {
+            }
+
+            <!-- SHIPPED -> Confirmar Entrega en Domicilio -->
+            @else if (order.status === 'shipped') {
               <button
+                type="button"
                 (click)="openConfirmModal('delivery_deliver')"
                 [disabled]="isUpdatingStatus"
-                class="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs transition active:scale-95 flex items-center gap-2 shadow-lg shadow-emerald-600/20 disabled:opacity-50 cursor-pointer"
+                class="px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold border border-emerald-200/80 transition-all active:scale-95 flex items-center gap-2 text-xs shadow-2xs cursor-pointer disabled:opacity-50"
               >
-                <span>✅</span>
+                <svg class="w-4 h-4 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12 5 5L20 7"/>
+                </svg>
                 <span>Confirmar Entrega en Domicilio</span>
               </button>
-            } @else if (order.status === 'delivered') {
-              <div class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-black">
-                <span>🎉</span>
+            }
+
+            <!-- DELIVERED -> Completado -->
+            @else if (order.status === 'delivered') {
+              <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-50 border border-emerald-200/80 text-emerald-800 text-xs font-bold">
+                <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m5 12 5 5L20 7"/>
+                </svg>
                 <span>Orden Completada y Entregada</span>
               </div>
             }
+
           </div>
 
         </div>
       </div>
 
-      <!-- Tarjetas de Información: Cliente, Modalidad y Pago -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 sm:p-8 bg-gray-50/40 border-b border-gray-100">
+      <!-- ── 4. TARJETAS DE INFORMACIÓN: CLIENTE, DESTINO Y PAGO ──────────────── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 sm:p-8 bg-slate-50/50 border-b border-slate-100">
         
         <!-- CARD 1: DATOS DEL CLIENTE -->
-        <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 border-b border-gray-100 pb-2.5">
-            <span class="text-base">👤</span>
-            <h3 class="text-xs font-black text-gray-900 uppercase tracking-wider">Datos del Cliente</h3>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5">
+          <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-700 flex items-center justify-center">
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="8" r="5"/>
+                  <path d="M20 21a8 8 0 1 0-16 0"/>
+                </svg>
+              </div>
+              <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Datos del Cliente</h3>
+            </div>
+            <span class="w-6 h-6 rounded-full bg-slate-900 text-white font-black text-[10px] flex items-center justify-center">
+              {{ clientInitials }}
+            </span>
           </div>
 
           <div class="space-y-2 text-xs">
             <div>
-              <span class="text-gray-400 block text-[10px] uppercase font-bold">Nombre Completo:</span>
-              <p class="font-black text-gray-900 text-sm mt-0.5">{{ getClientName() }}</p>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Nombre Completo:</span>
+              <p class="font-black text-slate-900 text-sm mt-0.5">{{ getClientName() }}</p>
             </div>
 
             <div>
-              <span class="text-gray-400 block text-[10px] uppercase font-bold">Correo Electrónico:</span>
-              <p class="font-mono font-bold text-purple-700 mt-0.5">{{ getClientEmail() }}</p>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Correo Electrónico:</span>
+              <p class="font-mono font-bold text-slate-700 mt-0.5 truncate">{{ getClientEmail() }}</p>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 pt-1">
+            <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100">
               <div>
-                <span class="text-gray-400 block text-[10px] uppercase font-bold">DNI / Documento:</span>
-                <p class="font-mono font-bold text-gray-800 mt-0.5">
-                  {{ getClientDni() ? getClientDni() : 'No especificado' }}
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">DNI / Documento:</span>
+                <p class="font-mono font-bold text-slate-800 mt-0.5">
+                  {{ getClientDni() || 'No especificado' }}
                 </p>
               </div>
 
               <div>
-                <span class="text-gray-400 block text-[10px] uppercase font-bold">Teléfono:</span>
-                <p class="font-bold text-gray-800 mt-0.5">
-                  {{ getClientPhone() ? getClientPhone() : 'No registrado' }}
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Teléfono:</span>
+                <p class="font-bold text-slate-800 mt-0.5">
+                  {{ getClientPhone() || 'No registrado' }}
                 </p>
               </div>
             </div>
+
+            @if (whatsAppLink) {
+              <div class="pt-1">
+                <a
+                  [href]="whatsAppLink"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/80 font-bold text-xs transition"
+                >
+                  <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                  </svg>
+                  <span>Contactar por WhatsApp</span>
+                </a>
+              </div>
+            }
           </div>
         </div>
 
         <!-- CARD 2: DESTINO Y MODALIDAD -->
-        <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 border-b border-gray-100 pb-2.5">
-            <span class="text-base">{{ isPickup() ? '🏪' : '🚚' }}</span>
-            <h3 class="text-xs font-black text-gray-900 uppercase tracking-wider">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+            <div class="w-7 h-7 rounded-lg flex items-center justify-center" [class.bg-rose-50]="isPickup()" [class.text-rose-700]="isPickup()" [class.bg-blue-50]="!isPickup()" [class.text-blue-700]="!isPickup()">
+              @if (isPickup()) {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                  <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+                </svg>
+              } @else {
+                <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+                  <path d="M15 18H9"/>
+                  <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+                  <circle cx="7" cy="18" r="2"/>
+                  <circle cx="17" cy="18" r="2"/>
+                </svg>
+              }
+            </div>
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">
               {{ isPickup() ? 'Sucursal de Retiro' : 'Dirección de Entrega' }}
             </h3>
           </div>
@@ -228,90 +384,142 @@
           <div class="space-y-2 text-xs">
             @if (isPickup()) {
               <div>
-                <span class="text-gray-400 block text-[10px] uppercase font-bold">Tienda Física:</span>
-                <p class="font-black text-purple-900 text-sm mt-0.5">{{ order.pickupStore?.name || 'Sucursal Principal' }}</p>
-                <p class="text-gray-600 text-[11px] mt-0.5">{{ order.pickupStore?.address || 'Dirección registrada en tienda' }}</p>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Tienda Física:</span>
+                <p class="font-black text-slate-900 text-sm mt-0.5">{{ order.pickupStore?.name || 'Sucursal Principal' }}</p>
+                <p class="text-slate-600 text-[11px] mt-0.5">{{ order.pickupStore?.address || 'Dirección registrada en tienda' }}</p>
               </div>
 
               @if (order.pickupCode) {
-                <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200 mt-2">
-                  <span class="text-purple-600 block text-[10px] uppercase font-black tracking-wider">Código de Retiro del Cliente:</span>
-                  <p class="font-mono font-black text-purple-800 text-base tracking-widest mt-0.5">
-                    {{ order.pickupCode }}
-                  </p>
+                <div class="bg-rose-50/80 p-3 rounded-2xl border border-rose-200 mt-2 flex items-center justify-between">
+                  <div>
+                    <span class="text-rose-600 block text-[10px] uppercase font-black tracking-wider">Código de Retiro:</span>
+                    <p class="font-mono font-black text-rose-900 text-base tracking-widest mt-0.5">
+                      {{ order.pickupCode }}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    (click)="copyToClipboard(order.pickupCode, 'code')"
+                    class="px-2.5 py-1 rounded-lg bg-white border border-rose-200 text-xs font-bold text-rose-700 hover:text-rose-950 transition cursor-pointer"
+                    title="Copiar código"
+                  >
+                    {{ copiedPickupCode ? 'Copiado' : 'Copiar' }}
+                  </button>
                 </div>
               }
 
-              <div class="pt-1 text-[11px] text-gray-500">
-                ⚡ <strong>Disponibilidad:</strong> Retiro disponible hoy mismo.
+              <div class="pt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span><strong>Disponibilidad:</strong> Retiro habilitado en horario regular de tienda.</span>
               </div>
             } @else {
               <div>
-                <span class="text-gray-400 block text-[10px] uppercase font-bold">Destino:</span>
-                <p class="font-black text-gray-900 mt-0.5">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Destino:</span>
+                <p class="font-black text-slate-900 mt-0.5">
                   {{ order.shippingAddress?.street }} {{ order.shippingAddress?.streetNumber }}
                   @if (order.shippingAddress?.apartment) {
                     · Dpto {{ order.shippingAddress?.apartment }}
                   }
                 </p>
-                <p class="text-gray-600 text-[11px] mt-0.5">
+                <p class="text-slate-600 text-[11px] mt-0.5">
                   {{ order.shippingAddress?.district }}, {{ order.shippingAddress?.province }}, {{ order.shippingAddress?.department }}
                 </p>
               </div>
 
               @if (order.shippingAddress?.references) {
                 <div>
-                  <span class="text-gray-400 block text-[10px] uppercase font-bold">Referencia:</span>
-                  <p class="text-gray-700 italic text-[11px] mt-0.5">{{ order.shippingAddress?.references }}</p>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Referencia:</span>
+                  <p class="text-slate-600 italic text-[11px] mt-0.5">{{ order.shippingAddress?.references }}</p>
                 </div>
               }
 
-              <div class="pt-1 text-[11px] text-gray-500">
-                📦 <strong>Plazo de Entrega:</strong>
-                {{ order.estimatedDays ? order.estimatedDays + ' días hábiles' : 'Estándar (2 a 3 días)' }}
+              <div class="pt-1 text-[11px] text-slate-500 flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-blue-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+                </svg>
+                <span><strong>Plazo estimado:</strong> {{ order.estimatedDays ? order.estimatedDays + ' días hábiles' : 'Estándar (2 a 3 días)' }}</span>
               </div>
             }
           </div>
         </div>
 
         <!-- CARD 3: FINANCIERO Y PAGO -->
-        <div class="bg-white p-5 rounded-2xl border border-gray-200/80 shadow-2xs space-y-3">
-          <div class="flex items-center gap-2 border-b border-gray-100 pb-2.5">
-            <span class="text-base">💳</span>
-            <h3 class="text-xs font-black text-gray-900 uppercase tracking-wider">Detalles de Pago</h3>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5">
+          <div class="flex items-center gap-2 border-b border-slate-100 pb-2.5">
+            <div class="w-7 h-7 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center">
+              <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect width="20" height="14" x="2" y="5" rx="2"/>
+                <line x1="2" y1="10" x2="22" y2="10"/>
+              </svg>
+            </div>
+            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Detalles de Pago</h3>
           </div>
 
           <div class="space-y-2 text-xs">
             <div>
-              <span class="text-gray-400 block text-[10px] uppercase font-bold">Método:</span>
-              <p class="font-black text-gray-900 mt-0.5 capitalize">
-                {{ order.paymentMethod === 'card' ? '💳 Tarjeta (Izipay)' : (order.paymentMethod === 'yape' ? '📱 Yape' : '💵 Efectivo') }}
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Método de Pago:</span>
+              <p class="font-black text-slate-900 mt-0.5 capitalize flex items-center gap-1.5">
+                @if (order.paymentMethod === 'card') {
+                  <svg class="w-3.5 h-3.5 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="20" height="14" x="2" y="5" rx="2"/>
+                    <line x1="2" y1="10" x2="22" y2="10"/>
+                  </svg>
+                  <span>Tarjeta Online (Izipay)</span>
+                } @else if (order.paymentMethod === 'yape') {
+                  <svg class="w-3.5 h-3.5 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect width="14" height="20" x="5" y="2" rx="2" ry="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                  </svg>
+                  <span>Billetera Digital (Yape)</span>
+                } @else {
+                  <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="1" x2="12" y2="23"/>
+                    <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                  </svg>
+                  <span>Efectivo Contraentrega</span>
+                }
               </p>
             </div>
 
             <div>
-              <span class="text-gray-400 block text-[10px] uppercase font-bold">Estado de Pago:</span>
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Estado de Pago:</span>
               <div class="flex items-center gap-2 mt-0.5">
-                <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
-                  [ngClass]="order.paymentStatus === 'paid' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'">
-                  {{ order.paymentStatus === 'paid' ? '✅ PAGADO' : '❌ NO COMPLETADO / RECHAZADO' }}
+                <span
+                  class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                  [ngClass]="order.paymentStatus === 'paid' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-rose-50 text-rose-800 border border-rose-200'"
+                >
+                  @if (order.paymentStatus === 'paid') {
+                    <svg class="w-3 h-3 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                    <span>PAGADO</span>
+                  } @else {
+                    <svg class="w-3 h-3 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                      <line x1="18" y1="6" x2="6" y2="18"/>
+                      <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                    <span>NO COMPLETADO</span>
+                  }
                 </span>
+
                 @if (order.paidAt) {
-                  <span class="text-[10px] text-gray-400 font-mono">{{ order.paidAt | date:'HH:mm dd/MM' }}</span>
+                  <span class="text-[10px] text-slate-400 font-mono">{{ order.paidAt | date:'HH:mm dd/MM' }}</span>
                 }
               </div>
             </div>
 
             @if (order.gatewayRef) {
               <div>
-                <span class="text-gray-400 block text-[10px] uppercase font-bold">Ref. Pasarela:</span>
-                <p class="font-mono text-[11px] text-gray-600 mt-0.5">{{ order.gatewayRef }}</p>
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Ref. Pasarela:</span>
+                <p class="font-mono text-[11px] text-slate-600 mt-0.5">{{ order.gatewayRef }}</p>
               </div>
             }
 
             @if (order.cancelReason) {
-              <div class="bg-rose-50 p-2 rounded-xl border border-rose-200">
-                <span class="text-rose-600 block text-[10px] uppercase font-bold">Motivo:</span>
+              <div class="bg-rose-50 p-2.5 rounded-xl border border-rose-200 mt-1">
+                <span class="text-rose-600 block text-[10px] uppercase font-bold">Motivo de Rechazo:</span>
                 <p class="text-rose-700 text-[11px] font-medium mt-0.5">{{ order.cancelReason }}</p>
               </div>
             }
@@ -320,84 +528,143 @@
 
       </div>
 
-      <!-- TABLA DE PRODUCTOS A PREPARAR (HOJA DE PICKING) -->
+      <!-- ── 5. TABLA DE ARTÍCULOS & HOJA DE PICKING ──────────────────────────── -->
       <div class="p-6 sm:p-8 space-y-4">
-        <div class="flex items-center justify-between">
+        
+        <div class="flex items-center justify-between flex-wrap gap-2">
           <div>
-            <h3 class="text-sm font-black text-gray-900 tracking-tight">Artículos del Pedido</h3>
-            <p class="text-xs text-gray-500 font-medium">Verifica las tallas, colores y cantidades para el empaquetado.</p>
+            <h3 class="text-sm font-black text-slate-900 tracking-tight">Artículos del Pedido</h3>
+            <p class="text-xs text-slate-500 font-medium">Verifica las tallas, colores y cantidades para el empaquetado y control de stock.</p>
           </div>
-          <span class="text-xs font-bold bg-gray-100 text-gray-700 px-3 py-1 rounded-full">
+          <span class="text-xs font-bold bg-slate-100 text-slate-700 px-3 py-1 rounded-full border border-slate-200">
             {{ totalItems() }} producto(s) en total
           </span>
         </div>
 
+        <!-- Checklist de Picking (cuando la orden está en preparación) -->
         @if (order.status === 'preparing') {
-          <div class="mb-4 p-3.5 rounded-2xl bg-amber-50/90 border border-amber-200/80 text-amber-900 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 no-print">
-            <div class="flex items-center gap-2.5">
-              <span class="text-lg">📋</span>
-              <div>
-                <span class="font-black">Checklist de Picking:</span>
-                <span class="text-amber-800 ml-1">Verifica cada prenda en el estante y márcala en la casilla para poder avanzar la orden.</span>
+          <div class="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 no-print">
+            <div class="space-y-1 flex-1">
+              <div class="flex items-center gap-2">
+                <svg class="w-4 h-4 text-amber-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m9 11 3 3L22 4"/>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                </svg>
+                <span class="font-black text-amber-900">Checklist de Picking en Almacén:</span>
+              </div>
+              <p class="text-amber-800 text-[11px]">
+                Marca cada prenda recolectada del estante para garantizar la exactitud del despacho.
+              </p>
+              
+              <!-- Barra de Progreso Visual -->
+              <div class="w-full bg-amber-200/60 rounded-full h-2 mt-2 overflow-hidden">
+                <div
+                  class="bg-amber-600 h-2 rounded-full transition-all duration-300"
+                  [style.width.%]="pickingProgressPercent"
+                ></div>
               </div>
             </div>
-            <div class="font-bold font-mono text-[11px] px-3 py-1 rounded-xl self-start sm:self-auto transition-colors" [ngClass]="areAllItemsChecked() ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-200/80 text-amber-900 border border-amber-300'">
-              {{ checkedItemsCount() }} / {{ (order.items || []).length }} chequeados {{ areAllItemsChecked() ? '✓' : '' }}
+
+            <div class="flex items-center gap-2 self-start sm:self-auto shrink-0">
+              <span class="font-bold font-mono text-[11px] px-3 py-1.5 rounded-xl border transition-colors" [ngClass]="areAllItemsChecked() ? 'bg-emerald-100 text-emerald-800 border-emerald-300' : 'bg-amber-100 text-amber-900 border-amber-300'">
+                {{ checkedItemsCount() }} / {{ (order.items || []).length }} listos ({{ pickingProgressPercent }}%)
+              </span>
+              <button
+                type="button"
+                (click)="toggleAllItemsCheck()"
+                class="px-2.5 py-1.5 rounded-xl bg-white border border-amber-300 text-amber-900 hover:bg-amber-100 font-bold text-[11px] transition cursor-pointer"
+              >
+                {{ areAllItemsChecked() ? 'Desmarcar' : 'Marcar todo' }}
+              </button>
             </div>
           </div>
         }
-        <div class="overflow-x-auto border border-gray-200 rounded-2xl">
+
+        <!-- Tabla de Productos -->
+        <div class="overflow-x-auto border border-slate-200/80 rounded-2xl">
           <table class="w-full text-left text-xs">
-            <thead class="bg-gray-50 text-gray-500 font-bold uppercase tracking-wider text-[10px] border-b border-gray-200">
+            <thead class="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider text-[10px] border-b border-slate-200">
               <tr>
                 <th class="py-3.5 px-4 w-12 text-center">#</th>
-                <th class="py-3.5 px-4">Producto / SKU</th>
+                <th class="py-3.5 px-4">Prenda / Producto</th>
                 <th class="py-3.5 px-4">Variante (Color - Talla)</th>
                 <th class="py-3.5 px-4 text-center">Cant.</th>
                 <th class="py-3.5 px-4 text-right">P. Unitario</th>
                 <th class="py-3.5 px-4 text-right">Desc.</th>
                 <th class="py-3.5 px-4 text-right">Subtotal</th>
-                <th class="py-3.5 px-4 text-center no-print">Chequeo</th>
+                <th class="py-3.5 px-4 text-center no-print">Picking</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 font-medium text-gray-700">
+            <tbody class="divide-y divide-slate-100 font-medium text-slate-700">
               @for (item of order.items; track item.variantId; let idx = $index) {
-                <tr class="hover:bg-gray-50/50 transition">
-                  <td class="py-4 px-4 text-center font-bold text-gray-400">{{ idx + 1 }}</td>
-                  <td class="py-4 px-4">
-                    <p class="font-black text-gray-900 text-sm leading-tight">{{ item.productName }}</p>
-                    <p class="text-[11px] text-gray-400 font-mono mt-0.5">SKU: {{ item.sku }}</p>
+                <tr class="hover:bg-slate-50/50 transition">
+                  <td class="py-3 px-4 text-center font-bold text-slate-400">{{ idx + 1 }}</td>
+                  <td class="py-3 px-4">
+                    <div class="flex items-center gap-3.5">
+                      <!-- Fotografía / Miniatura de la Prenda -->
+                      <div class="relative w-14 h-14 rounded-2xl overflow-hidden bg-slate-100 border border-slate-200/80 shadow-2xs shrink-0 group">
+                        @if (item.thumbnail) {
+                          <img
+                            [src]="item.thumbnail | cloudinary:'w_200,h_200,c_fill,q_auto,f_auto'"
+                            [alt]="item.productName"
+                            class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105 cursor-pointer"
+                            (click)="openImagePreview(item.thumbnail, item.productName)"
+                            title="Click para ampliar imagen"
+                            (error)="$event.target.style.display = 'none'"
+                          />
+                        } @else {
+                          <div class="w-full h-full flex flex-col items-center justify-center text-slate-300 p-2">
+                            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                              <rect width="18" height="18" x="3" y="3" rx="2" ry="2"/>
+                              <circle cx="9" cy="9" r="2"/>
+                              <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>
+                            </svg>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Información y SKU -->
+                      <div class="min-w-0">
+                        <p class="font-black text-slate-900 text-sm leading-snug">{{ item.productName }}</p>
+                        <div class="flex items-center gap-1.5 mt-1">
+                          <span class="text-[10px] text-slate-400 font-mono uppercase font-bold">SKU:</span>
+                          <span class="text-[11px] text-slate-700 font-mono font-bold bg-slate-100 px-2 py-0.5 rounded-md border border-slate-200/60">{{ item.sku }}</span>
+                        </div>
+                      </div>
+                    </div>
                   </td>
-                  <td class="py-4 px-4">
+                  <td class="py-3 px-4">
                     <div class="flex items-center gap-2">
-                      <span class="px-2 py-0.5 rounded-md bg-gray-100 text-gray-800 font-bold text-[11px] border border-gray-200">
-                        {{ item.color }}
+                      <span class="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-800 font-bold text-[11px] border border-slate-200">
+                        {{ item.color?.colorName || item.color || '-' }}
                       </span>
-                      <span class="px-2 py-0.5 rounded-md bg-purple-50 text-purple-700 font-black text-[11px] border border-purple-200">
-                        {{ item.size }}
+                      <span class="px-2.5 py-1 rounded-lg bg-slate-900 text-white font-black text-[11px]">
+                        {{ item.size?.size || item.size || '-' }}
                       </span>
                     </div>
                   </td>
-                  <td class="py-4 px-4 text-center font-black text-gray-900 text-sm">
-                    {{ item.quantity }}
+                  <td class="py-3 px-4 text-center">
+                    <span class="inline-block px-2.5 py-0.5 rounded-lg bg-slate-100 font-black text-slate-900 text-xs">
+                      {{ item.quantity }}
+                    </span>
                   </td>
-                  <td class="py-4 px-4 text-right font-mono text-gray-600">
+                  <td class="py-3 px-4 text-right font-mono text-slate-600">
                     {{ item.unitPrice | solCurrency }}
                   </td>
-                  <td class="py-4 px-4 text-right text-rose-600 font-bold">
+                  <td class="py-3 px-4 text-right text-slate-900 font-bold font-mono">
                     {{ item.discount > 0 ? '-' + item.discount + '%' : '-' }}
                   </td>
-                  <td class="py-4 px-4 text-right font-black text-gray-900 text-sm">
+                  <td class="py-3 px-4 text-right font-black text-slate-900 text-sm">
                     {{ item.subtotal | solCurrency }}
                   </td>
-                  <td class="py-4 px-4 text-center no-print">
+                  <td class="py-3 px-4 text-center no-print">
                     <input
                       type="checkbox"
                       [checked]="isItemChecked(item.variantId)"
                       [disabled]="order.status !== 'preparing'"
                       (change)="toggleItemCheck(item.variantId)"
-                      class="w-4 h-4 rounded text-purple-600 focus:ring-purple-500 border-gray-300 cursor-pointer disabled:cursor-not-allowed disabled:opacity-75 transition"
-                      [title]="order.status === 'preparing' ? 'Marcar artículo como verificado en picking' : 'Verificado en picking'"
+                      class="w-4 h-4 rounded text-slate-900 focus:ring-slate-700 border-slate-300 cursor-pointer disabled:cursor-not-allowed disabled:opacity-75 transition"
+                      [title]="order.status === 'preparing' ? 'Marcar prenda como chequeada en picking' : 'Prenda lista'"
                     />
                   </td>
                 </tr>
@@ -406,48 +673,53 @@
           </table>
         </div>
 
-        <!-- Desglose Financiero -->
-        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-4 border-t border-gray-100">
-          <div class="text-xs text-gray-400 space-y-1">
-            <p>Moorea E-Commerce · Sistema de Gestión y Preparación de Pedidos</p>
-            <p class="font-mono text-[10px]">ID de Registro: {{ order._id }}</p>
+        <!-- ── 6. DESGLOSE FINANCIERO Y FIRMAS DE IMPRESIÓN ────────────────────── -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pt-4 border-t border-slate-100">
+          
+          <div class="text-xs text-slate-400 space-y-1">
+            <p class="font-bold text-slate-600">Moorea E-Commerce Suite · Logística & Operaciones</p>
+            <p class="font-mono text-[10px]">ID de Registro del Sistema: {{ order._id }}</p>
           </div>
 
-          <div class="w-full sm:w-72 space-y-2 text-xs bg-gray-50/80 p-4 rounded-2xl border border-gray-200/80">
-            <div class="flex justify-between text-gray-500">
-              <span>Subtotal:</span>
-              <span class="font-mono font-bold text-gray-800">{{ order.pricing.subtotalBeforeDiscount | solCurrency }}</span>
+          <div class="w-full sm:w-80 space-y-2 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-200/80 shadow-2xs">
+            <div class="flex justify-between text-slate-500">
+              <span>Subtotal artículos:</span>
+              <span class="font-mono font-bold text-slate-800">{{ order.pricing.subtotalBeforeDiscount | solCurrency }}</span>
             </div>
+            
             @if (order.pricing.discount > 0) {
               <div class="flex justify-between text-rose-600 font-bold">
                 <span>Descuento aplicado:</span>
                 <span class="font-mono">-{{ order.pricing.discount | solCurrency }}</span>
               </div>
             }
-            <div class="flex justify-between text-gray-500">
+
+            <div class="flex justify-between text-slate-500">
               <span>Costo de Envío:</span>
-              <span class="font-mono font-bold text-gray-800">
+              <span class="font-mono font-bold" [class.text-emerald-700]="order.pricing.shippingCost === 0" [class.text-slate-800]="order.pricing.shippingCost > 0">
                 {{ order.pricing.shippingCost > 0 ? (order.pricing.shippingCost | solCurrency) : 'Gratis (S/ 0.00)' }}
               </span>
             </div>
-            <div class="flex justify-between pt-2 border-t border-gray-200 text-base font-black text-gray-900">
-              <span>Total Pagado:</span>
-              <span class="text-purple-700">{{ order.pricing.total | solCurrency }}</span>
+
+            <div class="flex justify-between pt-2 border-t border-slate-200 text-base font-black text-slate-900">
+              <span>Total Liquidado:</span>
+              <span class="text-slate-950">{{ order.pricing.total | solCurrency }}</span>
             </div>
           </div>
+
         </div>
 
         <!-- Sección de Firmas (Visible únicamente al Imprimir) -->
-        <div class="hidden print:grid grid-cols-2 gap-12 pt-16 mt-12 border-t border-gray-300 text-xs text-center">
+        <div class="hidden print:grid grid-cols-2 gap-12 pt-16 mt-12 border-t border-slate-300 text-xs text-center">
           <div>
-            <div class="border-b border-gray-400 pb-12"></div>
-            <p class="font-bold text-gray-900 mt-2">Firma del Responsable de Empaque</p>
-            <p class="text-[10px] text-gray-500">Almacén / Tienda Moorea</p>
+            <div class="border-b border-slate-400 pb-12"></div>
+            <p class="font-bold text-slate-900 mt-2">Firma del Responsable de Almacén</p>
+            <p class="text-[10px] text-slate-500">Moorea Business Operations</p>
           </div>
           <div>
-            <div class="border-b border-gray-400 pb-12"></div>
-            <p class="font-bold text-gray-900 mt-2">Firma del Cliente o Repartidor</p>
-            <p class="text-[10px] text-gray-500">Recepción conforme de artículos</p>
+            <div class="border-b border-slate-400 pb-12"></div>
+            <p class="font-bold text-slate-900 mt-2">Firma de Recepción Conforme</p>
+            <p class="text-[10px] text-slate-500">Cliente / Repartidor Courier</p>
           </div>
         </div>
 
@@ -457,301 +729,464 @@
 
   }
 
+</div>
 
-      <!-- ═══════════════════════════════════════════════════════════════════════ -->
-      <!-- MODALES DE CONFIRMACIÓN RIGUROSA DE ETAPAS OPERATIVAS                    -->
-      <!-- ═══════════════════════════════════════════════════════════════════════ -->
-      @if (confirmModalType && order) {
-        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in no-print">
-          <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-7 border border-gray-100 overflow-hidden space-y-5">
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+<!-- MODALES DE CONFIRMACIÓN OPERATIVA CON GLASSMORPHISM                         -->
+<!-- ═══════════════════════════════════════════════════════════════════════════ -->
+@if (confirmModalType && order) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-md no-print">
+    <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full p-6 sm:p-8 border border-slate-100 animate-modal-enter space-y-5">
 
-            <!-- MODAL: PREPARING -->
-            @if (confirmModalType === 'preparing') {
-              <div class="text-center space-y-3">
-                <div class="w-14 h-14 rounded-2xl bg-orange-100 text-orange-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
-                  🍳
-                </div>
-                <h3 class="text-lg font-black text-gray-900">¿Iniciar Preparación de este Pedido?</h3>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                  La orden <strong class="text-gray-900">{{ order.invoiceNumber }}</strong> pasará a estado <strong>En Preparación</strong>. 
-                  El personal de almacén procederá con el picking y empaque de los artículos.
-                </p>
-              </div>
-
-              <div class="bg-orange-50/60 rounded-2xl p-4 border border-orange-200/60 text-xs space-y-2">
-                <div class="flex items-center justify-between font-bold text-orange-900 pb-1 border-b border-orange-200/50">
-                  <span>Prendas a preparar:</span>
-                  <span>{{ totalItems() }} unidades</span>
-                </div>
-                <ul class="space-y-1 text-gray-600 max-h-32 overflow-y-auto pr-1">
-                  @for (item of order.items; track item.variantId) {
-                    <li class="flex items-center justify-between text-[11px]">
-                      <span class="truncate max-w-[200px]">{{ item.quantity }}x {{ item.productName }}</span>
-                      <span class="font-bold text-gray-800">{{ item.size?.size || '-' }} / {{ item.color?.colorName || '-' }}</span>
-                    </li>
-                  }
-                </ul>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  (click)="closeConfirmModal()"
-                  [disabled]="isProcessingAction"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  (click)="executeConfirmAction()"
-                  [disabled]="isProcessingAction"
-                  class="px-5 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-black text-xs shadow-md shadow-orange-600/20 transition active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  @if (isProcessingAction) {
-                    <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  }
-                  <span>Confirmar e Iniciar</span>
-                </button>
-              </div>
-            }
-
-            <!-- MODAL: READY FOR PICKUP -->
-            @if (confirmModalType === 'ready_for_pickup') {
-              <div class="text-center space-y-3">
-                <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
-                  🏪
-                </div>
-                <h3 class="text-lg font-black text-gray-900">¿Marcar Pedido Listo en Tienda?</h3>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                  Confirma que los productos han sido empacados y rotulados con el número 
-                  <strong class="text-gray-900">{{ order.invoiceNumber }}</strong> y están listos en la sucursal 
-                  <strong class="text-purple-700">{{ order.pickupStore?.name }}</strong>.
-                </p>
-              </div>
-
-              <div class="bg-purple-50/60 rounded-2xl p-4 border border-purple-200/60 text-xs space-y-1.5 text-purple-900">
-                <div class="flex items-center gap-2 font-bold">
-                  <span>📍</span>
-                  <span>Sucursal de entrega:</span>
-                </div>
-                <p class="text-xs text-gray-600 font-medium pl-6">{{ order.pickupStore?.address }}</p>
-                <p class="text-[11px] text-purple-700 pl-6 mt-1 font-semibold">
-                  ℹ️ El cliente podrá recoger su compra presentando su código de retiro.
-                </p>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  (click)="closeConfirmModal()"
-                  [disabled]="isProcessingAction"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition cursor-pointer"
-                >
-                  Volver a revisar
-                </button>
-                <button
-                  type="button"
-                  (click)="executeConfirmAction()"
-                  [disabled]="isProcessingAction"
-                  class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-600/20 transition active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  @if (isProcessingAction) {
-                    <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  }
-                  <span>Confirmar Listo en Tienda</span>
-                </button>
-              </div>
-            }
-
-            <!-- MODAL: SHIPPED -->
-            @if (confirmModalType === 'shipped') {
-              <div class="text-center space-y-3">
-                <div class="w-14 h-14 rounded-2xl bg-blue-100 text-blue-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
-                  🚚
-                </div>
-                <h3 class="text-lg font-black text-gray-900">¿Confirmar Despacho a Domicilio?</h3>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                  El pedido <strong class="text-gray-900">{{ order.invoiceNumber }}</strong> pasará a estado <strong>En Camino / Despachado</strong>.
-                  Confirma que el paquete fue entregado al courier o repartidor encargado.
-                </p>
-              </div>
-
-              <div class="bg-blue-50/60 rounded-2xl p-4 border border-blue-200/60 text-xs space-y-2">
-                <div class="font-bold text-blue-900">Dirección de Destino:</div>
-                <p class="text-xs text-gray-700">
-                  {{ order.shippingAddress?.street }} {{ order.shippingAddress?.streetNumber }},
-                  {{ order.shippingAddress?.district }}, {{ order.shippingAddress?.province }}
-                </p>
-                @if (order.shippingAddress?.references) {
-                  <p class="text-[11px] text-gray-500 italic">Ref: {{ order.shippingAddress?.references }}</p>
-                }
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  (click)="closeConfirmModal()"
-                  [disabled]="isProcessingAction"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  (click)="executeConfirmAction()"
-                  [disabled]="isProcessingAction"
-                  class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-black text-xs shadow-md shadow-blue-600/20 transition active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  @if (isProcessingAction) {
-                    <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  }
-                  <span>Confirmar Despacho</span>
-                </button>
-              </div>
-            }
-
-            <!-- MODAL: PICKUP DELIVER (PIN / Código de Retiro) -->
-            @if (confirmModalType === 'pickup_deliver') {
-              <div class="text-center space-y-3">
-                <div class="w-14 h-14 rounded-2xl bg-purple-100 text-purple-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
-                  🔑
-                </div>
-                <h3 class="text-lg font-black text-gray-900">Validar Retiro en Tienda</h3>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                  Solicita al cliente su <strong>código de retiro</strong> (6 caracteres alfanuméricos) enviado a su correo o mostrado en su portal.
-                </p>
-              </div>
-
-              <div class="space-y-3">
-                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wider">
-                  Código de Retiro:
-                </label>
-                <input
-                  type="text"
-                  [(ngModel)]="verificationCodeInput"
-                  placeholder="Ej. PKP-8F3X2K"
-                  maxlength="20"
-                  class="w-full px-4 py-3 rounded-2xl border-2 border-purple-200 focus:border-purple-600 focus:outline-hidden text-center font-mono font-black text-xl tracking-widest uppercase bg-purple-50/30 text-purple-900 placeholder:text-gray-300 transition"
-                  (keyup.enter)="executeConfirmAction()"
-                  autofocus
-                />
-
-                @if (pickupVerificationError) {
-                  <div class="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-semibold flex items-center gap-2">
-                    <span>⚠️</span>
-                    <span>{{ pickupVerificationError }}</span>
-                  </div>
-                }
-
-                <div class="p-3 bg-gray-50 rounded-xl border border-gray-100 text-[11px] text-gray-500 space-y-1">
-                  <div class="flex justify-between">
-                    <span>Cliente:</span>
-                    <span class="font-bold text-gray-700">{{ getClientName() }}</span>
-                  </div>
-                  @if (getClientDni()) {
-                    <div class="flex justify-between">
-                      <span>DNI:</span>
-                      <span class="font-mono font-bold text-gray-700">{{ getClientDni() }}</span>
-                    </div>
-                  }
-                  <div class="flex justify-between">
-                    <span>Orden:</span>
-                    <span class="font-mono font-bold text-purple-700">{{ order.invoiceNumber }}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  (click)="closeConfirmModal()"
-                  [disabled]="isProcessingAction"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  (click)="executeConfirmAction()"
-                  [disabled]="isProcessingAction || !verificationCodeInput.trim()"
-                  class="px-5 py-2.5 rounded-xl bg-purple-600 hover:bg-purple-700 text-white font-black text-xs shadow-md shadow-purple-600/20 transition active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  @if (isProcessingAction) {
-                    <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  }
-                  <span>Verificar y Entregar</span>
-                </button>
-              </div>
-            }
-
-            <!-- MODAL: DELIVERY DELIVER (Recepción en Domicilio) -->
-            @if (confirmModalType === 'delivery_deliver') {
-              <div class="text-center space-y-3">
-                <div class="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-3xl mx-auto shadow-inner">
-                  ✅
-                </div>
-                <h3 class="text-lg font-black text-gray-900">Registrar Entrega en Domicilio</h3>
-                <p class="text-xs text-gray-500 leading-relaxed">
-                  Confirma la recepción del paquete en la dirección del cliente. Esta acción marcará la orden como <strong>Entregada</strong> definitivamente.
-                </p>
-              </div>
-
-              <div class="space-y-3 text-xs">
-                <div>
-                  <label class="block font-bold text-gray-700 mb-1">Nombre de quien recibe:</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="deliveryRecipientName"
-                    placeholder="Nombre completo"
-                    class="w-full px-3.5 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-hidden font-medium text-xs text-gray-800"
-                  />
-                </div>
-                <div>
-                  <label class="block font-bold text-gray-700 mb-1">DNI de quien recibe (opcional):</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="deliveryRecipientDni"
-                    placeholder="DNI o documento"
-                    class="w-full px-3.5 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-hidden font-mono text-xs text-gray-800"
-                  />
-                </div>
-                <div>
-                  <label class="block font-bold text-gray-700 mb-1">Observaciones / Notas del Repartidor:</label>
-                  <input
-                    type="text"
-                    [(ngModel)]="deliveryNotes"
-                    placeholder="Ej. Recibido conforme por el titular / Dejado en portería"
-                    class="w-full px-3.5 py-2 rounded-xl border border-gray-200 focus:border-emerald-500 focus:outline-hidden text-xs text-gray-800"
-                  />
-                </div>
-              </div>
-
-              <div class="flex items-center justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  (click)="closeConfirmModal()"
-                  [disabled]="isProcessingAction"
-                  class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 font-bold text-xs hover:bg-gray-50 transition cursor-pointer"
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  (click)="executeConfirmAction()"
-                  [disabled]="isProcessingAction"
-                  class="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-md shadow-emerald-600/20 transition active:scale-95 flex items-center gap-2 cursor-pointer disabled:opacity-50"
-                >
-                  @if (isProcessingAction) {
-                    <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
-                  }
-                  <span>Confirmar Entrega</span>
-                </button>
-              </div>
-            }
-
+      <!-- ── MODAL 1: PREPARING (INICIAR PICKING) ────────────────────────────── -->
+      @if (confirmModalType === 'preparing') {
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto shadow-2xs border border-amber-200/80">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/>
+              <path d="M12 22V12"/>
+            </svg>
           </div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">¿Iniciar Preparación de este Pedido?</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            La orden <strong class="text-slate-900 font-mono">{{ order.invoiceNumber }}</strong> pasará a estado <strong>En Preparación</strong>. 
+            El personal de almacén iniciará el picking y empaque de los artículos.
+          </p>
+        </div>
+
+        <div class="bg-amber-50/60 rounded-2xl p-4 border border-amber-200/70 text-xs space-y-2">
+          <div class="flex items-center justify-between font-bold text-amber-900 pb-1 border-b border-amber-200/60">
+            <span>Prendas a recolectar:</span>
+            <span>{{ totalItems() }} unidades</span>
+          </div>
+          <ul class="space-y-1.5 text-slate-600 max-h-32 overflow-y-auto pr-1">
+            @for (item of order.items; track item.variantId) {
+              <li class="flex items-center justify-between text-[11px]">
+                <span class="truncate max-w-[220px] font-medium">{{ item.quantity }}x {{ item.productName }}</span>
+                <span class="font-bold text-slate-800">{{ item.size?.size || item.size || '-' }} / {{ item.color?.colorName || item.color || '-' }}</span>
+              </li>
+            }
+          </ul>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirmModal()"
+            [disabled]="isProcessingAction"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="executeConfirmAction()"
+            [disabled]="isProcessingAction"
+            class="px-5 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-900 font-bold text-xs border border-amber-200/90 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-50"
+          >
+            @if (isProcessingAction) {
+              <span class="inline-block w-3.5 h-3.5 border-2 border-amber-700 border-t-transparent rounded-full animate-spin"></span>
+            }
+            <span>Confirmar e Iniciar</span>
+          </button>
+        </div>
+      }
+
+      <!-- ── MODAL 2: READY FOR PICKUP (LISTO EN TIENDA) ─────────────────────── -->
+      @if (confirmModalType === 'ready_for_pickup') {
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto shadow-2xs border border-slate-200">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">¿Marcar Pedido Listo en Tienda?</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Confirma que los productos han sido empacados y rotulados con el comprobante 
+            <strong class="text-slate-900 font-mono">{{ order.invoiceNumber }}</strong> y se encuentran listos en la sucursal 
+            <strong class="text-slate-900">{{ order.pickupStore?.name }}</strong>.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 text-xs space-y-1.5 text-slate-800">
+          <div class="flex items-center gap-1.5 font-bold">
+            <svg class="w-4 h-4 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/>
+              <circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Sucursal de entrega física:</span>
+          </div>
+          <p class="text-xs text-slate-600 font-medium pl-5.5">{{ order.pickupStore?.address }}</p>
+          <p class="text-[11px] text-slate-500 pl-5.5 mt-1 font-semibold">
+            El cliente podrá recoger su compra presentando su código de retiro.
+          </p>
+        </div>
+
+        <!-- ⚠️ Alerta de Picking Incompleto / Confirmación de Checklist -->
+        @if (!areAllItemsChecked()) {
+          <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 text-xs space-y-2.5 text-left shadow-2xs">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-black text-amber-950 text-sm">Los productos necesitan estar chequeados</h4>
+                <p class="text-amber-800 text-xs mt-0.5 leading-relaxed">
+                  Has verificado <strong>{{ checkedItemsCount() }} de {{ (order.items || []).length }}</strong> artículos en el picking ({{ pickingProgressPercent }}%).
+                  Por seguridad y control de stock, debes chequear cada prenda en la lista antes de confirmar que el pedido está listo para retiro.
+                </p>
+              </div>
+            </div>
+
+            <!-- Barra de progreso miniatura -->
+            <div class="w-full bg-amber-200/80 rounded-full h-2 overflow-hidden">
+              <div class="bg-amber-600 h-2 rounded-full transition-all duration-300" [style.width.%]="pickingProgressPercent"></div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-amber-200">
+              <span class="text-[11px] text-amber-800 font-semibold">¿Ya verificaste físicamente todas las prendas?</span>
+              <button
+                type="button"
+                (click)="toggleAllItemsCheck()"
+                class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Marcar todas como chequeadas</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="font-bold text-[11px]">Picking 100% completado: Todas las prendas han sido chequeadas correctamente.</span>
+          </div>
+        }
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirmModal()"
+            [disabled]="isProcessingAction"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+          >
+            Volver a revisar
+          </button>
+          <button
+            type="button"
+            (click)="executeConfirmAction()"
+            [disabled]="isProcessingAction || !areAllItemsChecked()"
+            class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs border border-slate-800 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+            [title]="!areAllItemsChecked() ? 'Debes chequear todos los productos en el picking' : 'Confirmar pedido listo en tienda'"
+          >
+            @if (isProcessingAction) {
+              <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            }
+            <span>Confirmar Listo en Tienda</span>
+          </button>
+        </div>
+      }
+
+      <!-- ── MODAL 3: SHIPPED (DESPACHO A DOMICILIO) ─────────────────────────── -->
+      @if (confirmModalType === 'shipped') {
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto shadow-2xs border border-slate-200">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2"/>
+              <path d="M15 18H9"/>
+              <path d="M19 18h2a1 1 0 0 0 1-1v-5l-3-4h-4v10"/>
+              <circle cx="7" cy="18" r="2"/>
+              <circle cx="17" cy="18" r="2"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">¿Confirmar Despacho a Domicilio?</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            El pedido <strong class="text-slate-900 font-mono">{{ order.invoiceNumber }}</strong> pasará a estado <strong>En Camino / Despachado</strong>.
+            Confirma que el paquete fue entregado al courier o repartidor encargado.
+          </p>
+        </div>
+
+        <div class="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 text-xs space-y-2">
+          <div class="font-bold text-slate-900">Dirección de Destino:</div>
+          <p class="text-xs text-slate-700">
+            {{ order.shippingAddress?.street }} {{ order.shippingAddress?.streetNumber }},
+            {{ order.shippingAddress?.district }}, {{ order.shippingAddress?.province }}
+          </p>
+          @if (order.shippingAddress?.references) {
+            <p class="text-[11px] text-slate-500 italic">Ref: {{ order.shippingAddress?.references }}</p>
+          }
+        </div>
+
+        <!-- ⚠️ Alerta de Picking Incompleto / Confirmación de Checklist -->
+        @if (!areAllItemsChecked()) {
+          <div class="p-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-amber-950 text-xs space-y-2.5 text-left shadow-2xs">
+            <div class="flex items-start gap-3">
+              <div class="w-8 h-8 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0 mt-0.5">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="12"/>
+                  <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+              </div>
+              <div class="flex-1 min-w-0">
+                <h4 class="font-black text-amber-950 text-sm">Los productos necesitan estar chequeados</h4>
+                <p class="text-amber-800 text-xs mt-0.5 leading-relaxed">
+                  Has verificado <strong>{{ checkedItemsCount() }} de {{ (order.items || []).length }}</strong> artículos en el picking ({{ pickingProgressPercent }}%).
+                  Debes chequear todas las prendas en la lista antes de despachar el paquete con el courier.
+                </p>
+              </div>
+            </div>
+
+            <!-- Barra de progreso miniatura -->
+            <div class="w-full bg-amber-200/80 rounded-full h-2 overflow-hidden">
+              <div class="bg-amber-600 h-2 rounded-full transition-all duration-300" [style.width.%]="pickingProgressPercent"></div>
+            </div>
+
+            <div class="flex items-center justify-between pt-2 border-t border-amber-200">
+              <span class="text-[11px] text-amber-800 font-semibold">¿Ya verificaste físicamente todas las prendas?</span>
+              <button
+                type="button"
+                (click)="toggleAllItemsCheck()"
+                class="px-3 py-1.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs transition cursor-pointer flex items-center gap-1.5 shadow-2xs"
+              >
+                <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                <span>Marcar todas como chequeadas</span>
+              </button>
+            </div>
+          </div>
+        } @else {
+          <div class="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+            <svg class="w-4 h-4 text-emerald-600 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span class="font-bold text-[11px]">Picking 100% completado: Todas las prendas han sido chequeadas correctamente.</span>
+          </div>
+        }
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirmModal()"
+            [disabled]="isProcessingAction"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="executeConfirmAction()"
+            [disabled]="isProcessingAction || !areAllItemsChecked()"
+            class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs border border-slate-800 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+            [title]="!areAllItemsChecked() ? 'Debes chequear todos los productos en el picking' : 'Confirmar despacho a domicilio'"
+          >
+            @if (isProcessingAction) {
+              <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            }
+            <span>Confirmar Despacho</span>
+          </button>
+        </div>
+      }
+
+      <!-- ── MODAL 4: PICKUP DELIVER (VALIDAR CÓDIGO) ────────────────────────── -->
+      @if (confirmModalType === 'pickup_deliver') {
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-slate-100 text-slate-800 flex items-center justify-center mx-auto shadow-2xs border border-slate-200">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Validar Retiro en Tienda</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Solicita al cliente su <strong>código alfanumérico de retiro</strong> enviado a su correo o visible en su portal.
+          </p>
+        </div>
+
+        <div class="space-y-3">
+          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+            Código de Retiro:
+          </label>
+          <input
+            type="text"
+            [(ngModel)]="verificationCodeInput"
+            placeholder="Ej. PKP-8F3X2K"
+            maxlength="20"
+            class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-slate-900 focus:outline-hidden text-center font-mono font-black text-xl tracking-widest uppercase bg-slate-50 text-slate-900 placeholder:text-slate-400 transition"
+            (keyup.enter)="executeConfirmAction()"
+            autofocus
+          />
+
+          @if (pickupVerificationError) {
+            <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
+              <svg class="w-4 h-4 text-rose-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              <span>{{ pickupVerificationError }}</span>
+            </div>
+          }
+
+          <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 text-[11px] text-slate-500 space-y-1">
+            <div class="flex justify-between">
+              <span>Cliente:</span>
+              <span class="font-bold text-slate-800">{{ getClientName() }}</span>
+            </div>
+            @if (getClientDni()) {
+              <div class="flex justify-between">
+                <span>DNI:</span>
+                <span class="font-mono font-bold text-slate-800">{{ getClientDni() }}</span>
+              </div>
+            }
+            <div class="flex justify-between">
+              <span>Orden:</span>
+              <span class="font-mono font-bold text-slate-900">{{ order.invoiceNumber }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirmModal()"
+            [disabled]="isProcessingAction"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="executeConfirmAction()"
+            [disabled]="isProcessingAction || !verificationCodeInput.trim()"
+            class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-black text-white font-bold text-xs border border-slate-800 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            @if (isProcessingAction) {
+              <span class="inline-block w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+            }
+            <span>Verificar y Entregar</span>
+          </button>
+        </div>
+      }
+
+      <!-- ── MODAL 5: DELIVERY DELIVER (CONFIRMAR EN DOMICILIO) ───────────────── -->
+      @if (confirmModalType === 'delivery_deliver') {
+        <div class="text-center space-y-3">
+          <div class="w-14 h-14 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto shadow-2xs border border-emerald-200/80">
+            <svg class="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m5 12 5 5L20 7"/>
+            </svg>
+          </div>
+          <h3 class="text-lg font-black text-slate-900 tracking-tight">Registrar Entrega en Domicilio</h3>
+          <p class="text-xs text-slate-500 leading-relaxed">
+            Confirma la recepción del paquete en la dirección del cliente. Esta acción marcará la orden como <strong>Entregada</strong> definitivamente.
+          </p>
+        </div>
+
+        <div class="space-y-3 text-xs">
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Nombre de quien recibe:</label>
+            <input
+              type="text"
+              [(ngModel)]="deliveryRecipientName"
+              placeholder="Nombre completo"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-hidden font-medium text-xs text-slate-800 bg-slate-50 focus:bg-white transition"
+            />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">DNI de quien recibe (opcional):</label>
+            <input
+              type="text"
+              [(ngModel)]="deliveryRecipientDni"
+              placeholder="DNI o documento"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-hidden font-mono text-xs text-slate-800 bg-slate-50 focus:bg-white transition"
+            />
+          </div>
+          <div>
+            <label class="block font-bold text-slate-700 mb-1">Observaciones / Notas del Repartidor:</label>
+            <input
+              type="text"
+              [(ngModel)]="deliveryNotes"
+              placeholder="Ej. Recibido conforme por el titular / Dejado en conserjería"
+              class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-hidden text-xs text-slate-800 bg-slate-50 focus:bg-white transition"
+            />
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2.5 pt-2">
+          <button
+            type="button"
+            (click)="closeConfirmModal()"
+            [disabled]="isProcessingAction"
+            class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="executeConfirmAction()"
+            [disabled]="isProcessingAction"
+            class="px-5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200/90 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-50"
+          >
+            @if (isProcessingAction) {
+              <span class="inline-block w-3.5 h-3.5 border-2 border-emerald-700 border-t-transparent rounded-full animate-spin"></span>
+            }
+            <span>Confirmar Entrega</span>
+          </button>
         </div>
       }
 
     </div>
+  </div>
+}
+
+<!-- ── 8. MODAL DE ZOOM DE FOTOGRAFÍA DE PRENDA (LIGHTBOX) ──────────────── -->
+@if (previewImageUrl) {
+  <div
+    class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-xs transition-opacity"
+    (click)="closeImagePreview()"
+  >
+    <div
+      class="relative bg-white rounded-3xl overflow-hidden max-w-md w-full shadow-2xl border border-slate-200 space-y-3 p-4"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+        <h4 class="text-xs font-black text-slate-900 uppercase tracking-wider truncate pr-4">
+          {{ previewImageTitle }}
+        </h4>
+        <button
+          type="button"
+          (click)="closeImagePreview()"
+          class="w-7 h-7 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition cursor-pointer"
+        >
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="aspect-square w-full rounded-2xl overflow-hidden bg-slate-100 flex items-center justify-center">
+        <img
+          [src]="previewImageUrl | cloudinary:'w_800,h_800,c_fit,q_auto,f_auto'"
+          [alt]="previewImageTitle"
+          class="w-full h-full object-contain"
+        />
+      </div>
+
+      <p class="text-[11px] text-center text-slate-400">
+        Fotografía de referencia para verificación de stock y empaque.
+      </p>
+    </div>
+  </div>
+}
