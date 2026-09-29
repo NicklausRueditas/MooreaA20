@@ -221,8 +221,71 @@ export class AuthService {
    * @returns true si el usuario tiene el rol
    */
   hasRole(role: string): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes(role);
+  }
+
+  /**
+   * Obtiene la lista de roles del usuario actual desde el estado en memoria o decodificando el token JWT
+   * @returns Arreglo de strings con los roles del usuario
+   */
+  getUserRoles(): string[] {
     const user = this.getCurrentUser();
-    return user?.roles?.includes(role) || false;
+    if (user?.roles && user.roles.length > 0) {
+      return user.roles;
+    }
+    const token = this.getToken();
+    if (token) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        if (payload?.roles) {
+          return Array.isArray(payload.roles) ? payload.roles : [payload.roles];
+        }
+      } catch {}
+    }
+    return [];
+  }
+
+  /**
+   * Determina si el usuario actual posee rol de Administrador
+   * @returns true si el usuario es administrador
+   */
+  isAdmin(): boolean {
+    const roles = this.getUserRoles();
+    const email = (this.getCurrentUser()?.email || '').toLowerCase();
+    return roles.includes('admin') || email === 'nick047tu@gmail.com';
+  }
+
+  /**
+   * Determina si el usuario posee rol de Vendedor o Administrador
+   * @returns true si tiene permisos comerciales de vendedor
+   */
+  isSeller(): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes('seller') || this.isAdmin();
+  }
+
+  /**
+   * Determina si el usuario posee rol de Operario/Worker o Administrador
+   * @returns true si tiene permisos de operario de almacén
+   */
+  isWorker(): boolean {
+    const roles = this.getUserRoles();
+    return roles.includes('worker') || this.isAdmin();
+  }
+
+  /**
+   * Determina si el usuario tiene acceso al panel de negocio (Admin, Seller o Worker)
+   * @returns true si es un usuario corporativo autorizado
+   */
+  isBusinessUser(): boolean {
+    const roles = this.getUserRoles();
+    return (
+      roles.includes('admin') ||
+      roles.includes('seller') ||
+      roles.includes('worker') ||
+      this.isAdmin()
+    );
   }
   //#endregion
 

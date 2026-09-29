@@ -1,4 +1,5 @@
 import { Routes } from '@angular/router';
+import { businessGuard } from './core/guards/business.guard';
 
 export const appRoutes: Routes = [
   {
@@ -13,8 +14,9 @@ export const appRoutes: Routes = [
     loadChildren: () => import('./website/public/public.routes').then(m => m.publicRoutes),
   },
   {
-    // Ruta para la sección de 'business', carga las rutas del módulo 'business'
+    // Ruta para la sección de 'business', protegida para usuarios con roles comerciales (admin, seller, worker)
     path: 'business',
+    canActivate: [businessGuard],
     loadChildren: () => import('./website/business/business.routes').then(m => m.businessRoutes)
   },
   {

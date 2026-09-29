@@ -5,6 +5,7 @@ import { MyAccountComponent } from './my-account/my-account.component';
 import { HelpComponent } from './help/help.component';
 import { BasketComponent } from './basket/basket.component';
 import { PaymentComponent } from './payment/payment.component';
+import { authGuard } from '../../core/guards/auth.guard';
 
 export const publicRoutes: Routes = [
   {
@@ -35,6 +36,7 @@ export const publicRoutes: Routes = [
   {
     path: 'my-account',
     component: MyAccountComponent,
+    canActivate: [authGuard],
     title: 'Mi Cuenta | Moorea',
     children: [
       {
