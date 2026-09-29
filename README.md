@@ -223,8 +223,9 @@ npm test
 Este frontend se comunica directamente con la API REST de **MooreaN10** (desarrollada en NestJS).
 
 - **URL Base:** `http://localhost:3000`
-- **Contrato de Endpoints:** [`api-requests.http`](./api-requests.http)
-- **Autenticación:** Cabecera `Authorization: Bearer <token_jwt>` gestionada de forma transparente por el interceptor `AuthInterceptor`.
+- **Contrato Central de Endpoints:** La fuente de verdad de las peticiones HTTP se mantiene centralizada y modularizada en el backend dentro del directorio [`MooreaN10/api-requests/`](../MooreaN10/api-requests/) (16 archivos `.http` especializados: `orders.http`, `products.http`, `auth.http`, `whatsapp.http`, `stores.http`, etc.).
+- **Documentación Interactiva Swagger:** `http://localhost:3000/docs`
+- **Autenticación:** Cabecera `Authorization: Bearer <token_jwt>` inyectada automáticamente en las peticiones mediante el interceptor `AuthInterceptor`.
 
 ---
 
