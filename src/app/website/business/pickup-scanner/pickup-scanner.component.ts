@@ -5,6 +5,7 @@ import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
 
 import { OrderService } from '../../../core/services/commerce/order.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
+import { QrScannerDriverService } from '../../../core/services/hardware/qr-scanner-driver.service';
 import {
   Order,
   ORDER_STATUS_LABELS,
@@ -22,7 +23,7 @@ type ScannerState = 'idle' | 'scanning' | 'found' | 'error';
 export class PickupScannerComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
 
-  // ─── Scanner manual ───────────────────────────────────────────────────────
+  // ─── Scanner manual y de hardware ──────────────────────────────────────────
   pickupCodeInput = '';
   scannerState = signal<ScannerState>('idle');
   foundOrder: Order | null = null;
@@ -39,15 +40,32 @@ export class PickupScannerComponent implements OnInit, OnDestroy {
   constructor(
     private readonly orderService: OrderService,
     private readonly toastService: ToastService,
+    public readonly qrScannerDriver: QrScannerDriverService,
   ) {}
 
   ngOnInit(): void {
     this.loadPendingPickups();
+    this.initHardwareScanner();
   }
 
   ngOnDestroy(): void {
+    this.qrScannerDriver.stopHardwareListening();
     this.destroy$.next();
     this.destroy$.complete();
+  }
+
+  /**
+   * Conecta y activa la escucha automática del lector físico de códigos QR
+   */
+  private initHardwareScanner(): void {
+    this.qrScannerDriver
+      .startHardwareListening()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(scannedCode => {
+        if (!scannedCode) return;
+        this.pickupCodeInput = scannedCode;
+        this.searchByCode();
+      });
   }
 
   // ─── Carga de pendientes ──────────────────────────────────────────────────

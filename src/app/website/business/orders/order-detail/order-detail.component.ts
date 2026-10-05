@@ -2,11 +2,13 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
+import { Subject, Subscription, takeUntil, catchError, of, finalize } from 'rxjs';
 
 import { OrderService } from '../../../../core/services/commerce/order.service';
 import { ToastService } from '../../../../core/services/ui/toast.service';
 import { PdfReportService } from '../../../../core/services/ui/pdf-report.service';
+import { ImageService } from '../../../../core/services/utils/image.service';
+import { QrScannerDriverService } from '../../../../core/services/hardware/qr-scanner-driver.service';
 import { SolCurrencyPipe } from '../../../../shared/pipes/sol-currency.pipe';
 import { CloudinaryPipe } from '../../../../shared/pipes/cloudinary.pipe';
 import {
@@ -14,6 +16,7 @@ import {
   OrderStatus,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLOR,
+  DeliveryProofSnapshot,
 } from '../../../../core/interfaces/order.interface';
 
 /**
@@ -57,10 +60,18 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   verificationCodeInput = '';
   pickupVerificationError = '';
 
+  // ─── Lector / Driver de Escáner Físico QR ─────────────────────────────────
+  isScannerListening = false;
+  isDriverConnected = false;
+  activeDriverName = '';
+  private scannerSubscription: Subscription | null = null;
+
   // Campos para Recepción en Domicilio (Delivery)
   deliveryRecipientName = '';
   deliveryRecipientDni = '';
   deliveryNotes = '';
+  deliveryPhotos: string[] = [];
+  isUploadingDeliveryPhoto = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -68,6 +79,8 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     private readonly orderService: OrderService,
     private readonly toastService: ToastService,
     private readonly pdfReportService: PdfReportService,
+    private readonly imageService: ImageService,
+    private readonly qrScannerDriver: QrScannerDriverService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -82,6 +95,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopHardwareScanner();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -219,6 +233,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   // ─── Gestión de Modales de Confirmación ───────────────────────────────────
   /**
    * Abre el modal de confirmación correspondiente a la etapa de la orden
+   * @param type Tipo de acción a confirmar ('preparing' | 'ready_for_pickup' | 'shipped' | 'pickup_deliver' | 'delivery_deliver')
    */
   openConfirmModal(type: 'preparing' | 'ready_for_pickup' | 'shipped' | 'pickup_deliver' | 'delivery_deliver'): void {
     this.confirmModalType = type;
@@ -227,18 +242,84 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     this.deliveryNotes = '';
     this.deliveryRecipientName = this.getClientName();
     this.deliveryRecipientDni = this.getClientDni() || '';
+    this.deliveryPhotos = [];
+    this.isUploadingDeliveryPhoto = false;
     this.cdr.markForCheck();
   }
 
   /**
-   * Cierra cualquier modal de confirmación activo
+   * Cierra cualquier modal de confirmación activo y restablece el estado
    */
   closeConfirmModal(): void {
+    this.stopHardwareScanner();
     this.confirmModalType = null;
     this.pickupVerificationError = '';
     this.verificationCodeInput = '';
+    this.deliveryPhotos = [];
+    this.isUploadingDeliveryPhoto = false;
     this.isProcessingAction = false;
     this.cdr.markForCheck();
+  }
+
+  /**
+   * Maneja la selección y subida de fotos de constancia de entrega (máx. 3 fotos)
+   * @param event Evento de selección de archivos desde input type="file"
+   */
+  onDeliveryPhotoSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) return;
+
+    if (this.deliveryPhotos.length >= 3) {
+      this.toastService.show('Máximo 3 fotografías de constancia permitidas.', 'warning');
+      input.value = '';
+      return;
+    }
+
+    const file = input.files[0];
+    if (!file.type.startsWith('image/')) {
+      this.toastService.show('Solo se permiten archivos de imagen.', 'warning');
+      input.value = '';
+      return;
+    }
+
+    if (file.size > 10 * 1024 * 1024) {
+      this.toastService.show('La imagen no debe superar los 10MB.', 'warning');
+      input.value = '';
+      return;
+    }
+
+    this.isUploadingDeliveryPhoto = true;
+    this.cdr.markForCheck();
+
+    this.imageService.uploadImage(file)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.toastService.show(err?.error?.message || 'Error al subir la fotografía', 'error');
+          return of(null);
+        }),
+        finalize(() => {
+          this.isUploadingDeliveryPhoto = false;
+          input.value = '';
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe(res => {
+        if (!res?.secureUrl) return;
+        this.deliveryPhotos.push(res.secureUrl);
+        this.toastService.show('Fotografía adjuntada a la constancia.', 'success');
+      });
+  }
+
+  /**
+   * Remueve una fotografía adjunta de la constancia de entrega
+   * @param index Índice de la foto en el arreglo deliveryPhotos
+   */
+  removeDeliveryPhoto(index: number): void {
+    if (index >= 0 && index < this.deliveryPhotos.length) {
+      this.deliveryPhotos.splice(index, 1);
+      this.cdr.markForCheck();
+    }
   }
 
   /**
@@ -264,20 +345,34 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
     } else if (this.confirmModalType === 'pickup_deliver') {
       this.confirmPickupByCode();
     } else if (this.confirmModalType === 'delivery_deliver') {
-      this.submitStatusChange('delivered', '¡Entrega en domicilio confirmada exitosamente!');
+      const deliveryProof: DeliveryProofSnapshot = {
+        recipientName: this.deliveryRecipientName.trim() || this.getClientName(),
+        recipientDni: this.deliveryRecipientDni.trim() || undefined,
+        notes: this.deliveryNotes.trim() || undefined,
+        photos: this.deliveryPhotos.length > 0 ? [...this.deliveryPhotos] : undefined,
+        deliveredAt: new Date(),
+      };
+      this.submitStatusChange('delivered', '¡Entrega en domicilio confirmada exitosamente!', deliveryProof);
     }
   }
 
   /**
    * Envía la actualización de estado a la API
+   * @param newStatus Nuevo estado de la orden
+   * @param successMsg Mensaje amigable para la notificación toast
+   * @param deliveryProof Snapshot opcional de constancia de entrega a domicilio (PoD)
    */
-  private submitStatusChange(newStatus: OrderStatus, successMsg: string): void {
+  private submitStatusChange(
+    newStatus: OrderStatus,
+    successMsg: string,
+    deliveryProof?: DeliveryProofSnapshot
+  ): void {
     if (!this.order?._id) return;
     this.isProcessingAction = true;
     this.isUpdatingStatus = true;
     this.cdr.markForCheck();
 
-    this.orderService.updateOrderStatus(this.order._id, newStatus)
+    this.orderService.updateOrderStatus(this.order._id, newStatus, undefined, deliveryProof)
       .pipe(
         takeUntil(this.destroy$),
         catchError(err => {
@@ -341,21 +436,180 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
       });
   }
 
+  // ─── Gestión de Máquina / Lector de Códigos QR (Hardware Scanner) ──────────
   /**
-   * Imprime la hoja formal de preparación abriendo el reporte en PDF
+   * Alterna el modo de escucha del lector físico o pistola de códigos QR
+   */
+  toggleHardwareScanner(): void {
+    if (this.isScannerListening) {
+      this.stopHardwareScanner();
+    } else {
+      this.startHardwareScanner();
+    }
+  }
+
+  /**
+   * Inicia la captura automática de códigos escaneados por la máquina lectora (HID / Driver)
+   */
+  startHardwareScanner(): void {
+    this.isScannerListening = true;
+    this.pickupVerificationError = '';
+    this.isDriverConnected = this.qrScannerDriver.isDriverConnected();
+    this.activeDriverName = this.qrScannerDriver.activeDevice()?.name || 'Lector USB / Bluetooth (HID)';
+    this.cdr.markForCheck();
+
+    this.scannerSubscription?.unsubscribe();
+    this.scannerSubscription = this.qrScannerDriver
+      .startHardwareListening()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(scannedCode => {
+        if (!scannedCode) return;
+        this.verificationCodeInput = scannedCode;
+        this.toastService.show(`¡Código detectado por el lector: ${scannedCode}!`, 'success');
+        this.cdr.markForCheck();
+        // Validación inmediata del retiro
+        this.confirmPickupByCode();
+      });
+  }
+
+  /**
+   * Detiene el modo de escucha del lector físico de códigos QR
+   */
+  stopHardwareScanner(): void {
+    this.scannerSubscription?.unsubscribe();
+    this.scannerSubscription = null;
+    this.qrScannerDriver.stopHardwareListening();
+    this.isScannerListening = false;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Conecta con el driver USB WebHID para lectores que operan por protocolo USB directo
+   */
+  async connectUsbScannerDriver(): Promise<void> {
+    const result = await this.qrScannerDriver.connectWebHidDriver();
+    if (result.success) {
+      this.isDriverConnected = true;
+      this.activeDriverName = result.deviceName || 'Dispositivo USB Conectado';
+      this.toastService.show(`Driver USB conectado: ${this.activeDriverName}`, 'success');
+      this.startHardwareScanner();
+    } else {
+      this.toastService.show(result.error || 'No se pudo conectar el driver USB', 'warning');
+    }
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Emula la lectura de la pistola QR para realizar pruebas sin la máquina física conectada
+   */
+  simulateScannerRead(): void {
+    const code = this.order?.pickupCode || 'PKP-DEMO12';
+    this.qrScannerDriver.simulateScan(code);
+  }
+
+  // ─── Control de Correlativo SUNAT ──────────────────────────────────────────
+  isEditingCorrelative = false;
+  newSunatCorrelative = '';
+  isSavingCorrelative = false;
+
+  /**
+   * Abre el formulario modal o inline para registrar el correlativo oficial de SUNAT
+   */
+  openEditCorrelativeModal(): void {
+    this.newSunatCorrelative = this.order?.billing?.sunatCorrelative || '';
+    this.isEditingCorrelative = true;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Cancela la edición del correlativo SUNAT
+   */
+  cancelEditCorrelative(): void {
+    this.isEditingCorrelative = false;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Guarda y valida el correlativo oficial SUNAT en la base de datos
+   */
+  saveSunatCorrelative(): void {
+    if (!this.order?._id) return;
+    const formatted = this.newSunatCorrelative.trim().toUpperCase();
+    if (formatted && !/^[A-Z0-9]{4}-[0-9]{1,8}$/.test(formatted)) {
+      this.toastService.show('Formato de correlativo inválido. Ejemplos válidos: B001-000123 o F001-000045', 'warning');
+      return;
+    }
+
+    this.isSavingCorrelative = true;
+    this.cdr.markForCheck();
+
+    this.orderService.updateSunatCorrelative(this.order._id, formatted)
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.toastService.show(err?.error?.message || 'Error al actualizar correlativo SUNAT', 'error');
+          return of(null);
+        }),
+        finalize(() => {
+          this.isSavingCorrelative = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe(res => {
+        if (!res) return;
+        if (this.order) {
+          if (!this.order.billing) {
+            this.order.billing = {
+              invoiceType: 'boleta',
+              documentType: 'dni',
+              documentNumber: this.getClientDni() || '',
+            };
+          }
+          this.order.billing.sunatCorrelative = formatted;
+        }
+        this.toastService.show('Correlativo SUNAT actualizado exitosamente.', 'success');
+        this.isEditingCorrelative = false;
+      });
+  }
+
+  /**
+   * Genera y descarga el comprobante formal de cliente (Boleta / Factura) en el formato especificado
+   * @param format 'a4' para formato hoja carta/A4 o 'ticket80' para impresora térmica de 80mm
+   */
+  downloadCustomerInvoice(format: 'a4' | 'ticket80' = 'a4'): void {
+    if (!this.order) return;
+    const tipo = this.order.billing?.invoiceType === 'factura' ? 'Factura Electrónica' : 'Boleta de Venta';
+    const fmtLabel = format === 'ticket80' ? 'Ticket 80mm' : 'A4';
+    this.toastService.show(`Generando ${tipo} (${fmtLabel})...`, 'info');
+    this.pdfReportService.generateCustomerInvoice(this.order, format, 'save');
+  }
+
+  /**
+   * Abre para previsualización e impresión directa el comprobante de cliente
+   * @param format 'a4' o 'ticket80'
+   */
+  printCustomerInvoice(format: 'a4' | 'ticket80' = 'a4'): void {
+    if (!this.order) return;
+    const tipo = this.order.billing?.invoiceType === 'factura' ? 'Factura' : 'Boleta';
+    this.toastService.show(`Abriendo ${tipo} para impresión directa...`, 'info');
+    this.pdfReportService.generateCustomerInvoice(this.order, format, 'open');
+  }
+
+  /**
+   * Imprime la hoja formal de preparación de almacén abriendo el reporte en PDF
    */
   printOrder(): void {
     if (!this.order) return;
-    this.toastService.show('Abriendo reporte formal para impresión...', 'info');
+    this.toastService.show('Abriendo hoja de almacén para impresión...', 'info');
     this.pdfReportService.generateOrderReport(this.order, 'open');
   }
 
   /**
-   * Genera y descarga el reporte corporativo oficial en formato PDF
+   * Genera y descarga el reporte de picking/almacén en formato PDF
    */
   downloadPdf(): void {
     if (!this.order) return;
-    this.toastService.show('Generando y descargando reporte corporativo en PDF...', 'success');
+    this.toastService.show('Descargando hoja de preparación y almacén en PDF...', 'success');
     this.pdfReportService.generateOrderReport(this.order, 'save');
   }
 
@@ -429,7 +683,7 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
    */
   getClientPhone(): string | null {
     const client = this.getClientObj();
-    const phone = client?.phone || this.order?.pickupStore?.phone;
+    const phone = client?.phone || (this.order?.shippingAddress as any)?.phone;
     return phone && phone.trim() !== '' ? phone.trim() : null;
   }
 

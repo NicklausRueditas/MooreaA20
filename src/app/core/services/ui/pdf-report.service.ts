@@ -694,4 +694,555 @@ export class PdfReportService {
 
     doc.save(`${filenamePrefix}-${Date.now()}.pdf`);
   }
+
+  // ═══════════════════════════════════════════════════════════════════════════
+  // 3. COMPROBANTE DE PAGO PARA EL CLIENTE: BOLETA O FACTURA ELECTRÓNICA
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  /**
+   * Genera el comprobante electrónico para el cliente (Boleta de Venta o Factura Electrónica)
+   * disponible en formato hoja A4 membretada o Ticket térmico para punto de venta (80mm).
+   *
+   * @param order Datos completos de la orden
+   * @param format 'a4' para hoja completa formal o 'ticket80' para ticket térmico de 80mm
+   * @param action 'save' para descarga automática o 'open' para previsualizar en pestaña
+   */
+  async generateCustomerInvoice(
+    order: Order,
+    format: 'a4' | 'ticket80' = 'a4',
+    action: 'save' | 'open' = 'save',
+  ): Promise<void> {
+    if (!order) return;
+
+    if (format === 'ticket80') {
+      await this.generateCustomerInvoiceTicket(order, action);
+    } else {
+      await this.generateCustomerInvoiceA4(order, action);
+    }
+  }
+
+  /**
+   * Genera la Boleta o Factura Electrónica en formato A4 membretado oficial de Moorea.
+   */
+  private async generateCustomerInvoiceA4(
+    order: Order,
+    action: 'save' | 'open',
+  ): Promise<void> {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+    const pageWidth = doc.internal.pageSize.getWidth();
+
+    const isFactura = order.billing?.invoiceType === 'factura';
+    const docTitle = isFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA ELECTRÓNICA';
+    const docTypeSunat = isFactura ? '01' : '03';
+
+    // Serie y correlativo (Si tiene sunatCorrelative asignado por admin o el invoiceNumber)
+    const serie = isFactura ? 'F001' : 'B001';
+    const rawNumber = (order.invoiceNumber || '00000001').replace(/^ORD-\d{4}-/, '');
+    const officialNumber = order.billing?.sunatCorrelative || `${serie}-${rawNumber.padStart(6, '0')}`;
+
+    const client = this.getClientData(order);
+    const docTypeLabel = isFactura ? 'R.U.C.' : 'D.N.I.';
+    const docNumber =
+      (isFactura ? order.billing?.documentNumber : order.billing?.documentNumber || client.dni) ||
+      'No especificado';
+    const clientName = isFactura
+      ? order.billing?.businessName || client.name
+      : order.billing?.customerName || client.name;
+    const clientAddress = isFactura
+      ? order.billing?.fiscalAddress || 'Sin dirección fiscal registrada'
+      : order.shippingAddress
+      ? `${order.shippingAddress.street} ${order.shippingAddress.streetNumber || ''}, ${order.shippingAddress.district}, ${order.shippingAddress.province}`
+      : order.pickupStore
+      ? `Retiro en Tienda: ${order.pickupStore.name}`
+      : 'Lima, Perú';
+    const clientPhone = order.billing?.customerPhone || client.phone;
+
+    // ── 1. Franja Superior Negra ──
+    doc.setFillColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.rect(0, 0, pageWidth, 4, 'F');
+
+    // ── 2. Datos de la Empresa (Izquierda) ──
+    doc.setTextColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(24);
+    doc.text('MOOREA', 14, 18);
+
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+    doc.text('·   BOUTIQUE DE MODA FEMENINA', 60, 18);
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLOR_BODY[0], COLOR_BODY[1], COLOR_BODY[2]);
+    doc.text('MOOREA BOUTIQUE S.A.C.', 14, 24);
+    doc.text('Av. Mariscal Castilla 2450, El Tambo, Huancayo - Junín', 14, 28);
+    doc.text('WhatsApp: +51 935 329 158 · contacto@moorea.pe', 14, 32);
+
+    // ── 3. Recuadro RUC y Tipo de Comprobante (Derecha - Estándar SUNAT) ──
+    const rucBoxX = pageWidth - 80;
+    const rucBoxY = 10;
+    const rucBoxW = 66;
+    const rucBoxH = 26;
+
+    doc.setDrawColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.setLineWidth(0.6);
+    doc.roundedRect(rucBoxX, rucBoxY, rucBoxW, rucBoxH, 2, 2, 'D');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10.5);
+    doc.setTextColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.text('R.U.C. 20608945123', rucBoxX + rucBoxW / 2, rucBoxY + 7, { align: 'center' });
+
+    doc.setFillColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.rect(rucBoxX, rucBoxY + 9.5, rucBoxW, 7.5, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.text(docTitle, rucBoxX + rucBoxW / 2, rucBoxY + 14.5, { align: 'center' });
+
+    doc.setTextColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.setFontSize(11);
+    doc.text(officialNumber, rucBoxX + rucBoxW / 2, rucBoxY + 22, { align: 'center' });
+
+    // ── 4. Recuadro Datos del Cliente y Emisión ──
+    const clientBoxY = 40;
+    doc.setFillColor(COLOR_BG_SUBTLE[0], COLOR_BG_SUBTLE[1], COLOR_BG_SUBTLE[2]);
+    doc.setDrawColor(COLOR_BORDER[0], COLOR_BORDER[1], COLOR_BORDER[2]);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(14, clientBoxY, pageWidth - 28, 26, 2, 2, 'FD');
+
+    const formattedDate = order.createdAt
+      ? new Date(order.createdAt).toLocaleDateString('es-PE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+        })
+      : new Date().toLocaleDateString('es-PE');
+
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+    doc.text(isFactura ? 'SEÑOR(ES) / RAZÓN SOCIAL:' : 'CLIENTE / TITULAR:', 18, clientBoxY + 6);
+    doc.text(`${docTypeLabel}:`, 18, clientBoxY + 12);
+    doc.text('DIRECCIÓN:', 18, clientBoxY + 18);
+    doc.text('TELÉFONO / WHATSAPP:', 18, clientBoxY + 24);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]);
+    doc.text(String(clientName).toUpperCase(), 64, clientBoxY + 6);
+    doc.text(String(docNumber), 64, clientBoxY + 12);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(COLOR_BODY[0], COLOR_BODY[1], COLOR_BODY[2]);
+    doc.text(String(clientAddress).substring(0, 60), 64, clientBoxY + 18);
+    doc.text(String(clientPhone), 64, clientBoxY + 24);
+
+    // Columna derecha del recuadro de cliente
+    const colRightX = pageWidth - 70;
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+    doc.text('FECHA DE EMISIÓN:', colRightX, clientBoxY + 6);
+    doc.text('MONEDA:', colRightX, clientBoxY + 12);
+    doc.text('MÉTODO DE PAGO:', colRightX, clientBoxY + 18);
+    doc.text('PEDIDO N°:', colRightX, clientBoxY + 24);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]);
+    doc.text(formattedDate, colRightX + 28, clientBoxY + 6);
+    doc.text('SOLES (PEN)', colRightX + 28, clientBoxY + 12);
+
+    doc.setFont('helvetica', 'normal');
+    doc.text(this.getPaymentLabel(order.paymentMethod).substring(0, 22), colRightX + 28, clientBoxY + 18);
+    doc.text(order.invoiceNumber || '-', colRightX + 28, clientBoxY + 24);
+
+    // ── 5. Tabla de Ítems / Prendas ──
+    const tableBody = (order.items || []).map((item, index) => {
+      const color = this.extractColor(item.color);
+      const size = this.extractSize(item.size);
+      const desc = `${item.productName}\nColor: ${color}  ·  Talla: ${size}  ·  SKU: ${item.sku}`;
+      const qty = item.quantity || 1;
+      const unit = item.unitPrice || 0;
+      const sub = item.subtotal || unit * qty;
+
+      return [
+        String(index + 1),
+        String(qty),
+        'UND',
+        desc,
+        this.formatMoney(unit),
+        this.formatMoney(sub),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: clientBoxY + 30,
+      head: [['ITEM', 'CANT.', 'UNIDAD', 'DESCRIPCIÓN DE LA PRENDA', 'P. UNIT.', 'TOTAL']],
+      body: tableBody,
+      theme: 'plain',
+      headStyles: {
+        fillColor: [COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]],
+        textColor: [255, 255, 255],
+        fontSize: 7.5,
+        fontStyle: 'bold',
+        halign: 'left',
+      },
+      columnStyles: {
+        0: { halign: 'center', cellWidth: 12 },
+        1: { halign: 'center', cellWidth: 14 },
+        2: { halign: 'center', cellWidth: 16 },
+        3: { halign: 'left' },
+        4: { halign: 'right', cellWidth: 26 },
+        5: { halign: 'right', cellWidth: 26, fontStyle: 'bold' },
+      },
+      styles: {
+        fontSize: 7.5,
+        cellPadding: 3,
+        textColor: [COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]],
+        lineColor: [COLOR_BORDER[0], COLOR_BORDER[1], COLOR_BORDER[2]],
+        lineWidth: 0.15,
+      },
+      alternateRowStyles: {
+        fillColor: [COLOR_BG_SUBTLE[0], COLOR_BG_SUBTLE[1], COLOR_BG_SUBTLE[2]],
+      },
+      margin: { left: 14, right: 14 },
+    });
+
+    const finalY = (doc as any).lastAutoTable?.finalY || 140;
+
+    // ── 6. Desglose Fiscal y Totales ──
+    const totalAmount = order.pricing?.total || 0;
+    const shipping = order.pricing?.shippingCost || 0;
+    const discount = order.pricing?.discount || 0;
+    const itemsTotal = Math.max(0, totalAmount - shipping);
+    const opGravada = itemsTotal / 1.18;
+    const igv = itemsTotal - opGravada;
+
+    const summaryBoxW = 76;
+    const summaryBoxX = pageWidth - 14 - summaryBoxW;
+    let currSumY = finalY + 6;
+
+    // Recuadro de Totales
+    doc.setFillColor(COLOR_BG_SUBTLE[0], COLOR_BG_SUBTLE[1], COLOR_BG_SUBTLE[2]);
+    doc.setDrawColor(COLOR_BORDER[0], COLOR_BORDER[1], COLOR_BORDER[2]);
+    doc.roundedRect(summaryBoxX, currSumY, summaryBoxW, 36, 1.5, 1.5, 'FD');
+
+    const printSumLine = (label: string, value: string, isBold = false) => {
+      doc.setFont('helvetica', isBold ? 'bold' : 'normal');
+      doc.setFontSize(isBold ? 9 : 7.5);
+      doc.setTextColor(isBold ? COLOR_BLACK[0] : COLOR_MUTED[0], isBold ? COLOR_BLACK[1] : COLOR_MUTED[1], isBold ? COLOR_BLACK[2] : COLOR_MUTED[2]);
+      doc.text(label, summaryBoxX + 4, currSumY + 6);
+      doc.setTextColor(COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]);
+      doc.text(value, summaryBoxX + summaryBoxW - 4, currSumY + 6, { align: 'right' });
+      currSumY += 6;
+    };
+
+    printSumLine('Op. Gravada:', this.formatMoney(opGravada));
+    printSumLine('I.G.V. (18%):', this.formatMoney(igv));
+    if (discount > 0) {
+      printSumLine('Descuentos:', `-${this.formatMoney(discount)}`);
+    }
+    printSumLine('Costo de Envío:', shipping === 0 ? 'GRATIS (S/ 0.00)' : this.formatMoney(shipping));
+
+    // Línea divisoria antes del total
+    doc.setDrawColor(COLOR_BLACK[0], COLOR_BLACK[1], COLOR_BLACK[2]);
+    doc.setLineWidth(0.3);
+    doc.line(summaryBoxX + 3, currSumY + 2, summaryBoxX + summaryBoxW - 3, currSumY + 2);
+    currSumY += 3;
+
+    printSumLine('TOTAL A PAGAR:', this.formatMoney(totalAmount), true);
+
+    // ── 7. Importe en Letras y Código QR SUNAT ──
+    const leftBlockY = finalY + 6;
+    const textLetters = this.numberToWords(totalAmount);
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7.5);
+    doc.setTextColor(COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]);
+    doc.text(textLetters, 14, leftBlockY + 5);
+
+    // Intentar generar y colocar QR tributario
+    try {
+      const QRCode = await import('qrcode');
+      const qrData = `20608945123|${docTypeSunat}|${serie}|${rawNumber}|${igv.toFixed(2)}|${totalAmount.toFixed(2)}|${formattedDate}|${isFactura ? '6' : '1'}|${docNumber}|`;
+      const qrUrl = await QRCode.toDataURL(qrData, { width: 140, margin: 1 });
+      doc.addImage(qrUrl, 'PNG', 14, leftBlockY + 9, 28, 28);
+    } catch {
+      // Si la carga falla, continuar sin QR
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7);
+    doc.setTextColor(COLOR_MUTED[0], COLOR_MUTED[1], COLOR_MUTED[2]);
+    doc.text('Representación impresa del Comprobante de Pago Electrónico.', 46, leftBlockY + 16);
+    doc.text('Consulte la validez de este comprobante en www.sunat.gob.pe', 46, leftBlockY + 21);
+    doc.text('Autorizado mediante Resolución de Superintendencia de SUNAT.', 46, leftBlockY + 26);
+
+    // ── 8. Políticas de Cambio y Garantía (Pie de Página) ──
+    const legalBoxY = Math.max(currSumY + 12, leftBlockY + 42);
+    doc.setFillColor(COLOR_BG_TINT[0], COLOR_BG_TINT[1], COLOR_BG_TINT[2]);
+    doc.setDrawColor(COLOR_BORDER[0], COLOR_BORDER[1], COLOR_BORDER[2]);
+    doc.roundedRect(14, legalBoxY, pageWidth - 28, 14, 1.5, 1.5, 'FD');
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(7);
+    doc.setTextColor(COLOR_DARK[0], COLOR_DARK[1], COLOR_DARK[2]);
+    doc.text('TÉRMINOS PARA CAMBIOS, DEVOLUCIONES O REEMBOLSOS:', 18, legalBoxY + 5);
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.setTextColor(COLOR_BODY[0], COLOR_BODY[1], COLOR_BODY[2]);
+    doc.text(
+      'Para solicitar un cambio o reembolso, conserve este comprobante. Plazo máximo: 7 días calendario posteriores a la entrega. Las prendas deben estar sin uso y con etiquetas originales intactas.',
+      18,
+      legalBoxY + 9
+    );
+
+    // Descargar o abrir
+    const filename = `${docTitle.replace(/\s+/g, '-')}-${officialNumber}.pdf`;
+    if (action === 'save') {
+      doc.save(filename);
+    } else {
+      const blobUrl = doc.output('bloburl');
+      window.open(blobUrl, '_blank');
+    }
+  }
+
+  /**
+   * Genera la Boleta o Factura en formato Ticket Térmico estándar de 80mm para punto de venta.
+   */
+  private async generateCustomerInvoiceTicket(
+    order: Order,
+    action: 'save' | 'open',
+  ): Promise<void> {
+    const isFactura = order.billing?.invoiceType === 'factura';
+    const docTitle = isFactura ? 'FACTURA ELECTRÓNICA' : 'BOLETA DE VENTA';
+    const docTypeSunat = isFactura ? '01' : '03';
+
+    const serie = isFactura ? 'F001' : 'B001';
+    const rawNumber = (order.invoiceNumber || '00000001').replace(/^ORD-\d{4}-/, '');
+    const officialNumber = order.billing?.sunatCorrelative || `${serie}-${rawNumber.padStart(6, '0')}`;
+
+    const client = this.getClientData(order);
+    const docTypeLabel = isFactura ? 'RUC' : 'DNI';
+    const docNumber =
+      (isFactura ? order.billing?.documentNumber : order.billing?.documentNumber || client.dni) ||
+      'No especificado';
+    const clientName = isFactura
+      ? order.billing?.businessName || client.name
+      : order.billing?.customerName || client.name;
+
+    const itemCount = (order.items || []).length;
+    const pageHeight = Math.max(180, 110 + itemCount * 12);
+
+    const doc = new jsPDF({
+      orientation: 'portrait',
+      unit: 'mm',
+      format: [80, pageHeight],
+    });
+
+    const pageWidth = 80;
+    let y = 8;
+
+    // Encabezado
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(13);
+    doc.setTextColor(0, 0, 0);
+    doc.text('MOOREA BOUTIQUE', pageWidth / 2, y, { align: 'center' });
+    y += 5;
+
+    doc.setFontSize(8);
+    doc.setFont('helvetica', 'normal');
+    doc.text('MOOREA BOUTIQUE S.A.C.', pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.text('R.U.C. 20608945123', pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.text('Av. M. Castilla 2450, El Tambo, Huancayo', pageWidth / 2, y, { align: 'center' });
+    y += 4;
+    doc.text('WhatsApp: +51 935 329 158', pageWidth / 2, y, { align: 'center' });
+    y += 6;
+
+    // Línea divisoria
+    doc.setLineDashPattern([1, 1], 0);
+    doc.setDrawColor(150, 150, 150);
+    doc.line(4, y, pageWidth - 4, y);
+    y += 5;
+
+    // Comprobante
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text(docTitle, pageWidth / 2, y, { align: 'center' });
+    y += 4.5;
+    doc.setFontSize(11);
+    doc.text(officialNumber, pageWidth / 2, y, { align: 'center' });
+    y += 5;
+
+    doc.line(4, y, pageWidth - 4, y);
+    y += 4.5;
+
+    // Datos cliente
+    const formattedDate = order.createdAt
+      ? new Date(order.createdAt).toLocaleString('es-PE', {
+          day: '2-digit',
+          month: '2-digit',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      : new Date().toLocaleString('es-PE');
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(7.5);
+    doc.text(`Fecha: ${formattedDate}`, 5, y);
+    y += 4;
+    doc.text(`Cliente: ${String(clientName).substring(0, 30).toUpperCase()}`, 5, y);
+    y += 4;
+    doc.text(`${docTypeLabel}: ${docNumber}`, 5, y);
+    y += 4;
+    doc.text(`Pago: ${this.getPaymentLabel(order.paymentMethod).substring(0, 26)}`, 5, y);
+    y += 5;
+
+    doc.line(4, y, pageWidth - 4, y);
+    y += 4.5;
+
+    // Cabecera Ítems
+    doc.setFont('helvetica', 'bold');
+    doc.text('CANT.  DESCRIPCIÓN', 5, y);
+    doc.text('TOTAL', pageWidth - 5, y, { align: 'right' });
+    y += 4;
+
+    doc.setFont('helvetica', 'normal');
+    for (const item of order.items || []) {
+      const color = this.extractColor(item.color);
+      const size = this.extractSize(item.size);
+      const qty = item.quantity || 1;
+      const sub = item.subtotal || (item.unitPrice || 0) * qty;
+
+      doc.text(`${qty}x   ${item.productName.substring(0, 24)}`, 5, y);
+      doc.text(this.formatMoney(sub), pageWidth - 5, y, { align: 'right' });
+      y += 3.5;
+      doc.setFontSize(6.5);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`     Talla: ${size} · Color: ${color}`, 5, y);
+      doc.setFontSize(7.5);
+      doc.setTextColor(0, 0, 0);
+      y += 4;
+    }
+
+    doc.line(4, y, pageWidth - 4, y);
+    y += 4.5;
+
+    // Totales
+    const totalAmount = order.pricing?.total || 0;
+    const shipping = order.pricing?.shippingCost || 0;
+    const itemsTotal = Math.max(0, totalAmount - shipping);
+    const opGravada = itemsTotal / 1.18;
+    const igv = itemsTotal - opGravada;
+
+    doc.text('Op. Gravada:', 5, y);
+    doc.text(this.formatMoney(opGravada), pageWidth - 5, y, { align: 'right' });
+    y += 4;
+    doc.text('I.G.V. (18%):', 5, y);
+    doc.text(this.formatMoney(igv), pageWidth - 5, y, { align: 'right' });
+    y += 4;
+    if (shipping > 0) {
+      doc.text('Envío:', 5, y);
+      doc.text(this.formatMoney(shipping), pageWidth - 5, y, { align: 'right' });
+      y += 4;
+    }
+
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(10);
+    doc.text('TOTAL:', 5, y);
+    doc.text(this.formatMoney(totalAmount), pageWidth - 5, y, { align: 'right' });
+    y += 6;
+
+    // QR Code centrado
+    try {
+      const QRCode = await import('qrcode');
+      const qrData = `20608945123|${docTypeSunat}|${serie}|${rawNumber}|${igv.toFixed(2)}|${totalAmount.toFixed(2)}|${formattedDate}|${isFactura ? '6' : '1'}|${docNumber}|`;
+      const qrUrl = await QRCode.toDataURL(qrData, { width: 100, margin: 1 });
+      doc.addImage(qrUrl, 'PNG', (pageWidth - 24) / 2, y, 24, 24);
+      y += 26;
+    } catch {
+      // omit QR
+    }
+
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(6.5);
+    doc.text('¡Gracias por su compra en Moorea!', pageWidth / 2, y, { align: 'center' });
+    y += 3.5;
+    doc.text('Cambios válidos hasta 7 días con este ticket.', pageWidth / 2, y, { align: 'center' });
+
+    const filename = `Ticket-${officialNumber}.pdf`;
+    if (action === 'save') {
+      doc.save(filename);
+    } else {
+      const blobUrl = doc.output('bloburl');
+      window.open(blobUrl, '_blank');
+    }
+  }
+
+  /**
+   * Convierte un monto numérico a su representación formal en letras según estándar SUNAT
+   * @param amount Monto numérico en soles
+   * @returns Cadena formal ej: "SON: CIENTO CINCUENTA CON 00/100 SOLES"
+   */
+  private numberToWords(amount: number): string {
+    const fixed = Math.max(0, amount).toFixed(2);
+    const [intPartStr, decPartStr] = fixed.split('.');
+    const intPart = parseInt(intPartStr, 10);
+    const cents = decPartStr || '00';
+
+    if (intPart === 0) {
+      return `SON: CERO CON ${cents}/100 SOLES`;
+    }
+
+    const units = ['', 'UN', 'DOS', 'TRES', 'CUATRO', 'CINCO', 'SEIS', 'SIETE', 'OCHO', 'NUEVE'];
+    const teens = ['DIEZ', 'ONCE', 'DOCE', 'TRECE', 'CATORCE', 'QUINCE', 'DIECISEIS', 'DIECISIETE', 'DIECIOCHO', 'DIECINUEVE'];
+    const tens = ['', 'DIEZ', 'VEINTE', 'TREINTA', 'CUARENTA', 'CINCUENTA', 'SESENTA', 'SETENTA', 'OCHENTA', 'NOVENTA'];
+    const hundreds = ['', 'CIENTO', 'DOSCIENTOS', 'TRESCIENTOS', 'CUATROCIENTOS', 'QUINIENTOS', 'SEISCIENTOS', 'SETECIENTOS', 'OCHOCIENTOS', 'NOVECIENTOS'];
+
+    const convertThreeDigits = (n: number): string => {
+      if (n === 0) return '';
+      if (n === 100) return 'CIEN';
+      const c = Math.floor(n / 100);
+      const rem = n % 100;
+      const d = Math.floor(rem / 10);
+      const u = rem % 10;
+
+      let result = '';
+      if (c > 0) result += hundreds[c] + ' ';
+
+      if (rem >= 10 && rem < 20) {
+        result += teens[rem - 10] + ' ';
+      } else if (rem >= 20 && rem < 30) {
+        result += (u === 0 ? 'VEINTE' : `VEINTI${units[u]}`) + ' ';
+      } else {
+        if (d > 0) {
+          result += tens[d] + (u > 0 ? ' Y ' : ' ');
+        }
+        if (u > 0) {
+          result += units[u] + ' ';
+        }
+      }
+      return result.trim();
+    };
+
+    let text = '';
+    const millions = Math.floor(intPart / 1000000);
+    const thousands = Math.floor((intPart % 1000000) / 1000);
+    const remainder = intPart % 1000;
+
+    if (millions > 0) {
+      text += millions === 1 ? 'UN MILLON ' : `${convertThreeDigits(millions)} MILLONES `;
+    }
+    if (thousands > 0) {
+      text += thousands === 1 ? 'MIL ' : `${convertThreeDigits(thousands)} MIL `;
+    }
+    if (remainder > 0 || text === '') {
+      text += `${convertThreeDigits(remainder)} `;
+    }
+
+    return `SON: ${text.trim()} CON ${cents}/100 SOLES`;
+  }
 }

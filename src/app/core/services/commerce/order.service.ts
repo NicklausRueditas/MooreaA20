@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import {
   CreateOrderDto,
+  DeliveryProofSnapshot,
   Order,
   OrderListResponse,
   OrderQrResponse,
@@ -69,12 +70,18 @@ export class OrderService {
   }
 
   /**
-   * PATCH /orders/:id/status — actualizar estado (Admin)
+   * PATCH /orders/:id/status — actualizar estado (Admin / Worker)
    */
-  updateOrderStatus(orderId: string, status: OrderStatus, cancelReason?: string): Observable<any> {
+  updateOrderStatus(
+    orderId: string,
+    status: OrderStatus,
+    cancelReason?: string,
+    deliveryProof?: DeliveryProofSnapshot,
+  ): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/${orderId}/status`, {
       status,
       ...(cancelReason ? { cancelReason } : {}),
+      ...(deliveryProof ? { deliveryProof } : {}),
     });
   }
 
@@ -83,5 +90,28 @@ export class OrderService {
    */
   confirmPickup(pickupCode: string): Observable<any> {
     return this.http.patch<any>(`${this.apiUrl}/pickup/confirm/${pickupCode}`, {});
+  }
+
+  /**
+   * PATCH /orders/:id/sunat-correlative — actualiza el número de comprobante oficial de SUNAT
+   *
+   * @param orderId ID de la orden
+   * @param sunatCorrelative Número oficial emitido en SUNAT (ej. F001-000045 o B001-000123)
+   * @returns Observable con la orden actualizada
+   */
+  updateSunatCorrelative(orderId: string, sunatCorrelative: string): Observable<Order> {
+    return this.http.patch<Order>(`${this.apiUrl}/${orderId}/sunat-correlative`, {
+      sunatCorrelative,
+    });
+  }
+
+  /**
+   * PATCH /orders/admin/backfill-billing — regulariza órdenes históricas sin snapshot fiscal
+   */
+  backfillBilling(): Observable<{ updatedCount: number; message: string }> {
+    return this.http.patch<{ updatedCount: number; message: string }>(
+      `${this.apiUrl}/admin/backfill-billing`,
+      {}
+    );
   }
 }

@@ -2,11 +2,12 @@ import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { Subject, takeUntil, catchError, of, finalize } from 'rxjs';
+import { Subject, Subscription, takeUntil, catchError, of, finalize } from 'rxjs';
 
 import { OrderService } from '../../../core/services/commerce/order.service';
 import { AuthService } from '../../../core/services/auth/auth.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
+import { QrScannerDriverService } from '../../../core/services/hardware/qr-scanner-driver.service';
 import { SolCurrencyPipe } from '../../../shared/pipes/sol-currency.pipe';
 import {
   Order,
@@ -101,6 +102,12 @@ export class OrdersComponent implements OnInit, OnDestroy {
   isVerifyingPickup = false;
   pickupVerificationError = '';
 
+  // ─── Lector / Driver de Escáner Físico QR ─────────────────────────────────
+  isScannerListening = false;
+  isDriverConnected = false;
+  activeDriverName = '';
+  private scannerSubscription: Subscription | null = null;
+
   // ─── Modal de Confirmación de Entrega a Domicilio (Delivery) ───────────────
   isDeliveryModalOpen = false;
   selectedDeliveryOrder: OrderViewModel | null = null;
@@ -110,6 +117,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
     private readonly orderService: OrderService,
     private readonly authService: AuthService,
     private readonly toastService: ToastService,
+    private readonly qrScannerDriver: QrScannerDriverService,
     private readonly router: Router,
     private readonly cdr: ChangeDetectorRef,
   ) {
@@ -126,6 +134,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.stopHardwareScanner();
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -186,7 +195,7 @@ export class OrdersComponent implements OnInit, OnDestroy {
       const clientEmail = clientObj?.email || '';
       const dni = clientObj?.dni || (clientObj as any)?.documentNumber;
       const clientDni = dni && dni.trim() !== '' ? dni.trim() : null;
-      const phone = clientObj?.phone || order?.pickupStore?.phone;
+      const phone = clientObj?.phone || (order?.shippingAddress as any)?.phone;
       const clientPhone = phone && phone.trim() !== '' ? phone.trim() : null;
 
       // Calcular iniciales del cliente
@@ -434,12 +443,83 @@ export class OrdersComponent implements OnInit, OnDestroy {
   }
 
   closePickupModal(): void {
+    this.stopHardwareScanner();
     this.isPickupModalOpen = false;
     this.selectedPickupOrder = null;
     this.verificationCodeInput = '';
     this.pickupVerificationError = '';
     this.isVerifyingPickup = false;
     this.cdr.markForCheck();
+  }
+
+  // ─── Lector / Driver de Escáner Físico QR ─────────────────────────────────
+  /**
+   * Alterna el modo de escucha activa del lector o pistola física de códigos QR
+   */
+  toggleHardwareScanner(): void {
+    if (this.isScannerListening) {
+      this.stopHardwareScanner();
+    } else {
+      this.startHardwareScanner();
+    }
+  }
+
+  /**
+   * Inicia la captura automática de códigos emitidos por la máquina lectora
+   */
+  startHardwareScanner(): void {
+    this.isScannerListening = true;
+    this.pickupVerificationError = '';
+    this.isDriverConnected = this.qrScannerDriver.isDriverConnected();
+    this.activeDriverName = this.qrScannerDriver.activeDevice()?.name || 'Lector USB / Bluetooth (HID)';
+    this.cdr.markForCheck();
+
+    this.scannerSubscription?.unsubscribe();
+    this.scannerSubscription = this.qrScannerDriver
+      .startHardwareListening()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(scannedCode => {
+        if (!scannedCode) return;
+        this.verificationCodeInput = scannedCode;
+        this.toastService.show(`¡Código detectado por el lector: ${scannedCode}!`, 'success');
+        this.cdr.markForCheck();
+        this.confirmPickupByCode();
+      });
+  }
+
+  /**
+   * Detiene el modo de escucha del lector físico
+   */
+  stopHardwareScanner(): void {
+    this.scannerSubscription?.unsubscribe();
+    this.scannerSubscription = null;
+    this.qrScannerDriver.stopHardwareListening();
+    this.isScannerListening = false;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Conecta con el driver USB WebHID para lectores directos por cable USB
+   */
+  async connectUsbScannerDriver(): Promise<void> {
+    const result = await this.qrScannerDriver.connectWebHidDriver();
+    if (result.success) {
+      this.isDriverConnected = true;
+      this.activeDriverName = result.deviceName || 'Dispositivo USB Conectado';
+      this.toastService.show(`Driver USB conectado: ${this.activeDriverName}`, 'success');
+      this.startHardwareScanner();
+    } else {
+      this.toastService.show(result.error || 'No se pudo conectar el driver USB', 'warning');
+    }
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Simula la lectura automática de un código QR para pruebas sin máquina física conectada
+   */
+  simulateScannerRead(): void {
+    const code = this.selectedPickupOrder?.pickupCode || 'PKP-DEMO99';
+    this.qrScannerDriver.simulateScan(code);
   }
 
   confirmPickupByCode(): void {
@@ -535,6 +615,35 @@ export class OrdersComponent implements OnInit, OnDestroy {
         }
         this.closeDeliveryModal();
         this.applyFilterAndSearch();
+      });
+  }
+
+  isBackfilling = false;
+
+  /**
+   * Ejecuta la regularización e inserción retroactiva de datos de facturación (BillingInfo)
+   * en órdenes existentes sin comprobante fiscal.
+   */
+  backfillBilling(): void {
+    this.isBackfilling = true;
+    this.cdr.markForCheck();
+
+    this.orderService.backfillBilling()
+      .pipe(
+        takeUntil(this.destroy$),
+        catchError(err => {
+          this.toastService.show(err?.error?.message || 'Error al regularizar órdenes', 'error');
+          return of(null);
+        }),
+        finalize(() => {
+          this.isBackfilling = false;
+          this.cdr.markForCheck();
+        })
+      )
+      .subscribe(res => {
+        if (!res) return;
+        this.toastService.show(res.message || 'Órdenes regularizadas con éxito', 'success');
+        this.loadOrders();
       });
   }
 

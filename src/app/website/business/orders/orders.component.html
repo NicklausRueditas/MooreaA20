@@ -48,6 +48,23 @@
         <span>Escanear QR Retiro</span>
       </a>
 
+      <!-- Botón Regularizar Facturación Histórica -->
+      <button
+        type="button"
+        (click)="backfillBilling()"
+        [disabled]="isBackfilling"
+        class="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-900 border border-indigo-200/80 text-xs font-bold transition-all active:scale-98 shadow-2xs disabled:opacity-50 cursor-pointer"
+        title="Asignar automáticamente datos de Boleta o Factura a órdenes anteriores"
+      >
+        <svg class="w-4 h-4 text-indigo-700" [class.animate-spin]="isBackfilling" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <path d="M12 18v-6"/>
+          <path d="m9 15 3-3 3 3"/>
+        </svg>
+        <span class="hidden lg:inline">{{ isBackfilling ? 'Regularizando...' : 'Regularizar Facturas' }}</span>
+      </button>
+
       <button
         type="button"
         (click)="loadOrders()"
@@ -1004,6 +1021,96 @@
             class="w-full px-4 py-3 bg-slate-50 border-2 border-purple-200 focus:border-purple-600 focus:bg-white rounded-2xl text-center font-mono text-base font-black tracking-widest uppercase outline-none transition"
           />
         </div>
+
+        <!-- Botón de Escanear QR con Lector Físico / Driver (Producción) -->
+        <button
+          type="button"
+          (click)="toggleHardwareScanner()"
+          [class.bg-purple-600]="isScannerListening"
+          [class.text-white]="isScannerListening"
+          [class.border-purple-500]="isScannerListening"
+          [class.hover:bg-purple-700]="isScannerListening"
+          [class.shadow-md]="isScannerListening"
+          [class.shadow-purple-600/25]="isScannerListening"
+          [class.bg-slate-900]="!isScannerListening"
+          [class.text-white]="!isScannerListening"
+          [class.hover:bg-black]="!isScannerListening"
+          [class.border-slate-800]="!isScannerListening"
+          class="w-full py-2.5 px-3.5 rounded-xl border text-xs font-bold transition-all duration-200 flex items-center justify-between cursor-pointer shadow-xs active:scale-[0.99]"
+        >
+          <div class="flex items-center gap-2">
+            @if (isScannerListening) {
+              <span class="relative flex h-2.5 w-2.5">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+              </span>
+              <span>Lector Activo — Esperando QR...</span>
+            } @else {
+              <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                <rect x="7" y="7" width="3" height="3" rx="0.5"/>
+                <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                <line x1="7" y1="12" x2="17" y2="12" stroke-dasharray="1 1"/>
+              </svg>
+              <span>Escanear QR con Lector / Pistola</span>
+            }
+          </div>
+          <span class="text-[10px] font-mono px-2 py-0.5 rounded-md" [ngClass]="isScannerListening ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-300'">
+            {{ isScannerListening ? 'Listo' : 'USB · BT' }}
+          </span>
+        </button>
+
+        <!-- Panel de Escáner Físico Activo / Conexión de Driver (Producción) -->
+        @if (isScannerListening) {
+          <div class="p-3.5 rounded-2xl bg-linear-to-br from-purple-50/90 to-indigo-50/50 border border-purple-200/90 text-xs space-y-2.5 animate-fadeIn shadow-2xs">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="relative flex h-2 w-2">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="font-black text-purple-950 text-[11px] uppercase tracking-wider">
+                  Modo Lectura Automática
+                </span>
+              </div>
+              <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-white border border-purple-200 text-purple-800 shadow-2xs">
+                {{ activeDriverName }}
+              </span>
+            </div>
+
+            <p class="text-[11px] text-purple-900 leading-relaxed font-medium">
+              Apunta la máquina o pistola lectora al código QR del cliente. La orden se validará inmediatamente.
+            </p>
+
+            <!-- Conexión de Driver Avanzado y Opción Manual -->
+            <div class="flex items-center justify-between pt-1 border-t border-purple-200/60">
+              <button
+                type="button"
+                (click)="connectUsbScannerDriver()"
+                class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100/70 border border-purple-200 text-purple-900 font-semibold text-[10px] transition cursor-pointer shadow-2xs"
+                title="Vincular dispositivo directo por WebHID USB"
+              >
+                <svg class="w-3 h-3 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M12 2v10"/>
+                  <path d="m9 9 3 3 3-3"/>
+                  <rect x="7" y="16" width="10" height="6" rx="1"/>
+                </svg>
+                <span>Conectar Driver USB</span>
+              </button>
+
+              <button
+                type="button"
+                (click)="stopHardwareScanner()"
+                class="text-[10px] font-bold text-purple-700 hover:text-purple-950 transition cursor-pointer underline decoration-dotted"
+              >
+                Escribir manualmente
+              </button>
+            </div>
+          </div>
+        }
 
         @if (pickupVerificationError) {
           <p class="text-xs font-bold text-rose-600 flex items-center gap-1 mt-1">

@@ -14,6 +14,7 @@ import { AuthService } from '../../../core/services/auth/auth.service';
 import { IzipayPaymentService, IzipayInitPaymentResponse } from '../../../core/services/commerce/izipay-payment.service';
 import { AddressModalComponent } from '../../../shared/components/address-modal/address-modal.component';
 import { CardModalComponent } from '../../../shared/components/card-modal/card-modal.component';
+import { UserContactModalComponent } from '../../../shared/components/user-contact-modal/user-contact-modal.component';
 
 import { Basket, BasketItem } from '../../../core/interfaces/basket.interface';
 import { AddressData } from '../../../core/interfaces/address.interface';
@@ -34,6 +35,7 @@ export type PaymentMethod   = 'card' | 'yape' | 'cash';
     RouterLink,
     AddressModalComponent,
     CardModalComponent,
+    UserContactModalComponent,
   ],
   templateUrl: './payment.component.html',
   styleUrl: './payment.component.css',
@@ -96,11 +98,103 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
   // ─── Confirmación ─────────────────────────────────────────────────────────
   isProcessingOrder = false;
+  orderConfirmed = false;
   orderError: string | null = null;
   acceptedTerms = false;
 
+  // ─── Modal de Contacto y DNI Obligatorios ────────────────────────────────
+  showContactModal = false;
+  private pendingStepAfterContact: CheckoutStep | null = null;
+
+  // ─── Selección Dinámica de Comprobante en Paso 4 (Checkout) ───────────────
+  selectedInvoiceType: 'boleta' | 'factura' = 'boleta';
+  billingDni = '';
+  billingCustomerName = '';
+  billingRuc = '';
+  billingBusinessName = '';
+  billingFiscalAddress = '';
+
+  /**
+   * Inicializa los datos de facturación para el checkout.
+   * Por defecto, la Boleta de Venta autocompleta el DNI y nombre del cliente registrado
+   * (permitiendo edición manual), mientras que la Factura se mantiene vacía por defecto
+   * para permitir facturar a empresas terceras.
+   *
+   * @param userProfile Perfil opcional del usuario autenticado
+   */
+  initBillingData(userProfile?: any): void {
+    const user = userProfile || this.currentUser;
+    if (user) {
+      if (!this.selectedInvoiceType) {
+        this.selectedInvoiceType = user.invoicePreference === 'factura' ? 'factura' : 'boleta';
+      }
+      const rawDni = user.dni || user.documentNumber || '';
+      const cleanDni = rawDni.replace(/\D/g, '').slice(0, 8);
+      if (!this.billingDni && cleanDni) {
+        this.billingDni = cleanDni;
+      }
+      if (!this.billingCustomerName && user.displayName) {
+        this.billingCustomerName = user.displayName;
+      }
+      // Para factura con RUC se mantienen vacíos por defecto según requerimiento de negocio
+    }
+  }
+
+  /**
+   * Cambia el tipo de comprobante seleccionado por el cliente en el checkout
+   * @param type 'boleta' o 'factura'
+   */
+  setInvoiceType(type: 'boleta' | 'factura'): void {
+    this.selectedInvoiceType = type;
+    this.cdr.markForCheck();
+  }
+
+  /**
+   * Valida si los datos del comprobante seleccionado en el checkout son válidos
+   */
+  get isBillingValid(): boolean {
+    const phone = (this.currentUser?.phone || '').replace(/\D/g, '');
+    if (phone.length < 9) return false;
+
+    if (this.selectedInvoiceType === 'factura') {
+      const ruc = (this.billingRuc || '').replace(/\D/g, '');
+      const validRuc = ruc.length === 11 && (ruc.startsWith('10') || ruc.startsWith('20'));
+      const validBusiness = !!(this.billingBusinessName && this.billingBusinessName.trim().length >= 3);
+      const validFiscal = !!(this.billingFiscalAddress && this.billingFiscalAddress.trim().length >= 5);
+      return validRuc && validBusiness && validFiscal;
+    } else {
+      const dni = (this.billingDni || '').replace(/\D/g, '');
+      return dni.length === 8;
+    }
+  }
+
   get currentUser() {
     return this.authService.getCurrentUser();
+  }
+
+  /**
+   * Determina si el perfil del usuario carece de celular o DNI válidos.
+   * Obligatorio para facturación y notificaciones logísticas por WhatsApp.
+   *
+   * @returns true si falta el celular o el DNI
+   */
+  get isProfileIncomplete(): boolean {
+    const user = this.currentUser;
+    if (!user) return false;
+    const cleanPhone = (user.phone || '').replace(/\D/g, '');
+    const hasPhone = cleanPhone.length >= 9;
+
+    if (user.invoicePreference === 'factura') {
+      const cleanRuc = (user.ruc || '').replace(/\D/g, '');
+      const hasRuc = cleanRuc.length === 11;
+      const hasBusiness = !!(user.businessName && user.businessName.trim().length >= 3);
+      const hasFiscal = !!(user.fiscalAddress && user.fiscalAddress.trim().length >= 5);
+      return !hasPhone || !hasRuc || !hasBusiness || !hasFiscal;
+    }
+
+    const cleanDni = (user.dni || '').replace(/\D/g, '');
+    const hasDni = cleanDni.length === 8;
+    return !hasPhone || !hasDni;
   }
 
   constructor(
@@ -130,6 +224,14 @@ export class PaymentComponent implements OnInit, OnDestroy {
       .subscribe(config => {
         if (config) this.googleMapsApiKey = config.googleMapsApiKey;
       });
+    this.authService.user$
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(user => {
+        if (user) {
+          this.initBillingData(user);
+        }
+      });
+    this.initBillingData();
   }
 
   ngOnDestroy(): void {
@@ -153,7 +255,19 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
   // ─── Navegación ───────────────────────────────────────────────────────────
 
+  /**
+   * Navega hacia un paso del checkout verificando previamente que los datos de contacto
+   * y facturación (celular y DNI) estén completos en el perfil del usuario.
+   *
+   * @param step Paso de destino
+   * @returns void
+   */
   goToStep(step: CheckoutStep): void {
+    if ((step === 'payment' || step === 'review') && this.isProfileIncomplete) {
+      this.pendingStepAfterContact = step;
+      this.showContactModal = true;
+      return;
+    }
     this.currentStep.set(step);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -195,14 +309,53 @@ export class PaymentComponent implements OnInit, OnDestroy {
     return this.paymentMethod() === 'yape' || this.paymentMethod() === 'cash';
   }
 
+  /**
+   * Continúa hacia el paso de Método de Pago si la entrega es válida y los datos de contacto existen.
+   *
+   * @returns void
+   */
   continueToPayment(): void {
     if (!this.canContinueFromAddress) return;
+    if (this.isProfileIncomplete) {
+      this.pendingStepAfterContact = 'payment';
+      this.showContactModal = true;
+      return;
+    }
     this.goToStep('payment');
   }
 
+  /**
+   * Continúa hacia la Revisión Final tras validar el método de pago y los datos de contacto.
+   *
+   * @returns void
+   */
   continueToReview(): void {
     if (!this.canContinueFromPayment) return;
+    if (this.isProfileIncomplete) {
+      this.pendingStepAfterContact = 'review';
+      this.showContactModal = true;
+      return;
+    }
     this.goToStep('review');
+  }
+
+  /**
+   * Manejador invocado cuando el usuario completa y guarda su celular y DNI desde el modal.
+   * Continúa la navegación al paso pendiente de manera automática.
+   *
+   * @param updatedUser Usuario con perfil actualizado
+   * @returns void
+   */
+  onContactModalSaved(updatedUser: any): void {
+    this.showContactModal = false;
+    if (updatedUser) {
+      this.initBillingData(updatedUser);
+    }
+    const nextStep = this.pendingStepAfterContact || 'payment';
+    this.pendingStepAfterContact = null;
+    this.currentStep.set(nextStep);
+    this.cdr.detectChanges();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   backToAddress(): void { this.goToStep('address'); }
@@ -226,7 +379,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
               this.itemDeliveryModes.set(key, 'delivery');
             }
           });
-          if (basketLoaded && basket.items.length === 0) {
+          if (basketLoaded && basket.items.length === 0 && !this.orderConfirmed && !this.isProcessingOrder) {
             this.router.navigate(['/basket']);
           }
           basketLoaded = true;
@@ -736,11 +889,12 @@ export class PaymentComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(() => {
+        this.orderConfirmed = true;
         this.isProcessingIzipayPayment = false;
         this.showIzipayModal = false;
         this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
-        // Redirigir directamente a Mis Pedidos
-        this.router.navigate(['/my-account/orders']);
+        // Redirigir directamente a la pantalla de éxito con comprobante
+        this.router.navigate(['/orders', orderIdToConfirm, 'success']);
       });
     }, 1200);
   }
@@ -760,20 +914,22 @@ export class PaymentComponent implements OnInit, OnDestroy {
       return;
     }
 
+    const orderId = this.pendingOrderId;
     this.isProcessingIzipayPayment = true;
     this.cdr.markForCheck();
 
     // Actualizar estado de orden en backend con nuevo método
-    this.orderService.updateOrderStatus(this.pendingOrderId as any, 'paid' as any)
+    this.orderService.updateOrderStatus(orderId as any, 'paid' as any)
       .pipe(
         takeUntil(this.destroy$),
         catchError(() => of(null))
       )
       .subscribe(() => {
+        this.orderConfirmed = true;
         this.isProcessingIzipayPayment = false;
         this.showIzipayModal = false;
         this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
-        this.router.navigate(['/my-account/orders']);
+        this.router.navigate(['/orders', orderId, 'success']);
       });
   }
 
@@ -804,6 +960,14 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
   confirmOrder(): void {
     if (!this.acceptedTerms || !this.basket) return;
+
+    // Validación final de teléfono y DNI requeridos
+    if (this.isProfileIncomplete) {
+      this.pendingStepAfterContact = 'review';
+      this.showContactModal = true;
+      return;
+    }
+
     this.isProcessingOrder = true;
     this.orderError = null;
 
@@ -812,6 +976,19 @@ export class PaymentComponent implements OnInit, OnDestroy {
 
     // Identificador compartido para sub-órdenes de una misma compra
     const groupOrderId = 'grp_' + Date.now() + '_' + Math.random().toString(36).substring(2, 9);
+
+    // Preparar datos de facturación legal (Boleta o Factura seleccionada en Paso 4)
+    const user = this.currentUser;
+    const isFactura = this.selectedInvoiceType === 'factura';
+    const billingDto: Partial<CreateOrderDto> = {
+      invoiceType: this.selectedInvoiceType,
+      documentType: isFactura ? 'ruc' : 'dni',
+      documentNumber: isFactura ? this.billingRuc.trim() : this.billingDni.trim(),
+      businessName: isFactura ? this.billingBusinessName.trim() : undefined,
+      fiscalAddress: isFactura ? this.billingFiscalAddress.trim() : undefined,
+      customerName: this.billingCustomerName.trim() || user?.displayName,
+      customerPhone: user?.phone,
+    };
 
     // ── Grupo delivery ─────────────────────────────────────────────────────
     const deliveryItems = this.basketItems.filter(
@@ -825,6 +1002,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
         variantIds:    deliveryItems.map(i => this.getItemKey(i)).filter(Boolean),
         groupOrderId,
         estimatedDays: 2, // Entrega a domicilio estándar (2 a 3 días)
+        ...billingDto,
       };
       calls.push(this.orderService.createOrder(dto));
     }
@@ -854,6 +1032,7 @@ export class PaymentComponent implements OnInit, OnDestroy {
         variantIds:    group.items.map(i => this.getItemKey(i)).filter(Boolean),
         groupOrderId,
         estimatedDays: group.estimatedDays,
+        ...billingDto,
       };
       calls.push(this.orderService.createOrder(dto));
     }
@@ -928,9 +1107,10 @@ export class PaymentComponent implements OnInit, OnDestroy {
               catchError(err => of(null))
             )
             .subscribe(() => {
+              this.orderConfirmed = true;
               this.isProcessingOrder = false;
               this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
-              this.router.navigate(['/my-account/orders']);
+              this.router.navigate(['/orders', firstOrder._id, 'success']);
             });
             return;
           }
@@ -959,9 +1139,10 @@ export class PaymentComponent implements OnInit, OnDestroy {
             });
         } else {
           // Vaciar carrito únicamente tras confirmar Yape o Efectivo
+          this.orderConfirmed = true;
           this.isProcessingOrder = false;
           this.basketService.clearBasket().pipe(takeUntil(this.destroy$)).subscribe();
-          this.router.navigate(['/my-account/orders']);
+          this.router.navigate(['/orders', firstOrder._id, 'success']);
         }
       });
   }

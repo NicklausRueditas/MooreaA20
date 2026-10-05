@@ -1,7 +1,7 @@
 import {
-  Component, OnChanges, OnDestroy,
+  Component, OnInit, OnChanges, OnDestroy,
   Input, Output, EventEmitter, ViewChild, ElementRef,
-  SimpleChanges,
+  SimpleChanges, ChangeDetectorRef,
 } from '@angular/core';
 import {
   FormBuilder, FormGroup, ReactiveFormsModule, Validators,
@@ -11,6 +11,7 @@ import { Subscription } from 'rxjs';
 
 import { AddressService } from '../../../core/services/utils/address.service';
 import { ToastService } from '../../../core/services/ui/toast.service';
+import { ConfigService } from '../../../core/services/utils/config.service';
 
 import {
   AddressData,
@@ -22,14 +23,19 @@ import { LocationsService, Location } from '../../../core/services/utils/locatio
 
 declare const google: any;
 
+/** Coordenadas predeterminadas de Lima, Perú */
+const DEFAULT_LIMA_COORDS = { lat: -12.046374, lng: -77.042793 };
+
 /**
  * Modal reutilizable para crear o editar una dirección.
+ * Integra Google Maps con carga asíncrona robusta y selector en cascada de ubicaciones de Perú.
  *
  * Uso:
  * ```html
  * <app-address-modal
  *   [isOpen]="showModal"
  *   [editAddress]="addressToEdit"
+ *   [googleMapsApiKey]="googleMapsApiKey"
  *   (closed)="showModal = false"
  *   (addressSaved)="onAddressSaved($event)">
  * </app-address-modal>
@@ -42,12 +48,12 @@ declare const google: any;
   templateUrl: './address-modal.component.html',
   styleUrl: './address-modal.component.css',
 })
-export class AddressModalComponent implements OnChanges, OnDestroy {
+export class AddressModalComponent implements OnInit, OnChanges, OnDestroy {
   /** Controla la visibilidad del modal */
   @Input() isOpen = false;
   /** Si se proporciona, entra en modo edición */
   @Input() editAddress: AddressData | null = null;
-  /** API key de Google Maps — pasarla desde el componente padre */
+  /** API key de Google Maps — opcional, si no se provee se obtiene de ConfigService */
   @Input() googleMapsApiKey = '';
 
   /** Emitido al cerrar el modal (backdrop o botón Cancelar) */
@@ -59,6 +65,9 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
   @ViewChild('mapContainer') mapContainer!: ElementRef;
   map: any;
   marker: any;
+  isMapLoading = false;
+  mapLoadError = false;
+  private mapInitialized = false;
 
   // ─── Selects en cascada ──────────────────────────────────────────────────
   departments: Location[] = [];
@@ -77,6 +86,8 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     private readonly addressService: AddressService,
     private readonly toastService: ToastService,
     private readonly locationsService: LocationsService,
+    private readonly configService: ConfigService,
+    private readonly cd: ChangeDetectorRef,
   ) {
     this.addressForm = this.fb.group({
       alias:             ['', [Validators.required, Validators.maxLength(50)]],
@@ -107,27 +118,71 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     );
   }
 
-  // ngOnInit no es necesario; la API key llega como @Input()
+  /**
+   * Ciclo de vida OnInit: escucha la configuración global de la API key de Maps
+   * como fallback automático si el padre no la pasó a tiempo.
+   *
+   * @returns void
+   */
+  ngOnInit(): void {
+    this.subscriptions.add(
+      this.configService.config$.subscribe(config => {
+        if (config?.googleMapsApiKey) {
+          if (!this.googleMapsApiKey) {
+            this.googleMapsApiKey = config.googleMapsApiKey;
+          }
+          if (this.isOpen && !this.mapInitialized) {
+            this.initMap();
+          }
+        }
+      })
+    );
+  }
 
+  /**
+   * Ciclo de vida OnChanges: detecta aperturas/cierres y cambios en inputs
+   * para reconfigurar el formulario y reintentar inicializar el mapa si la key llega tarde.
+   *
+   * @param changes Cambios detectados en las propiedades @Input()
+   * @returns void
+   */
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['isOpen']) {
       if (this.isOpen) {
+        this.mapInitialized = false;
         this.setupModal();
       } else {
         this.resetForm();
+        this.map = null;
+        this.marker = null;
       }
     }
     if (changes['editAddress'] && this.isOpen) {
+      this.mapInitialized = false;
       this.setupModal();
+    }
+    if (changes['googleMapsApiKey'] && this.isOpen && this.googleMapsApiKey && !this.mapInitialized) {
+      this.initMap();
     }
   }
 
+  /**
+   * Ciclo de vida OnDestroy: desuscribe todos los observables activos.
+   *
+   * @returns void
+   */
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
   // ─── Setup ────────────────────────────────────────────────────────────────
 
+  /**
+   * Configura los valores del modal al abrirlo, distinguiendo entre modo edición
+   * y modo creación con coordenadas iniciales por defecto de Lima, Perú.
+   *
+   * @returns void
+   */
   private setupModal(): void {
     if (this.editAddress) {
       // Modo edición
@@ -138,17 +193,38 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
       // Modo creación
       this.currentAddressId = null;
       this.resetForm();
+      // Inicializar coordenadas predeterminadas de Lima
+      this.addressForm.patchValue({
+        lat: DEFAULT_LIMA_COORDS.lat,
+        lng: DEFAULT_LIMA_COORDS.lng,
+      });
     }
-    // Pequeño delay para que el DOM renderice el #mapContainer
-    setTimeout(() => this.initMap(), 50);
+
+    this.mapLoadError = false;
+    this.isMapLoading = true;
+    this.cd.detectChanges();
+
+    // Pequeño delay para permitir que el DOM renderice el #mapContainer tras el @if (isOpen)
+    setTimeout(() => this.initMap(), 80);
   }
 
+  /**
+   * Restablece el formulario a sus valores iniciales en blanco.
+   *
+   * @returns void
+   */
   private resetForm(): void {
     this.addressForm.reset({ country: 'PE', isDefault: false });
     this.provinces = [];
     this.districts = [];
   }
 
+  /**
+   * Carga las listas dependientes de provincias y distritos según el departamento de la dirección.
+   *
+   * @param address Dirección cargada en modo edición
+   * @returns void
+   */
   private loadDependentLists(address: AddressData): void {
     const dep = this.departments.find(d => d.name === address.department);
     if (dep) {
@@ -162,42 +238,128 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
 
   // ─── Google Maps ─────────────────────────────────────────────────────────
 
+  /**
+   * Inicializa la carga del script de Google Maps o procede a renderizar el mapa
+   * si el SDK ya se encuentra disponible globalmente en window.google.
+   *
+   * @returns void
+   */
   private initMap(): void {
-    if (!this.googleMapsApiKey) return;
-    if (typeof google !== 'undefined') {
+    const apiKey = this.googleMapsApiKey || this.configService.getGoogleMapsApiKey();
+    if (!apiKey) {
+      this.isMapLoading = false;
+      return;
+    }
+
+    if (typeof google !== 'undefined' && google.maps?.Map) {
       this.renderMap();
       return;
     }
-    // Evitar inyectar el script más de una vez
-    if (document.querySelector('script[src*="maps.googleapis.com"]')) return;
+
+    // Verificar si el script ya fue inyectado en el DOM
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      existingScript.addEventListener('load', () => this.renderMap());
+      existingScript.addEventListener('error', () => {
+        this.isMapLoading = false;
+        this.mapLoadError = true;
+        this.cd.detectChanges();
+      });
+
+      // Polling de seguridad en caso de que el evento 'load' ya haya disparado
+      const checkInterval = setInterval(() => {
+        if (typeof google !== 'undefined' && google.maps?.Map) {
+          clearInterval(checkInterval);
+          this.renderMap();
+        }
+      }, 150);
+      setTimeout(() => clearInterval(checkInterval), 4000);
+      return;
+    }
+
+    // Inyectar el script con la API key activa
     const script = document.createElement('script');
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${this.googleMapsApiKey}&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places,marker`;
     script.async = true;
     script.defer = true;
     script.onload = () => this.renderMap();
+    script.onerror = () => {
+      this.isMapLoading = false;
+      this.mapLoadError = true;
+      this.cd.detectChanges();
+    };
     document.body.appendChild(script);
   }
 
-  renderMap(): void {
+  /**
+   * Renderiza la instancia de Google Maps en el contenedor del DOM `#mapContainer`
+   * y añade el marcador interactivo (arrastrable y con clic).
+   *
+   * @param retries Cantidad de reintentos restantes si el contenedor no está listo en el DOM
+   * @returns void
+   */
+  renderMap(retries = 3): void {
     setTimeout(() => {
-      if (!this.mapContainer?.nativeElement) return;
-      const lat = this.addressForm.get('lat')?.value ?? -12.0667;
-      const lng = this.addressForm.get('lng')?.value ?? -75.2333;
+      if (!this.mapContainer?.nativeElement) {
+        if (retries > 0) {
+          this.renderMap(retries - 1);
+        } else {
+          this.isMapLoading = false;
+        }
+        return;
+      }
+
+      let lat = this.addressForm.get('lat')?.value;
+      let lng = this.addressForm.get('lng')?.value;
+
+      if (lat == null || lng == null || isNaN(Number(lat)) || isNaN(Number(lng))) {
+        lat = DEFAULT_LIMA_COORDS.lat;
+        lng = DEFAULT_LIMA_COORDS.lng;
+        this.addressForm.patchValue({ lat, lng });
+      }
+
       const location = { lat: Number(lat), lng: Number(lng) };
       const mapOptions = {
-        center: location, zoom: 13,
-        mapTypeControl: false, streetViewControl: false,
+        center: location,
+        zoom: 15,
+        mapTypeControl: false,
+        streetViewControl: false,
+        fullscreenControl: false,
       };
+
       this.map = new google.maps.Map(this.mapContainer.nativeElement, mapOptions);
       this.marker = new google.maps.Marker({
-        position: location, map: this.map, draggable: true,
+        position: location,
+        map: this.map,
+        draggable: true,
         animation: google.maps.Animation.DROP,
       });
+
       this.map.addListener('click', (e: any) => this.updateMarkerPosition(e.latLng));
       this.marker.addListener('dragend', (e: any) => this.updateMarkerPosition(e.latLng));
-    }, 100);
+
+      this.isMapLoading = false;
+      this.mapLoadError = false;
+      this.mapInitialized = true;
+      this.cd.detectChanges();
+
+      // Disparar recálculo de tamaño tras la animación de entrada del modal
+      setTimeout(() => {
+        if (this.map && typeof google !== 'undefined') {
+          google.maps.event.trigger(this.map, 'resize');
+          this.map.setCenter(location);
+        }
+      }, 250);
+    }, 60);
   }
 
+  /**
+   * Actualiza la posición del marcador y los campos de latitud y longitud del formulario
+   * cuando el usuario hace clic en el mapa o arrastra el pin.
+   *
+   * @param latLng Objeto LatLng provisto por Google Maps
+   * @returns void
+   */
   private updateMarkerPosition(latLng: any): void {
     const lat = latLng.lat();
     const lng = latLng.lng();
@@ -206,20 +368,36 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     this.addressForm.patchValue({ lat, lng });
     this.addressForm.get('lat')?.markAsTouched();
     this.addressForm.get('lng')?.markAsTouched();
+    this.cd.detectChanges();
   }
 
+  /**
+   * Centra el mapa y actualiza la posición del marcador a partir de valores numéricos de coordenadas.
+   *
+   * @param lat Latitud numérica
+   * @param lng Longitud numérica
+   * @returns void
+   */
   private updateMapCenter(lat: number, lng: number): void {
     if (this.map && this.marker) {
       const pos = { lat, lng };
       this.map.panTo(pos);
-      this.map.setZoom(13);
+      this.map.setZoom(15);
       this.marker.setPosition(pos);
       this.addressForm.patchValue({ lat, lng });
+      this.cd.detectChanges();
     }
   }
 
   // ─── Selects en cascada ───────────────────────────────────────────────────
 
+  /**
+   * Manejador del cambio de selección de Departamento.
+   * Actualiza las provincias disponibles y centra el mapa en el departamento elegido.
+   *
+   * @param event Evento Change del elemento select
+   * @returns void
+   */
   onDepartmentChange(event: Event): void {
     const name = (event.target as HTMLSelectElement).value;
     const dep = this.departments.find(d => d.name === name);
@@ -228,10 +406,17 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     this.addressForm.patchValue({ province: '', district: '' });
     if (dep) {
       this.provinces = dep.children ?? [];
-      this.updateMapCenter(dep.lat ?? -12.0667, dep.lng ?? -75.2333);
+      this.updateMapCenter(dep.lat ?? DEFAULT_LIMA_COORDS.lat, dep.lng ?? DEFAULT_LIMA_COORDS.lng);
     }
   }
 
+  /**
+   * Manejador del cambio de selección de Provincia.
+   * Actualiza los distritos disponibles y centra el mapa en la provincia elegida.
+   *
+   * @param event Evento Change del elemento select
+   * @returns void
+   */
   onProvinceChange(event: Event): void {
     const name = (event.target as HTMLSelectElement).value;
     const prov = this.provinces.find(p => p.name === name);
@@ -243,6 +428,13 @@ export class AddressModalComponent implements OnChanges, OnDestroy {
     }
   }
 
+  /**
+   * Manejador del cambio de selección de Distrito.
+   * Centra el mapa en las coordenadas del distrito seleccionado.
+   *
+   * @param event Evento Change del elemento select
+   * @returns void
+   */
   onDistrictChange(event: Event): void {
     const name = (event.target as HTMLSelectElement).value;
     const dist = this.districts.find(d => d.name === name);

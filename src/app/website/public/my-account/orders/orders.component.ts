@@ -5,6 +5,8 @@ import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 
 import { OrderService } from '../../../../core/services/commerce/order.service';
+import { PdfReportService } from '../../../../core/services/ui/pdf-report.service';
+import { ToastService } from '../../../../core/services/ui/toast.service';
 import { SolCurrencyPipe } from '../../../../shared/pipes/sol-currency.pipe';
 import { CloudinaryPipe } from '../../../../shared/pipes/cloudinary.pipe';
 import {
@@ -36,6 +38,8 @@ export class OrdersComponent implements OnInit {
 
   constructor(
     private readonly orderService: OrderService,
+    private readonly pdfReportService: PdfReportService,
+    private readonly toastService: ToastService,
     private readonly cdr: ChangeDetectorRef,
   ) {}
 
@@ -175,4 +179,26 @@ export class OrdersComponent implements OnInit {
         return 'bg-neutral-400';
     }
   }
+
+  /**
+   * Genera y descarga el comprobante electrónico oficial (Boleta o Factura)
+   * @param order Objeto de la orden seleccionada
+   * @param format 'a4' para PDF estándar o 'ticket80' para tirilla térmica
+   * @param event Evento opcional del ratón para prevenir propagación
+   */
+  downloadInvoice(order: Order, format: 'a4' | 'ticket80' = 'a4', event?: Event): void {
+    if (event) {
+      event.stopPropagation();
+      event.preventDefault();
+    }
+    const isFactura = order.billing?.invoiceType === 'factura';
+    const tipo = isFactura ? 'Factura Electrónica' : 'Boleta de Venta';
+    const fmt = format === 'ticket80' ? 'Ticket 80mm' : 'A4';
+    this.toastService.show(`Descargando ${tipo} (${fmt})...`, 'info');
+    this.pdfReportService.generateCustomerInvoice(order, format, 'save');
+  }
+
+
+
+
 }

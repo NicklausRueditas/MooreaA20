@@ -24,34 +24,54 @@
       <span class="text-xs font-bold text-slate-500">Hoja de Preparación y Despacho</span>
     </div>
 
-    <!-- Botones de Impresión y PDF -->
-    <div class="flex items-center gap-2.5">
+    <!-- Botones de Impresión y Comprobantes -->
+    <div class="flex items-center gap-2 flex-wrap">
+      <!-- Comprobante Cliente A4 -->
+      <button
+        type="button"
+        (click)="downloadCustomerInvoice('a4')"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-indigo-50 hover:bg-indigo-100 text-indigo-800 border border-indigo-200/80 text-xs font-bold transition-all active:scale-95 shadow-2xs cursor-pointer"
+        title="Descargar Boleta o Factura en formato estándar A4"
+      >
+        <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <polyline points="10 9 9 9 8 9"/>
+        </svg>
+        <span>{{ order?.billing?.invoiceType === 'factura' ? 'Factura A4' : 'Boleta A4' }}</span>
+      </button>
+
+      <!-- Ticket Térmico 80mm -->
+      <button
+        type="button"
+        (click)="downloadCustomerInvoice('ticket80')"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-purple-50 hover:bg-purple-100 text-purple-800 border border-purple-200/80 text-xs font-bold transition-all active:scale-95 shadow-2xs cursor-pointer"
+        title="Descargar Ticket para impresora térmica de 80mm"
+      >
+        <svg class="w-4 h-4 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="18" x="3" y="3" rx="2"/>
+          <path d="M7 7h10"/>
+          <path d="M7 12h10"/>
+          <path d="M7 17h6"/>
+        </svg>
+        <span>Ticket (80mm)</span>
+      </button>
+
+      <!-- Hoja de Almacén Picking -->
       <button
         type="button"
         (click)="printOrder()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-all active:scale-95 shadow-2xs cursor-pointer"
-        title="Imprimir hoja de picking"
+        class="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl bg-white border border-slate-200 text-xs font-bold text-slate-700 hover:bg-slate-50 hover:text-slate-950 transition-all active:scale-95 shadow-2xs cursor-pointer"
+        title="Imprimir hoja de picking y control logístico"
       >
         <svg class="w-4 h-4 text-slate-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 6 2 18 2 18 9"/>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
           <rect width="12" height="8" x="6" y="14"/>
         </svg>
-        <span>Imprimir Hoja</span>
-      </button>
-
-      <button
-        type="button"
-        (click)="downloadPdf()"
-        class="inline-flex items-center gap-2 px-4 py-2 rounded-2xl bg-slate-900 text-white border border-slate-800 text-xs font-bold hover:bg-black transition-all active:scale-95 shadow-2xs cursor-pointer"
-        title="Descargar comprobante en formato PDF"
-      >
-        <svg class="w-4 h-4 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span>Descargar PDF</span>
+        <span>Hoja Almacén</span>
       </button>
     </div>
 
@@ -291,8 +311,8 @@
         </div>
       </div>
 
-      <!-- ── 4. TARJETAS DE INFORMACIÓN: CLIENTE, DESTINO Y PAGO ──────────────── -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6 sm:p-8 bg-slate-50/50 border-b border-slate-100">
+      <!-- ── 4. TARJETAS DE INFORMACIÓN: CLIENTE, DESTINO, PAGO Y FACTURACIÓN ─────── -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 p-6 sm:p-8 bg-slate-50/50 border-b border-slate-100">
         
         <!-- CARD 1: DATOS DEL CLIENTE -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5">
@@ -526,7 +546,246 @@
           </div>
         </div>
 
+        <!-- CARD 4: COMPROBANTE FISCAL SUNAT -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5 flex flex-col justify-between">
+          <div class="space-y-3">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-2.5">
+              <div class="flex items-center gap-2">
+                <div class="w-7 h-7 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                  </svg>
+                </div>
+                <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider">Comprobante SUNAT</h3>
+              </div>
+              <span
+                class="px-2 py-0.5 rounded-md text-[10px] font-black uppercase tracking-wider"
+                [ngClass]="order.billing?.invoiceType === 'factura' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-blue-100 text-blue-900 border border-blue-200'"
+              >
+                {{ order.billing?.invoiceType === 'factura' ? 'Factura con RUC' : 'Boleta de Venta' }}
+              </span>
+            </div>
+
+            <div class="space-y-2 text-xs">
+              @if (order.billing?.invoiceType === 'factura') {
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">RUC (11 dígitos):</span>
+                  <p class="font-mono font-black text-slate-900 text-sm mt-0.5">
+                    {{ order.billing?.documentNumber || 'No registrado' }}
+                  </p>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Razón Social:</span>
+                  <p class="font-bold text-slate-800 text-xs mt-0.5 leading-snug">
+                    {{ order.billing?.businessName || 'No registrada' }}
+                  </p>
+                </div>
+
+                @if (order.billing?.fiscalAddress) {
+                  <div>
+                    <span class="text-slate-400 block text-[10px] uppercase font-bold">Dirección Fiscal:</span>
+                    <p class="text-slate-600 text-[11px] mt-0.5 leading-snug">
+                      {{ order.billing?.fiscalAddress }}
+                    </p>
+                  </div>
+                }
+              } @else {
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">DNI del Cliente:</span>
+                  <p class="font-mono font-black text-slate-900 text-sm mt-0.5">
+                    {{ order.billing?.documentNumber || getClientDni() || 'Sin DNI' }}
+                  </p>
+                </div>
+
+                <div>
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">Adquiriente / Receptor:</span>
+                  <p class="font-bold text-slate-800 text-xs mt-0.5">
+                    {{ order.billing?.customerName || getClientName() }}
+                  </p>
+                </div>
+              }
+
+              <!-- Correlativo SUNAT -->
+              <div class="pt-2 border-t border-slate-100">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-400 block text-[10px] uppercase font-bold">N° Correlativo SUNAT:</span>
+                  @if (!isEditingCorrelative) {
+                    <button
+                      type="button"
+                      (click)="openEditCorrelativeModal()"
+                      class="text-[10px] font-bold text-indigo-600 hover:text-indigo-900 cursor-pointer underline decoration-dotted"
+                    >
+                      {{ order.billing?.sunatCorrelative ? 'Cambiar' : '+ Registrar' }}
+                    </button>
+                  }
+                </div>
+
+                @if (!isEditingCorrelative) {
+                  <p class="font-mono font-black text-sm mt-1 flex items-center gap-1.5" [ngClass]="order.billing?.sunatCorrelative ? 'text-emerald-700' : 'text-slate-400 italic text-xs font-normal'">
+                    @if (order.billing?.sunatCorrelative) {
+                      <svg class="w-3.5 h-3.5 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <polyline points="20 6 9 17 4 12"/>
+                      </svg>
+                      <span>{{ order.billing?.sunatCorrelative }}</span>
+                    } @else {
+                      <span>Pendiente de emitir en SUNAT</span>
+                    }
+                  </p>
+                } @else {
+                  <div class="mt-2 p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                    <input
+                      type="text"
+                      [(ngModel)]="newSunatCorrelative"
+                      placeholder="Ej. B001-000123"
+                      class="w-full px-2.5 py-1 text-xs font-mono border border-slate-300 rounded-lg uppercase outline-none focus:border-slate-900 focus:ring-1 focus:ring-slate-900"
+                    />
+                    <div class="flex items-center gap-1.5 justify-end">
+                      <button
+                        type="button"
+                        (click)="cancelEditCorrelative()"
+                        class="px-2 py-1 text-[11px] font-bold text-slate-500 hover:text-slate-700"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        (click)="saveSunatCorrelative()"
+                        [disabled]="isSavingCorrelative"
+                        class="px-2.5 py-1 bg-slate-900 hover:bg-black text-white text-[11px] font-bold rounded-lg cursor-pointer disabled:opacity-50"
+                      >
+                        {{ isSavingCorrelative ? 'Guardando...' : 'Guardar' }}
+                      </button>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          </div>
+
+          <!-- Acciones de descarga rápida del comprobante -->
+          <div class="pt-2 border-t border-slate-100 flex items-center gap-2">
+            <button
+              type="button"
+              (click)="downloadCustomerInvoice('a4')"
+              class="flex-1 py-1.5 px-2 rounded-xl bg-slate-900 hover:bg-black text-white text-[11px] font-bold text-center transition cursor-pointer shadow-2xs"
+            >
+              Descargar A4
+            </button>
+            <button
+              type="button"
+              (click)="downloadCustomerInvoice('ticket80')"
+              class="flex-1 py-1.5 px-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-[11px] font-bold text-center transition cursor-pointer"
+            >
+              Ticket 80mm
+            </button>
+          </div>
+        </div>
+
       </div>
+
+      <!-- ── 4b. CONSTANCIA DE ENTREGA A DOMICILIO (PROOF OF DELIVERY) ─────────────── -->
+      @if (order.deliveryProof) {
+        <div class="mx-6 sm:mx-8 my-6 p-5 sm:p-6 rounded-2xl bg-linear-to-br from-emerald-50/70 to-teal-50/40 border border-emerald-200/80 shadow-2xs space-y-4">
+          <div class="flex items-center justify-between flex-wrap gap-2 border-b border-emerald-100 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shadow-xs">
+                <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 6 9 17l-5-5"/>
+                </svg>
+              </div>
+              <div>
+                <h3 class="text-xs font-black text-slate-900 uppercase tracking-wider flex items-center gap-2">
+                  <span>Constancia de Entrega a Domicilio (PoD)</span>
+                  <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 border border-emerald-300">
+                    Verificado
+                  </span>
+                </h3>
+                <p class="text-[11px] text-slate-500">
+                  Comprobante operativo de entrega y recepción física conforme en domicilio.
+                </p>
+              </div>
+            </div>
+
+            @if (order.deliveryProof.deliveredAt) {
+              <div class="text-right">
+                <span class="text-slate-400 block text-[10px] uppercase font-bold">Fecha / Hora de Entrega:</span>
+                <span class="font-mono font-bold text-slate-800 text-xs">
+                  {{ order.deliveryProof.deliveredAt | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+            }
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+            <div class="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-100">
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Persona que recibió:</span>
+              <p class="font-black text-slate-900 text-sm mt-0.5">
+                {{ order.deliveryProof.recipientName || 'Titular del pedido' }}
+              </p>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-100">
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">DNI / Documento Receptor:</span>
+              <p class="font-mono font-bold text-slate-800 text-sm mt-0.5">
+                {{ order.deliveryProof.recipientDni || 'No registrado' }}
+              </p>
+            </div>
+
+            <div class="bg-white/80 backdrop-blur-xs p-3.5 rounded-xl border border-emerald-100">
+              <span class="text-slate-400 block text-[10px] uppercase font-bold">Observaciones / Notas:</span>
+              <p class="text-slate-700 text-xs mt-0.5 italic">
+                {{ order.deliveryProof.notes || 'Entregado conforme en el domicilio indicado.' }}
+              </p>
+            </div>
+          </div>
+
+          <!-- Galería de fotos de constancia -->
+          @if (order.deliveryProof.photos && order.deliveryProof.photos.length > 0) {
+            <div class="pt-2">
+              <div class="flex items-center gap-2 mb-2.5">
+                <svg class="w-4 h-4 text-emerald-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                  <circle cx="12" cy="13" r="4"/>
+                </svg>
+                <span class="text-xs font-bold text-slate-800">
+                  Fotografías de Respaldo de la Entrega ({{ order.deliveryProof.photos.length }}):
+                </span>
+                <span class="text-[11px] text-slate-400 italic">(Clic sobre cualquier imagen para ampliar)</span>
+              </div>
+
+              <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                @for (photo of order.deliveryProof.photos; track $index) {
+                  <button
+                    type="button"
+                    (click)="openImagePreview(photo, 'Constancia de Entrega - ' + order.invoiceNumber)"
+                    class="group relative aspect-4/3 rounded-xl overflow-hidden border border-emerald-200/90 bg-white shadow-2xs hover:shadow-md transition transform hover:-translate-y-0.5 cursor-pointer"
+                  >
+                    <img
+                      [src]="photo | cloudinary:'w_400,h_300,c_fill,q_auto,f_auto'"
+                      [alt]="'Constancia de entrega ' + ($index + 1)"
+                      class="w-full h-full object-cover transition group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div class="absolute inset-0 bg-slate-900/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white">
+                      <svg class="w-6 h-6 drop-shadow-md" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"/>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        <line x1="11" y1="8" x2="11" y2="14"/>
+                        <line x1="8" y1="11" x2="14" y2="11"/>
+                      </svg>
+                    </div>
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      }
 
       <!-- ── 5. TABLA DE ARTÍCULOS & HOJA DE PICKING ──────────────────────────── -->
       <div class="p-6 sm:p-8 space-y-4">
@@ -1014,18 +1273,110 @@
         </div>
 
         <div class="space-y-3">
-          <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-            Código de Retiro:
-          </label>
-          <input
-            type="text"
-            [(ngModel)]="verificationCodeInput"
-            placeholder="Ej. PKP-8F3X2K"
-            maxlength="20"
-            class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-slate-900 focus:outline-hidden text-center font-mono font-black text-xl tracking-widest uppercase bg-slate-50 text-slate-900 placeholder:text-slate-400 transition"
-            (keyup.enter)="executeConfirmAction()"
-            autofocus
-          />
+          <div class="space-y-2">
+            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+              Código de Retiro:
+            </label>
+            <input
+              type="text"
+              [(ngModel)]="verificationCodeInput"
+              placeholder="Ej. PKP-8F3X2K"
+              maxlength="20"
+              class="w-full px-4 py-3 rounded-2xl border-2 border-slate-300 focus:border-slate-900 focus:outline-hidden text-center font-mono font-black text-xl tracking-widest uppercase bg-slate-50 text-slate-900 placeholder:text-slate-400 transition"
+              (keyup.enter)="executeConfirmAction()"
+              autofocus
+            />
+
+            <!-- Botón de Escanear QR con Lector Físico / Driver (Producción) -->
+            <button
+              type="button"
+              (click)="toggleHardwareScanner()"
+              [class.bg-purple-600]="isScannerListening"
+              [class.text-white]="isScannerListening"
+              [class.border-purple-500]="isScannerListening"
+              [class.hover:bg-purple-700]="isScannerListening"
+              [class.shadow-md]="isScannerListening"
+              [class.shadow-purple-600/25]="isScannerListening"
+              [class.bg-slate-900]="!isScannerListening"
+              [class.text-white]="!isScannerListening"
+              [class.hover:bg-black]="!isScannerListening"
+              [class.border-slate-800]="!isScannerListening"
+              class="w-full py-2.5 px-3.5 rounded-xl border text-xs font-bold transition-all duration-200 flex items-center justify-between cursor-pointer shadow-xs active:scale-[0.99]"
+            >
+              <div class="flex items-center gap-2">
+                @if (isScannerListening) {
+                  <span class="relative flex h-2.5 w-2.5">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-400"></span>
+                  </span>
+                  <span>Lector Activo — Esperando QR...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 7V5a2 2 0 0 1 2-2h2"/>
+                    <path d="M17 3h2a2 2 0 0 1 2 2v2"/>
+                    <path d="M21 17v2a2 2 0 0 1-2 2h-2"/>
+                    <path d="M7 21H5a2 2 0 0 1-2-2v-2"/>
+                    <rect x="7" y="7" width="3" height="3" rx="0.5"/>
+                    <rect x="14" y="14" width="3" height="3" rx="0.5"/>
+                    <line x1="7" y1="12" x2="17" y2="12" stroke-dasharray="1 1"/>
+                  </svg>
+                  <span>Escanear QR con Lector / Pistola</span>
+                }
+              </div>
+              <span class="text-[10px] font-mono px-2 py-0.5 rounded-md" [ngClass]="isScannerListening ? 'bg-white/20 text-white' : 'bg-white/10 text-slate-300'">
+                {{ isScannerListening ? 'Listo' : 'USB · BT' }}
+              </span>
+            </button>
+          </div>
+
+          <!-- Panel de Escáner Físico Activo / Conexión de Driver (Producción) -->
+          @if (isScannerListening) {
+            <div class="p-3.5 rounded-2xl bg-linear-to-br from-purple-50/90 to-indigo-50/50 border border-purple-200/90 text-xs space-y-2.5 animate-fadeIn shadow-2xs">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span class="font-black text-purple-950 text-[11px] uppercase tracking-wider">
+                    Modo Lectura Automática
+                  </span>
+                </div>
+                <span class="text-[10px] font-mono font-bold px-2 py-0.5 rounded-lg bg-white border border-purple-200 text-purple-800 shadow-2xs">
+                  {{ activeDriverName }}
+                </span>
+              </div>
+
+              <p class="text-[11px] text-purple-900 leading-relaxed font-medium">
+                Apunta la máquina o pistola lectora al código QR del cliente. La orden se validará y entregará automáticamente.
+              </p>
+
+              <!-- Conexión de Driver Avanzado y Opción Manual -->
+              <div class="flex items-center justify-between pt-1 border-t border-purple-200/60">
+                <button
+                  type="button"
+                  (click)="connectUsbScannerDriver()"
+                  class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white hover:bg-purple-100/70 border border-purple-200 text-purple-900 font-semibold text-[10px] transition cursor-pointer shadow-2xs"
+                  title="Vincular dispositivo directo por WebHID USB"
+                >
+                  <svg class="w-3 h-3 text-purple-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v10"/>
+                    <path d="m9 9 3 3 3-3"/>
+                    <rect x="7" y="16" width="10" height="6" rx="1"/>
+                  </svg>
+                  <span>Conectar Driver USB</span>
+                </button>
+
+                <button
+                  type="button"
+                  (click)="stopHardwareScanner()"
+                  class="text-[10px] font-bold text-purple-700 hover:text-purple-950 transition cursor-pointer underline decoration-dotted"
+                >
+                  Escribir manualmente
+                </button>
+              </div>
+            </div>
+          }
 
           @if (pickupVerificationError) {
             <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold flex items-center gap-2">
@@ -1121,13 +1472,78 @@
               class="w-full px-3.5 py-2 rounded-xl border border-slate-200 focus:border-emerald-500 focus:outline-hidden text-xs text-slate-800 bg-slate-50 focus:bg-white transition"
             />
           </div>
+
+          <!-- Fotos de constancia de entrega (PoD) -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="block font-bold text-slate-700">Fotos de constancia (opcional, máx. 3):</label>
+              <span class="text-[10px] text-slate-400 font-mono font-bold">{{ deliveryPhotos.length }}/3</span>
+            </div>
+
+            <!-- Previsualización de miniaturas subidas -->
+            @if (deliveryPhotos.length > 0) {
+              <div class="grid grid-cols-3 gap-2 mb-2">
+                @for (photo of deliveryPhotos; track $index) {
+                  <div class="relative group aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 shadow-2xs">
+                    <img
+                      [src]="photo | cloudinary:'w_200,h_200,c_fill,q_auto,f_auto'"
+                      alt="Constancia de entrega"
+                      class="w-full h-full object-cover cursor-pointer transition group-hover:scale-105"
+                      (click)="openImagePreview(photo, 'Foto de Constancia de Entrega')"
+                    />
+                    <button
+                      type="button"
+                      (click)="removeDeliveryPhoto($index)"
+                      [disabled]="isProcessingAction"
+                      class="absolute top-1 right-1 w-5 h-5 rounded-full bg-rose-600 hover:bg-rose-700 text-white flex items-center justify-center transition shadow-xs cursor-pointer"
+                      title="Eliminar foto"
+                    >
+                      <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                      </svg>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+
+            <!-- Botón para subir foto si son menos de 3 -->
+            @if (deliveryPhotos.length < 3) {
+              <input
+                #deliveryPhotoInput
+                type="file"
+                accept="image/*"
+                capture="environment"
+                (change)="onDeliveryPhotoSelected($event)"
+                class="hidden"
+              />
+              <button
+                type="button"
+                (click)="deliveryPhotoInput.click()"
+                [disabled]="isUploadingDeliveryPhoto || isProcessingAction"
+                class="w-full py-2.5 px-3 border border-dashed border-slate-300 hover:border-emerald-500 rounded-xl bg-slate-50 hover:bg-emerald-50/40 text-slate-600 hover:text-emerald-700 text-xs font-semibold flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                @if (isUploadingDeliveryPhoto) {
+                  <span class="inline-block w-3.5 h-3.5 border-2 border-emerald-600 border-t-transparent rounded-full animate-spin"></span>
+                  <span>Subiendo fotografía...</span>
+                } @else {
+                  <svg class="w-4 h-4 text-emerald-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  <span>Adjuntar foto (fachada, paquete o recepción)</span>
+                }
+              </button>
+            }
+          </div>
         </div>
 
         <div class="flex items-center justify-end gap-2.5 pt-2">
           <button
             type="button"
             (click)="closeConfirmModal()"
-            [disabled]="isProcessingAction"
+            [disabled]="isProcessingAction || isUploadingDeliveryPhoto"
             class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs transition cursor-pointer"
           >
             Cancelar
@@ -1135,7 +1551,7 @@
           <button
             type="button"
             (click)="executeConfirmAction()"
-            [disabled]="isProcessingAction"
+            [disabled]="isProcessingAction || isUploadingDeliveryPhoto"
             class="px-5 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-800 font-bold text-xs border border-emerald-200/90 transition active:scale-95 flex items-center gap-2 cursor-pointer shadow-2xs disabled:opacity-50"
           >
             @if (isProcessingAction) {
@@ -1185,7 +1601,7 @@
       </div>
 
       <p class="text-[11px] text-center text-slate-400">
-        Fotografía de referencia para verificación de stock y empaque.
+        {{ previewImageTitle.includes('Constancia') ? 'Fotografía de respaldo de entrega en domicilio.' : 'Fotografía de referencia para verificación de stock y empaque.' }}
       </p>
     </div>
   </div>

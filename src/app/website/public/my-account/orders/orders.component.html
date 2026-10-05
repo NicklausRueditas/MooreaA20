@@ -272,9 +272,11 @@
 
               <!-- Comprobante / # de Orden -->
               <div>
-                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">Nº de Comprobante</span>
+                <span class="block text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                  {{ order.billing?.invoiceType === 'factura' ? 'Factura con RUC' : 'Boleta de Venta' }}
+                </span>
                 <span class="text-xs font-mono font-black text-slate-900">
-                  {{ order.invoiceNumber || order._id | slice:-8 }}
+                  {{ order.billing?.sunatCorrelative || order.invoiceNumber || (order._id | slice:-8) }}
                 </span>
               </div>
 
@@ -436,16 +438,33 @@
 
               </div>
 
-              <!-- Botón Acción: Ver Detalle -->
-              <a
-                [routerLink]="['/orders', order._id, 'success']"
-                class="px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
-              >
-                <span>Ver Comprobante y Detalle</span>
-                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-                </svg>
-              </a>
+              <!-- Botones de Acción: Descargar Comprobante y Ver Detalle -->
+              <div class="flex items-center gap-2 flex-wrap">
+                <button
+                  type="button"
+                  (click)="downloadInvoice(order, 'a4', $event)"
+                  class="px-3 py-2 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-bold transition shadow-2xs cursor-pointer inline-flex items-center gap-1.5"
+                  [title]="order.billing?.invoiceType === 'factura' ? 'Descargar Factura Electrónica (PDF A4)' : 'Descargar Boleta de Venta (PDF A4)'"
+                >
+                  <svg class="w-4 h-4 text-indigo-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>{{ order.billing?.invoiceType === 'factura' ? 'Factura' : 'Boleta' }} PDF</span>
+                </button>
+
+                <a
+                  [routerLink]="['/orders', order._id, 'success']"
+                  [queryParams]="{ single: 'true' }"
+                  class="px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-black uppercase tracking-wider shadow-sm hover:shadow-md transition-all inline-flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <span>Ver Detalle</span>
+                  <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+                  </svg>
+                </a>
+              </div>
 
             </div>
 

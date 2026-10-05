@@ -29,232 +29,361 @@
   <!-- ══ Contenedor Principal ══ -->
   <div class="max-w-3xl mx-auto px-4 space-y-6 animate-[fadeIn_0.2s_ease-out]">
 
-    <!-- Encabezado de Confirmación -->
+    <!-- Encabezado de Confirmación / Detalle -->
     <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-8 text-center space-y-3">
       <div class="w-16 h-16 rounded-3xl bg-emerald-500 text-white flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/25">
         <svg class="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
           <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
-      <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">¡Gracias por tu compra!</h1>
-      <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
-        Tu pedido con comprobante <strong class="text-gray-900 font-extrabold">{{ order.invoiceNumber }}</strong> ha sido confirmado y registrado con éxito.
-      </p>
 
-      <div class="pt-2 flex items-center justify-center gap-2 flex-wrap">
-        <span class="px-3 py-1 rounded-full text-xs font-extrabold border"
-          [ngClass]="getStatusColor(order.status)">
-          {{ getStatusLabel(order.status) }}
-        </span>
-        <span class="px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center gap-1.5">
-          <svg class="w-3.5 h-3.5 text-slate-700" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-          </svg>
-          <span>{{ order.paymentMethod === 'card' ? 'Izipay Aprobado' : (order.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}</span>
-        </span>
-      </div>
+      @if (isSingleView) {
+        <!-- Modo Detalle Individual (accedido desde Mis Pedidos) -->
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Detalle del Pedido</h1>
+        <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+          Comprobante <strong class="text-gray-900 font-extrabold">{{ order.invoiceNumber }}</strong> · Registrado el {{ order.createdAt | date:'dd/MM/yyyy, HH:mm' }}
+        </p>
+
+        <div class="pt-2 flex items-center justify-center gap-2 flex-wrap">
+          <span class="px-3 py-1 rounded-full text-xs font-extrabold border" [ngClass]="getStatusColor(order.status)">
+            {{ getStatusLabel(order.status) }}
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center gap-1.5">
+            <span>{{ order.paymentMethod === 'card' ? 'Izipay Aprobado' : (order.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}</span>
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-slate-900 text-white">
+            Total: {{ order.pricing.total | solCurrency }}
+          </span>
+        </div>
+      } @else if (isGroupedOrder) {
+        <!-- Modo Compra Multientrega (recién finalizada desde el Checkout) -->
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">¡Gracias por tu compra!</h1>
+        <p class="text-xs sm:text-sm text-gray-600 max-w-lg mx-auto leading-relaxed">
+          Tu compra ha sido procesada con éxito y organizada en <strong class="text-gray-900 font-extrabold">{{ allOrders.length }} despachos independientes</strong> para que recibas o retires cada producto según tu preferencia.
+        </p>
+        <div class="pt-2 flex items-center justify-center gap-2 flex-wrap">
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-indigo-50 text-indigo-800 border border-indigo-200 inline-flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+            </svg>
+            <span>Compra Multientrega ({{ allOrders.length }} Entregas · {{ totalGroupItemsCount }} {{ totalGroupItemsCount === 1 ? 'producto' : 'productos' }})</span>
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-800 border border-slate-200">
+            Total Global: {{ totalGroupAmount | solCurrency }}
+          </span>
+        </div>
+      } @else {
+        <!-- Modo Compra Simple (1 solo despacho) -->
+        <h1 class="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">¡Gracias por tu compra!</h1>
+        <p class="text-xs sm:text-sm text-gray-500 max-w-md mx-auto">
+          Tu pedido con comprobante <strong class="text-gray-900 font-extrabold">{{ order.invoiceNumber }}</strong> ha sido confirmado y registrado con éxito.
+        </p>
+        <div class="pt-2 flex items-center justify-center gap-2 flex-wrap">
+          <span class="px-3 py-1 rounded-full text-xs font-extrabold border" [ngClass]="getStatusColor(order.status)">
+            {{ getStatusLabel(order.status) }}
+          </span>
+          <span class="px-3 py-1 rounded-full text-xs font-black bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center gap-1.5">
+            <span>{{ order.paymentMethod === 'card' ? 'Izipay Aprobado' : (order.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}</span>
+          </span>
+        </div>
+      }
     </div>
 
-    <!-- ═══════════════════════════════════════════════════════════════════════ -->
-    <!-- SEGUIMIENTO DEL PEDIDO (Estilo Falabella / Ripley)                       -->
-    <!-- ═══════════════════════════════════════════════════════════════════════ -->
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 sm:p-7 space-y-6">
-      <div class="flex items-center justify-between border-b border-gray-100 pb-3">
-        <h3 class="text-sm font-black text-slate-900 flex items-center gap-2">
-          <svg class="w-4 h-4 text-slate-800" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+    <!-- ══ Banner Interactivo de Alternancia entre Individual y Agrupado ══ -->
+    @if (hasSisterOrders) {
+    <div class="p-4 bg-indigo-50/80 border border-indigo-200/90 rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
+      <div class="flex items-center gap-2.5 text-indigo-950 font-bold text-center sm:text-left">
+        <div class="w-8 h-8 rounded-xl bg-indigo-600 text-white flex items-center justify-center shrink-0">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
           </svg>
-          <span>Seguimiento de tu Pedido</span>
-        </h3>
-        <span class="text-[11px] font-extrabold text-emerald-700 bg-emerald-50 border border-emerald-100 px-2.5 py-1 rounded-lg">
-          En Tiempo Real
-        </span>
-      </div>
-
-      <!-- Stepper Visual -->
-      <div class="grid grid-cols-4 gap-2 relative">
-        <!-- Barra de progreso de fondo -->
-        <div class="absolute top-4 left-6 right-6 h-1 bg-gray-100 -z-0"></div>
-
-        <!-- Paso 1: Pagado -->
-        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
-          <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-emerald-600/30 ring-4 ring-white">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
-            </svg>
-          </div>
-          <div>
-            <p class="text-[11px] font-black text-gray-900">Pagado</p>
-            <p class="text-[9px] text-gray-400 font-medium">Cobro Aprobado</p>
-          </div>
         </div>
-
-        <!-- Paso 2: Preparando -->
-        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
-          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
-            [ngClass]="['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : (order.status === 'paid' ? 'bg-slate-900 text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
-            @if (['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(order.status)) {
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            } @else {
-              2
-            }
-          </div>
-          <div>
-            <p class="text-[11px] font-black text-gray-900">En Preparación</p>
-            <p class="text-[9px] text-gray-400 font-medium">Empaque de stock</p>
-          </div>
-        </div>
-
-        <!-- Paso 3: Listo / En Camino -->
-        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
-          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
-            [ngClass]="['ready_for_pickup', 'shipped', 'delivered'].includes(order.status) ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : (order.status === 'preparing' ? 'bg-slate-900 text-white animate-pulse' : 'bg-gray-100 text-gray-400')">
-            @if (['ready_for_pickup', 'shipped', 'delivered'].includes(order.status)) {
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            } @else {
-              3
-            }
-          </div>
-          <div>
-            <p class="text-[11px] font-black text-gray-900">{{ hasPickup ? 'Listo en Tienda' : 'En Camino' }}</p>
-            <p class="text-[9px] text-gray-400 font-medium">{{ hasPickup ? 'Con código QR' : 'Repartidor en ruta' }}</p>
-          </div>
-        </div>
-
-        <!-- Paso 4: Entregado -->
-        <div class="flex flex-col items-center text-center space-y-2 relative z-10">
-          <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
-            [ngClass]="order.status === 'delivered' ? 'bg-emerald-600 text-white shadow-md shadow-emerald-600/30' : 'bg-gray-100 text-gray-400'">
-            @if (order.status === 'delivered') {
-              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" /></svg>
-            } @else {
-              4
-            }
-          </div>
-          <div>
-            <p class="text-[11px] font-black text-gray-900">Entregado</p>
-            <p class="text-[9px] text-gray-400 font-medium">Pedido completado</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- ── QR de Retiro (si aplica) ── -->
-    @if (hasPickup) {
-    <div class="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-      <div class="bg-slate-900 p-5 text-white flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center shadow-xs">
-            <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
-          </div>
-          <div>
-            <h2 class="font-black text-sm sm:text-base tracking-tight">Código QR para Retiro en Tienda</h2>
-            <p class="text-slate-300 text-xs">Muestra este código al cajero para retirar tus productos</p>
-          </div>
-        </div>
-      </div>
-      <div class="p-6 flex flex-col sm:flex-row items-center gap-6">
-        <div class="flex-shrink-0">
-          @if (isLoadingQr) {
-            <div class="w-[180px] h-[180px] bg-gray-100 rounded-2xl animate-pulse"></div>
-          } @else if (qrImageUrl) {
-            <img [src]="qrImageUrl" alt="QR de retiro" class="w-[180px] h-[180px] rounded-2xl shadow-sm border border-gray-200">
-          } @else if (qrData) {
-            <div class="w-[180px] h-[180px] bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex flex-col items-center justify-center p-4 text-center">
-              <p class="text-[10px] text-slate-500 font-black uppercase tracking-wider">Código de Retiro</p>
-              <p class="font-mono font-black text-2xl text-slate-900">{{ qrData.pickupCode }}</p>
-            </div>
+        <div>
+          @if (isSingleView) {
+            <p class="text-slate-900 font-black">Este pedido forma parte de una compra de {{ sisterOrdersCount }} despachos.</p>
+            <p class="text-slate-500 text-[11px] font-medium">Estás visualizando únicamente este paquete. Puedes ver el grupo completo si lo deseas.</p>
+          } @else {
+            <p class="text-slate-900 font-black">Viendo la compra completa ({{ sisterOrdersCount }} despachos).</p>
+            <p class="text-slate-500 text-[11px] font-medium">Puedes aislar la vista para centrarte en este pedido individual.</p>
           }
         </div>
-        <div class="text-center sm:text-left space-y-2">
-          @if (qrData) {
-            <div>
-              <p class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Código de Retiro</p>
-              <p class="font-mono font-black text-2xl text-gray-900">{{ qrData.pickupCode }}</p>
-            </div>
-          }
-          <div>
-            <p class="text-[10px] text-gray-400 font-extrabold uppercase tracking-wider">Tienda de Retiro</p>
-            <p class="font-bold text-sm text-gray-800">{{ pickupStore }}</p>
-            @if (pickupStoreAddress) {
-              <p class="text-xs text-gray-500">{{ pickupStoreAddress }}</p>
-            }
-          </div>
-          <div class="flex items-start gap-2 text-[11px] text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100">
-            <svg class="w-4 h-4 text-slate-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-            <span>Presenta este código QR y tu documento de identidad oficial para retirar tu compra.</span>
-          </div>
-        </div>
       </div>
+
+      <button
+        type="button"
+        (click)="toggleViewMode()"
+        class="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-black transition-all active:scale-95 cursor-pointer shrink-0 shadow-sm"
+      >
+        {{ isSingleView ? 'Ver compra completa (' + sisterOrdersCount + ')' : 'Ver solo este pedido' }}
+      </button>
     </div>
     }
 
-    <!-- ── Detalle de Artículos y Costos ── -->
-    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-      <div class="p-5 border-b border-gray-100 flex items-center justify-between">
-        <h3 class="font-black text-sm text-gray-900">Resumen del Pedido</h3>
-        <span class="text-xs font-semibold text-gray-400">{{ order.createdAt | date:'dd/MM/yyyy, HH:mm' }}</span>
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- LISTADO DE DESPACHOS / SUB-ÓRDENES (Delivery vs Recojo)                -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @for (subOrder of allOrders; track subOrder._id; let i = $index) {
+    <div class="bg-white rounded-3xl border border-slate-200/90 shadow-sm overflow-hidden space-y-5 p-6 sm:p-7">
+
+      <!-- Cabecera de la Sub-orden / Despacho -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0 shadow-xs"
+            [ngClass]="subOrder.fulfillment === 'pickup' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-blue-50 text-blue-700 border border-blue-200'">
+            @if (subOrder.fulfillment === 'pickup') {
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+              </svg>
+            } @else {
+              <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0" />
+              </svg>
+            }
+          </div>
+
+          <div>
+            <div class="flex items-center gap-2 flex-wrap">
+              <span class="text-xs font-black uppercase tracking-wider text-slate-400">
+                {{ isSingleView ? 'Despacho Asignado' : ('Entrega #' + (i + 1)) }} · {{ subOrder.fulfillment === 'pickup' ? 'Retiro en Tienda' : 'Envío a Domicilio' }}
+              </span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider"
+                [ngClass]="subOrder.fulfillment === 'pickup' ? 'bg-emerald-100 text-emerald-900 border border-emerald-200' : 'bg-blue-100 text-blue-900 border border-blue-200'">
+                {{ subOrder.fulfillment === 'pickup' ? 'Retiro Físico' : 'Delivery Estándar' }}
+              </span>
+            </div>
+
+            <h2 class="text-base font-black text-slate-900 tracking-tight mt-0.5">
+              Comprobante: {{ subOrder.invoiceNumber }}
+            </h2>
+
+            <p class="text-xs text-slate-500 mt-0.5">
+              @if (subOrder.fulfillment === 'pickup') {
+                Local: <strong class="text-slate-800">{{ subOrder.pickupStore?.name || 'Tienda Física' }}</strong> — {{ subOrder.pickupStore?.address }}
+              } @else {
+                Destino: <strong class="text-slate-800">{{ subOrder.shippingAddress?.street }} {{ subOrder.shippingAddress?.streetNumber || '' }}</strong>, {{ subOrder.shippingAddress?.district }}
+              }
+            </p>
+          </div>
+        </div>
+
+        <!-- Botones de Comprobante para esta sub-orden -->
+        <div class="flex items-center gap-2 flex-wrap sm:shrink-0">
+          <button
+            type="button"
+            (click)="downloadInvoice(subOrder, 'a4')"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-900 hover:bg-black text-white text-xs font-bold transition-all active:scale-95 shadow-xs cursor-pointer"
+            title="Descargar comprobante en formato A4 (PDF)"
+          >
+            <svg class="w-3.5 h-3.5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>Descargar A4</span>
+          </button>
+
+          <button
+            type="button"
+            (click)="downloadInvoice(subOrder, 'ticket80')"
+            class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-200 text-xs font-bold transition-all active:scale-95 cursor-pointer"
+            title="Descargar ticket de 80mm para impresora térmica"
+          >
+            <svg class="w-3.5 h-3.5 text-slate-700" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect width="18" height="18" x="3" y="3" rx="2"/>
+              <path d="M7 7h10"/>
+              <path d="M7 12h10"/>
+            </svg>
+            <span>Ticket (80mm)</span>
+          </button>
+        </div>
       </div>
 
-      <div class="divide-y divide-gray-100">
-        @for (item of order.items; track item.variantId) {
-        <div class="p-4 sm:p-5 flex items-center justify-between gap-4">
-          <div class="flex items-center gap-3.5 min-w-0">
+      <!-- Datos fiscales de la emisión del comprobante -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs bg-slate-50/80 p-3.5 rounded-2xl border border-slate-100">
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Tipo y Documento:</span>
+          <p class="font-black text-slate-900 mt-0.5">
+            {{ getInvoiceTypeLabel(subOrder) }}
+          </p>
+          <p class="font-mono text-slate-500 text-[11px]">
+            {{ isFactura(subOrder) ? 'RUC: ' : 'DNI: ' }}{{ getDocumentNumber(subOrder) || 'No especificado' }}
+          </p>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Titular de la Compra:</span>
+          <p class="font-bold text-slate-900 mt-0.5 truncate">
+            {{ getCustomerOrBusinessName(subOrder) }}
+          </p>
+          <span class="text-[10px] text-emerald-700 font-bold">
+            {{ subOrder.paymentMethod === 'card' ? 'Izipay Aprobado' : (subOrder.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}
+          </span>
+        </div>
+
+        <div>
+          <span class="text-slate-400 block text-[10px] uppercase font-bold">Monto de este Despacho:</span>
+          <p class="font-black text-slate-900 text-sm mt-0.5 font-sans">
+            {{ subOrder.pricing.total | solCurrency }}
+          </p>
+          <span class="text-[10px] text-slate-400">IGV 18% incluido</span>
+        </div>
+      </div>
+
+      <!-- Stepper Visual de Seguimiento de este Despacho -->
+      <div class="pt-2">
+        <div class="grid grid-cols-4 gap-2 relative text-center">
+          <div class="absolute top-4 left-6 right-6 h-1 bg-gray-100 -z-0"></div>
+
+          <!-- Paso 1 -->
+          <div class="flex flex-col items-center space-y-1.5 relative z-10">
+            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow-md shadow-emerald-600/30 ring-4 ring-white">
+              <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p class="text-[10px] font-black text-gray-900">Registrado</p>
+          </div>
+
+          <!-- Paso 2 -->
+          <div class="flex flex-col items-center space-y-1.5 relative z-10">
+            <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+              [ngClass]="['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(subOrder.status) ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-white animate-pulse'">
+              2
+            </div>
+            <p class="text-[10px] font-black text-gray-900">En Preparación</p>
+          </div>
+
+          <!-- Paso 3 -->
+          <div class="flex flex-col items-center space-y-1.5 relative z-10">
+            <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+              [ngClass]="['ready_for_pickup', 'shipped', 'delivered'].includes(subOrder.status) ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'">
+              3
+            </div>
+            <p class="text-[10px] font-black text-gray-900">
+              {{ subOrder.fulfillment === 'pickup' ? 'Listo en Tienda' : 'En Camino' }}
+            </p>
+          </div>
+
+          <!-- Paso 4 -->
+          <div class="flex flex-col items-center space-y-1.5 relative z-10">
+            <div class="w-8 h-8 rounded-full text-xs font-bold flex items-center justify-center ring-4 ring-white"
+              [ngClass]="subOrder.status === 'delivered' ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-400'">
+              4
+            </div>
+            <p class="text-[10px] font-black text-gray-900">Entregado</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- QR de Retiro si esta sub-orden es de recojo en tienda -->
+      @if (subOrder.fulfillment === 'pickup') {
+      <div class="bg-slate-50 border border-slate-200/80 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-center gap-5">
+        <div class="flex-shrink-0 bg-white p-2.5 rounded-2xl border border-slate-200 shadow-xs">
+          @if (isQrLoadingForOrder(subOrder._id)) {
+            <div class="w-36 h-36 flex items-center justify-center bg-gray-50 rounded-xl">
+              <svg class="animate-spin h-6 w-6 text-slate-700" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            </div>
+          } @else if (getQrDataForOrder(subOrder._id)?.qrUrl) {
+            <img [src]="getQrDataForOrder(subOrder._id)!.qrUrl" alt="Código QR de retiro" class="w-36 h-36 rounded-xl object-contain"/>
+          } @else {
+            <div class="w-36 h-36 flex items-center justify-center bg-gray-100 rounded-xl text-center p-2 text-[10px] text-gray-500 font-bold">
+              QR disponible con tu documento
+            </div>
+          }
+        </div>
+
+        <div class="space-y-2 text-center sm:text-left min-w-0">
+          <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-100 text-emerald-900 border border-emerald-200">
+            <span>Pase Rápido de Caja</span>
+          </div>
+          <p class="text-xs sm:text-sm font-extrabold text-slate-900 leading-snug">
+            Muestra este código QR o tu código <strong class="font-mono text-emerald-800 font-black">{{ getQrDataForOrder(subOrder._id)?.code || subOrder.pickupCode || 'PKP-AUTO' }}</strong> al cajero en {{ subOrder.pickupStore?.name || 'tienda' }}.
+          </p>
+          <p class="text-[11px] text-slate-500">
+            Dirección: {{ subOrder.pickupStore?.address }}
+          </p>
+        </div>
+      </div>
+      }
+
+      <!-- Artículos de este Despacho -->
+      <div class="border border-slate-100 rounded-2xl overflow-hidden divide-y divide-slate-100">
+        <div class="p-3 bg-slate-50/60 font-black text-xs text-slate-700 flex items-center justify-between">
+          <span>Artículos incluidos en esta entrega ({{ subOrder.items.length }})</span>
+          <span class="text-[11px] text-slate-500 font-semibold">{{ subOrder.fulfillment === 'pickup' ? 'Retiro sin costo de envío' : 'Despacho a Domicilio' }}</span>
+        </div>
+
+        @for (item of subOrder.items; track item.variantId) {
+        <div class="p-3.5 flex items-center justify-between gap-3">
+          <div class="flex items-center gap-3 min-w-0">
             <div class="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200/60 overflow-hidden flex items-center justify-center flex-shrink-0 relative">
               @if (item.thumbnail) {
-                <img
-                  [src]="item.thumbnail | cloudinary:'w_160,c_fill,q_auto,f_auto'"
-                  [alt]="item.productName"
-                  class="w-full h-full object-cover"
-                  loading="lazy"
-                />
+                <img [src]="item.thumbnail | cloudinary:'w_160,c_fill,q_auto,f_auto'" [alt]="item.productName" class="w-full h-full object-cover" loading="lazy"/>
               } @else {
-                <svg class="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                <svg class="w-5 h-5 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                 </svg>
               }
             </div>
             <div class="min-w-0">
-              <p class="font-black text-xs sm:text-sm text-gray-900 truncate">{{ item.productName }}</p>
-              <p class="text-[11px] text-gray-400 mt-0.5">
+              <p class="font-extrabold text-xs text-slate-900 truncate">{{ item.productName }}</p>
+              <p class="text-[11px] text-slate-400 mt-0.5">
                 SKU: {{ item.sku }} · {{ item.color }} · T. {{ item.size }}
               </p>
-              <p class="text-xs font-semibold text-gray-500 mt-0.5">
+              <p class="text-xs font-semibold text-slate-600 mt-0.5">
                 {{ item.quantity }} × {{ item.unitPrice | solCurrency }}
               </p>
             </div>
           </div>
           <div class="text-right flex-shrink-0">
-            <p class="font-black text-sm text-gray-900">{{ item.subtotal | solCurrency }}</p>
+            <p class="font-black text-xs sm:text-sm text-slate-900">{{ item.subtotal | solCurrency }}</p>
           </div>
         </div>
         }
       </div>
 
-      <!-- Desglose Financiero -->
-      <div class="p-5 border-t border-gray-100 bg-gray-50/70 space-y-2">
-        <div class="flex justify-between text-xs text-gray-600 font-medium">
-          <span>Subtotal de Productos:</span>
-          <span class="font-bold text-gray-800">{{ order.pricing.subtotalBeforeDiscount | solCurrency }}</span>
+    </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- DESGLOSE FINANCIERO                                                    -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <div class="bg-white rounded-3xl border border-gray-100 shadow-sm p-6 space-y-3">
+      <h3 class="font-black text-sm text-gray-900 pb-2 border-b border-gray-100">
+        {{ isSingleView ? 'Resumen Financiero del Pedido' : 'Resumen Consolidado de la Compra' }}
+      </h3>
+
+      <div class="space-y-2 text-xs text-gray-600">
+        <div class="flex justify-between">
+          <span>{{ isSingleView ? 'Subtotal de Productos:' : 'Subtotal de Todos los Productos:' }}</span>
+          <span class="font-bold text-gray-800">{{ totalGroupSubtotal | solCurrency }}</span>
         </div>
-        @if (order.pricing.discount > 0) {
-        <div class="flex justify-between text-xs text-emerald-600 font-bold">
-          <span>Descuento Aplicado:</span>
-          <span>- {{ order.pricing.discount | solCurrency }}</span>
+
+        @if (totalGroupSavings > 0) {
+        <div class="flex justify-between text-emerald-600 font-bold">
+          <span>Descuento Total Aplicado:</span>
+          <span>- {{ totalGroupSavings | solCurrency }}</span>
         </div>
         }
-        <div class="flex justify-between text-xs text-gray-600 font-medium">
-          <span>Costo de Entrega:</span>
-          <span class="font-bold text-gray-800">{{ order.pricing.shippingCost === 0 ? 'Gratis (Recojo)' : (order.pricing.shippingCost | solCurrency) }}</span>
+
+        <div class="flex justify-between">
+          <span>Costos de Envío / Despacho:</span>
+          <span class="font-bold text-gray-800">
+            {{ totalGroupShipping === 0 ? 'Gratis' : (totalGroupShipping | solCurrency) }}
+          </span>
         </div>
-        <div class="pt-2 border-t border-gray-200 flex justify-between items-center">
-          <span class="text-xs font-black uppercase tracking-wider text-gray-900">Total Pagado:</span>
-          <span class="text-2xl font-black text-slate-900 font-sans">{{ order.pricing.total | solCurrency }}</span>
+
+        <div class="pt-3 border-t border-gray-200 flex justify-between items-center">
+          <div>
+            <span class="text-xs font-black uppercase tracking-wider text-gray-900 block">Total Pagado:</span>
+            <span class="text-[10px] text-slate-400">Total liquidado con {{ order.paymentMethod === 'card' ? 'Izipay' : (order.paymentMethod === 'yape' ? 'Yape' : 'Contraentrega') }}</span>
+          </div>
+          <span class="text-2xl font-black text-slate-900 font-sans">
+            {{ totalGroupAmount | solCurrency }}
+          </span>
         </div>
       </div>
     </div>
@@ -264,7 +393,7 @@
       <a routerLink="/my-account/orders"
         class="inline-flex items-center gap-2 px-5 py-3 border border-slate-200 bg-white text-slate-700 rounded-2xl text-xs font-bold hover:bg-slate-50 hover:text-slate-900 transition shadow-xs">
         <svg class="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        <span>Ir a Mis Pedidos</span>
+        <span>Volver a Mis Pedidos</span>
       </a>
       <a routerLink="/store"
         class="px-6 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black hover:bg-slate-800 shadow-lg shadow-slate-900/10 active:scale-98 transition">

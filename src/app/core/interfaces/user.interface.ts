@@ -6,6 +6,10 @@ export interface User {
   roles: string[];
   phone?: string;
   dni?: string;
+  ruc?: string;
+  businessName?: string;
+  fiscalAddress?: string;
+  invoicePreference?: 'boleta' | 'factura';
   googleId?: string;
   isActive?: boolean;
   addresses?: string[];

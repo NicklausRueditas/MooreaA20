@@ -59,6 +59,26 @@ export interface OrderPickupStoreSnapshot {
   phone?: string;
 }
 
+export interface OrderBillingInfo {
+  invoiceType: 'boleta' | 'factura';
+  documentType: 'dni' | 'ruc';
+  documentNumber: string;
+  businessName?: string;
+  fiscalAddress?: string;
+  customerName?: string;
+  customerPhone?: string;
+  sunatCorrelative?: string;
+  issuedAt?: string | Date;
+}
+
+export interface DeliveryProofSnapshot {
+  recipientName?: string;
+  recipientDni?: string;
+  notes?: string;
+  photos?: string[];
+  deliveredAt?: string | Date;
+}
+
 // ─── Documento de Orden Principal ─────────────────────────────────────────
 
 export interface Order {
@@ -82,10 +102,13 @@ export interface Order {
   pickupCode?: string;
   pickupUsedAt?: string;
   groupOrderId?: string;
+  relatedOrders?: Order[];
   estimatedDays?: number;
   estimatedDeliveryDate?: string;
   status: OrderStatus;
   cancelReason?: string;
+  billing?: OrderBillingInfo;
+  deliveryProof?: DeliveryProofSnapshot;
   createdAt: string;
   updatedAt: string;
   paidAt?: string;
@@ -102,6 +125,13 @@ export interface CreateOrderDto {
   groupOrderId?: string;
   estimatedDays?: number;
   estimatedDeliveryDate?: string;
+  invoiceType?: 'boleta' | 'factura';
+  documentType?: 'dni' | 'ruc';
+  documentNumber?: string;
+  businessName?: string;
+  fiscalAddress?: string;
+  customerName?: string;
+  customerPhone?: string;
 }
 
 // ─── Respuestas del Backend ───────────────────────────────────────────────
