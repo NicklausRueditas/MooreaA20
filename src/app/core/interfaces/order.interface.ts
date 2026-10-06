@@ -79,6 +79,27 @@ export interface DeliveryProofSnapshot {
   deliveredAt?: string | Date;
 }
 
+export interface OrderHistoryEntry {
+  action: string;
+  actionLabel: string;
+  previousStatus?: OrderStatus;
+  newStatus?: OrderStatus;
+  performedBy: {
+    userId?: string;
+    name: string;
+    email?: string;
+    role: string;
+  };
+  store?: {
+    storeId?: string;
+    name?: string;
+    code?: string;
+  };
+  timestamp: string | Date;
+  notes?: string;
+  metadata?: Record<string, any>;
+}
+
 // ─── Documento de Orden Principal ─────────────────────────────────────────
 
 export interface Order {
@@ -109,6 +130,7 @@ export interface Order {
   cancelReason?: string;
   billing?: OrderBillingInfo;
   deliveryProof?: DeliveryProofSnapshot;
+  history?: OrderHistoryEntry[];
   createdAt: string;
   updatedAt: string;
   paidAt?: string;

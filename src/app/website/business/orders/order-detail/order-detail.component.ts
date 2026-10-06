@@ -17,6 +17,7 @@ import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_COLOR,
   DeliveryProofSnapshot,
+  OrderHistoryEntry,
 } from '../../../../core/interfaces/order.interface';
 
 /**
@@ -724,5 +725,344 @@ export class OrderDetailComponent implements OnInit, OnDestroy {
   closeImagePreview(): void {
     this.previewImageUrl = null;
     this.previewImageTitle = '';
+  }
+
+  // ─── Historial y Trazabilidad de Auditoría ──────────────────────────────
+  /**
+   * Obtiene la lista ordenada de eventos del historial, con retrocompatibilidad
+   * para pedidos anteriores que no tengan eventos persistidos en la base de datos.
+   */
+  getOrderTimeline(): OrderHistoryEntry[] {
+    if (this.order?.history && this.order.history.length > 0) {
+      return [...this.order.history].sort(
+        (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+      );
+    }
+
+    // Fallback sintetizado para órdenes previas
+    const syntheticEvents: OrderHistoryEntry[] = [];
+    if (!this.order) return syntheticEvents;
+
+    // 1. Creación
+    syntheticEvents.push({
+      action: 'order_created',
+      actionLabel: 'Pedido registrado por el cliente',
+      performedBy: {
+        name: this.getClientName(),
+        role: 'user',
+        email: this.order.user?.email,
+      },
+      store: this.order.pickupStore ? {
+        storeId: this.order.pickupStore.storeId,
+        name: this.order.pickupStore.name,
+      } : undefined,
+      timestamp: this.order.createdAt || new Date(),
+    });
+
+    // 2. Pago
+    if (this.order.paidAt || this.order.paymentStatus === 'paid' || this.order.status !== 'cancelled') {
+      syntheticEvents.push({
+        action: 'payment_confirmed',
+        actionLabel: 'Pago verificado exitosamente',
+        performedBy: {
+          name: this.order.paymentMethod === 'card' ? 'Pasarela Izipay' : this.getClientName(),
+          role: this.order.paymentMethod === 'card' ? 'system' : 'user',
+        },
+        timestamp: this.order.paidAt || this.order.createdAt || new Date(),
+      });
+    }
+
+    // 3. Preparación
+    if (['preparing', 'ready_for_pickup', 'shipped', 'delivered'].includes(this.order.status)) {
+      syntheticEvents.push({
+        action: 'preparing',
+        actionLabel: 'En preparación y empaque (Picking)',
+        performedBy: {
+          name: 'Operario de Almacén',
+          role: 'worker',
+        },
+        store: this.order.pickupStore ? {
+          storeId: this.order.pickupStore.storeId,
+          name: this.order.pickupStore.name,
+        } : { name: 'Almacén Central / Despacho' },
+        timestamp: this.order.updatedAt || new Date(),
+      });
+    }
+
+    // 4. Listo para retiro o en camino
+    if (['ready_for_pickup', 'delivered'].includes(this.order.status) && this.isPickup()) {
+      syntheticEvents.push({
+        action: 'ready_for_pickup',
+        actionLabel: 'Listo para retiro en tienda',
+        performedBy: {
+          name: 'Personal de Tienda',
+          role: 'worker',
+        },
+        store: this.order.pickupStore ? {
+          storeId: this.order.pickupStore.storeId,
+          name: this.order.pickupStore.name,
+        } : undefined,
+        timestamp: this.order.updatedAt || new Date(),
+      });
+    } else if (['shipped', 'delivered'].includes(this.order.status) && !this.isPickup()) {
+      syntheticEvents.push({
+        action: 'shipped',
+        actionLabel: 'Despachado / En camino a domicilio',
+        performedBy: {
+          name: 'Despachador de Envíos',
+          role: 'worker',
+        },
+        timestamp: this.order.updatedAt || new Date(),
+      });
+    }
+
+    // 5. Entregado
+    if (this.order.status === 'delivered') {
+      syntheticEvents.push({
+        action: 'delivered',
+        actionLabel: this.isPickup() ? 'Retiro en tienda validado y entregado' : 'Entrega a domicilio confirmada',
+        performedBy: {
+          name: this.isPickup() ? 'Cajero de Sucursal' : (this.order.deliveryProof?.recipientName ? `Receptor: ${this.order.deliveryProof.recipientName}` : 'Repartidor'),
+          role: 'worker',
+        },
+        store: this.order.pickupStore ? {
+          storeId: this.order.pickupStore.storeId,
+          name: this.order.pickupStore.name,
+        } : undefined,
+        timestamp: this.order.pickupUsedAt || this.order.deliveryProof?.deliveredAt || this.order.updatedAt || new Date(),
+      });
+    }
+
+    // 6. Cancelado
+    if (this.order.status === 'cancelled') {
+      syntheticEvents.push({
+        action: 'cancelled',
+        actionLabel: 'Pedido cancelado',
+        performedBy: {
+          name: 'Administración',
+          role: 'admin',
+        },
+        notes: this.order.cancelReason,
+        timestamp: this.order.updatedAt || new Date(),
+      });
+    }
+
+    return syntheticEvents;
+  }
+
+  /**
+   * Obtiene la configuración de estilos e insignia del rol del operador
+   */
+  getRoleBadge(role?: string): { label: string; badgeClass: string; roleCode: string; roleType: string } {
+    const cleanRole = (role || '').toLowerCase();
+    switch (cleanRole) {
+      case 'admin':
+        return {
+          label: 'Administrador Global',
+          badgeClass: 'bg-purple-50 text-purple-800 border-purple-200/80',
+          roleCode: 'ADMIN',
+          roleType: 'admin',
+        };
+      case 'worker':
+        return {
+          label: 'Operario / Almacén',
+          badgeClass: 'bg-blue-50 text-blue-800 border-blue-200/80',
+          roleCode: 'OPERARIO',
+          roleType: 'worker',
+        };
+      case 'seller':
+        return {
+          label: 'Tienda / Vendedor',
+          badgeClass: 'bg-emerald-50 text-emerald-800 border-emerald-200/80',
+          roleCode: 'SUCURSAL',
+          roleType: 'seller',
+        };
+      case 'user':
+        return {
+          label: 'Cliente',
+          badgeClass: 'bg-slate-100 text-slate-800 border-slate-200/80',
+          roleCode: 'CLIENTE',
+          roleType: 'user',
+        };
+      case 'system':
+      default:
+        return {
+          label: 'Sistema Automatizado',
+          badgeClass: 'bg-cyan-50 text-cyan-800 border-cyan-200/80',
+          roleCode: 'SISTEMA',
+          roleType: 'system',
+        };
+    }
+  }
+
+  /**
+   * Obtiene los colores y diseño del nodo en la línea de tiempo según la acción
+   */
+  getActionVisuals(action?: string): {
+    actionType: string;
+    gradientClass: string;
+    iconBgClass: string;
+    iconColorClass: string;
+    ringColor: string;
+    bgClass: string;
+    borderClass: string;
+    badgeText: string;
+    badgeClass: string;
+  } {
+    switch (action) {
+      case 'order_created':
+        return {
+          actionType: 'created',
+          gradientClass: 'from-slate-800 to-slate-950',
+          iconBgClass: 'bg-slate-900',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-slate-300',
+          bgClass: 'bg-slate-50/70',
+          borderClass: 'border-slate-200/90',
+          badgeText: 'Checkout Realizado',
+          badgeClass: 'bg-slate-200/80 text-slate-800 border-slate-300',
+        };
+      case 'payment_confirmed':
+      case 'paid':
+        return {
+          actionType: 'payment',
+          gradientClass: 'from-emerald-600 to-teal-700',
+          iconBgClass: 'bg-emerald-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-emerald-200',
+          bgClass: 'bg-gradient-to-br from-emerald-50/40 via-white to-teal-50/30',
+          borderClass: 'border-emerald-200/90',
+          badgeText: 'Pago Verificado',
+          badgeClass: 'bg-emerald-100 text-emerald-800 border-emerald-300',
+        };
+      case 'preparing':
+        return {
+          actionType: 'preparing',
+          gradientClass: 'from-amber-500 to-orange-600',
+          iconBgClass: 'bg-amber-500',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-amber-200',
+          bgClass: 'bg-gradient-to-br from-amber-50/40 via-white to-orange-50/30',
+          borderClass: 'border-amber-200/90',
+          badgeText: 'Picking & Empaque',
+          badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+        };
+      case 'ready_for_pickup':
+        return {
+          actionType: 'ready_pickup',
+          gradientClass: 'from-purple-600 to-indigo-700',
+          iconBgClass: 'bg-purple-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-purple-200',
+          bgClass: 'bg-gradient-to-br from-purple-50/40 via-white to-indigo-50/30',
+          borderClass: 'border-purple-200/90',
+          badgeText: 'Listo en Tienda',
+          badgeClass: 'bg-purple-100 text-purple-800 border-purple-300',
+        };
+      case 'shipped':
+        return {
+          actionType: 'shipped',
+          gradientClass: 'from-blue-600 to-indigo-700',
+          iconBgClass: 'bg-blue-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-blue-200',
+          bgClass: 'bg-gradient-to-br from-blue-50/40 via-white to-indigo-50/30',
+          borderClass: 'border-blue-200/90',
+          badgeText: 'Despachado / Courier',
+          badgeClass: 'bg-blue-100 text-blue-800 border-blue-300',
+        };
+      case 'delivered':
+      case 'pickup_delivered':
+        return {
+          actionType: 'delivered',
+          gradientClass: 'from-green-600 to-emerald-700',
+          iconBgClass: 'bg-green-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-green-300',
+          bgClass: 'bg-gradient-to-br from-green-50/50 via-white to-emerald-50/40',
+          borderClass: 'border-green-300',
+          badgeText: 'Entregado con Éxito',
+          badgeClass: 'bg-green-100 text-green-900 border-green-300',
+        };
+      case 'cancelled':
+        return {
+          actionType: 'cancelled',
+          gradientClass: 'from-rose-600 to-red-700',
+          iconBgClass: 'bg-rose-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-rose-200',
+          bgClass: 'bg-gradient-to-br from-rose-50/50 via-white to-red-50/40',
+          borderClass: 'border-rose-300',
+          badgeText: 'Orden Cancelada',
+          badgeClass: 'bg-rose-100 text-rose-900 border-rose-300',
+        };
+      case 'sunat_correlative_updated':
+        return {
+          actionType: 'sunat',
+          gradientClass: 'from-sky-600 to-cyan-700',
+          iconBgClass: 'bg-sky-600',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-sky-200',
+          bgClass: 'bg-gradient-to-br from-sky-50/40 via-white to-cyan-50/30',
+          borderClass: 'border-sky-200/90',
+          badgeText: 'SUNAT Facturación',
+          badgeClass: 'bg-sky-100 text-sky-800 border-sky-300',
+        };
+      default:
+        return {
+          actionType: 'default',
+          gradientClass: 'from-slate-700 to-slate-900',
+          iconBgClass: 'bg-slate-700',
+          iconColorClass: 'text-white',
+          ringColor: 'ring-slate-200',
+          bgClass: 'bg-slate-50',
+          borderClass: 'border-slate-200',
+          badgeText: 'Movimiento Operativo',
+          badgeClass: 'bg-slate-100 text-slate-800 border-slate-300',
+        };
+    }
+  }
+
+  /**
+   * Calcula el tiempo relativo amigable en español
+   */
+  getRelativeTime(timestamp: string | Date): string {
+    if (!timestamp) return 'Reciente';
+    const date = new Date(timestamp);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    if (diffMs < 0) return 'Hace un momento';
+
+    const diffSec = Math.floor(diffMs / 1000);
+    const diffMin = Math.floor(diffSec / 60);
+    const diffHours = Math.floor(diffMin / 60);
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffSec < 60) return 'Hace un momento';
+    if (diffMin < 60) return `Hace ${diffMin} ${diffMin === 1 ? 'min' : 'mins'}`;
+    if (diffHours < 24) return `Hace ${diffHours} ${diffHours === 1 ? 'h' : 'hrs'}`;
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    return date.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' });
+  }
+
+  /**
+   * Obtiene el nombre del punto operativo o sucursal asociado al evento
+   */
+  getEventStoreName(event: OrderHistoryEntry): string {
+    if (event.store?.name) {
+      return event.store.name;
+    }
+    if (this.order?.pickupStore?.name) {
+      return this.order.pickupStore.name;
+    }
+    return 'Almacén Central / Despacho Moorea';
+  }
+
+  /**
+   * Obtiene el código de la tienda asociado al evento si existe
+   */
+  getEventStoreCode(event: OrderHistoryEntry): string | null {
+    return event.store?.code || null;
   }
 }

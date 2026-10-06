@@ -80,3 +80,15 @@
     box-shadow: none !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════ */
+/* 📦 TIMELINE & AUDIT TRAIL E-COMMERCE STYLES                               */
+/* ═══════════════════════════════════════════════════════════════════════════ */
+
+#order-audit-trail article {
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+#order-audit-trail article:hover {
+  transform: translateY(-2px);
+}
